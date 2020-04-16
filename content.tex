@@ -160,25 +160,13 @@ Finally, once the density bands are identified, the process of calculating the v
 ANN                 &:     & Artificial Neural Network \\
 CNN                 &:     & Convolutional Neural Network \\
 SGD                 &:     & Stochastic Gradient Descent \\
-${\mathcal H}( x )$ &:     & the Hamming weight of $x$ \\
-${\mathbb  F}_q$    &:     & a finite field with $q$ elements \\
-$x_i$               &:     & the $i$-th bit of some binary sequence $x$, st. $x_i \in \{ 0, 1 \}$ \\
 \end{tabular}
 
 % -----------------------------------------------------------------------------
 
 \chapter*{Acknowledgements}
 
-{\bf An optional section, of at most $1$ page}
-\vspace{1cm} 
-
-\noindent
-It is common practice (although totally optional) to acknowledge any
-third-party advice, contribution or influence you have found useful
-during your work.  Examples include support from friends or family, 
-the input of your Supervisor and/or Advisor, external organisations 
-or persons who  have supplied resources of some kind (e.g., funding, 
-advice or time), and so on.
+I am extremely grateful to Dr. Tilo Burghardt whose enthusiasm, support, and guidance throughout this project has been invaluable. His passion for education is incredible and I will forever be thankful for his contributions throughout my entire degree. I would also like to extend my sincere thanks to Dr. Erica Hendy and Dr. Kenneth Johnson for their expertise and enthusiasm for the project. I am also grateful to Leonardo for the time and effort he put into labelling data for this project as well as his consistent support throughout.
 
 % =============================================================================
 
@@ -200,15 +188,30 @@ advice or time), and so on.
 \chapter{Contextual Background}
 \label{chap:context}
 
-Explain the current method that erica and co use to calculate what we are trying to calculate. Introduce the density of coral?
+This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of corals is discussed. Next, the motivations for an automated process of analysis are outlined and the choice of a deep learning based solution is discussed. Finally, related works in the analysis of corals are highlighted and briefly discussed.
+
+\section{Introduction}
+
+\subsection{Corals}
 
 Introduce coral density bands cite showing they exist. Explain what they can be useful for.
 
-Why are we using deep learning for it? why is it an important area of research?
+\section{Motivations}
 
+\subsection{Manual Processing}
+
+Explain the current method that erica and co use to calculate what we are trying to calculate. Introduce the density of coral?
+
+\subsection{Dataset}
+
+Introduce the dataset (whats the name? can use it in the subsection name).
+
+\subsection{Image Segmentation}
+
+Why are we using deep learning for it? why is it an important area of research?
 Introduce image segmentation. Mention U-Net and SegNet are used for this and are discussed in tech bg. Mention that unet is often used for biomedical data for example cells etc and it was in interesting experiment applying it to volumetric ct scans of coral skeletons.
 
-Introduce the dataset
+\section{Related Work}
 
 % {\bf A compulsory chapter,     of roughly $5$ pages}
 % \vspace{1cm} 
@@ -297,7 +300,7 @@ As outlined in Chapter \ref{chap:context}, the objective of this project is to u
 
 \section{Deep Learning}
 
-Based loosely on the structure of the brain, artificial neural networks (ANNs) are computational models that have proved useful in a wide range of applications~\cite{applications}\textemdash a notable example being the recent success of convolutional neural networks in the field of computer vision~\cite{compvision}. Deep learning is a form of machine learning that concerns the use of ANNs with many layers\textemdash hence the name ``deep'' learning. The field has seen a significant increase in popularity in recent years since a network named AlexNet famously won the ImageNet Large Scale Visual Recognition Challenge in 2012\footnote{\url{http://www.image-net.org/challenges/LSVRC/2012/results.html}}, performing considerably better than the previous state-of-the-art~\cite{alexnet}.
+Based loosely on the structure of the brain, artificial neural networks (ANNs) are computational models that have proved useful in a wide range of applications~\cite{lecun2015deep, healthcare, nlp}\textemdash a notable example being the recent success of convolutional neural networks in the field of computer vision~\cite{compvision, semanticseg}. Deep learning is a form of machine learning that concerns the use of ANNs with many layers\textemdash hence the name ``deep'' learning. The field has seen a significant increase in popularity in recent years since a network named AlexNet famously won the ImageNet Large Scale Visual Recognition Challenge in 2012\footnote{\url{http://www.image-net.org/challenges/LSVRC/2012/results.html}}, performing considerably better than the previous state-of-the-art~\cite{alexnet}.
 
 A typical fully connected ANN is a layered network of ``neurons'' connected by a series of ``weights''. A neuron is simply an object that produces a weighted sum of some number of inputs. This weighted sum is often passed through a non-linear ``activation'' function and the final result is referred to as the ``activation'' of the neuron. When values are supplied to the input neurons of the network, these values are forward-propagated through the network, activating each layer of neurons which, in turn, activate the next layer. The resulting activations of the neurons in the final layer are the output of the network.
 
@@ -312,7 +315,9 @@ The convolutional neural network (CNN) is a type of neural network named after t
 \noindent
 where $f$ is the input image, $h$ is an $m\times n$ kernel, and $g$ is the resulting image.
 
-CNNs often contain multiple convolutional layers in which increasingly complex features of an image may be detected by making use of a combination of simpler features detected in previous layers. As well as the convolution operation, the max-pooling and up-sampling operations are often used. The max-pooling operation is used to decrease the dimensionality of the input in attempt to force the network to ``learn'' features present in the input. These operations are illustrated in Figure \ref{fig:operations}.
+CNNs often contain multiple convolutional layers in which increasingly complex features of an image may be detected by making use of a combination of simpler features detected in previous layers. A convolutional layer convolves the channels of an image with multiple learned kernels. A channel is simply a component of an image\textemdash an RGB image, for example, consists of three channels, whilst a greyscale image consists of only one. The output of these operations will be multiple modified images that are referred to as ``feature maps''. These feature maps can then be used as the input channels to the next layer, and so on.
+
+As well as the convolution operation, the max-pooling operation is often used. The max-pooling operation is used to decrease the dimensionality of the input in attempt to force the network to ``learn'' features present in the input. These operations are illustrated in Figure \ref{fig:operations}.
 
 \begin{figure}[t]
     \centering
@@ -333,7 +338,7 @@ CNNs often contain multiple convolutional layers in which increasingly complex f
     \label{fig:operations}
 \end{figure}
 
-Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a $3\times 3$ kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its ``receptive field''. This is one of the reasons why during hyper parameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyper parameter optimisation is discussed in Section \ref{sec:hyperparam}.
+Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a $3\times 3$ kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyper parameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyper parameter optimisation is discussed in Section \ref{sec:hyperparam}.
 
 \subsection{Backpropagation}
 \label{sec:backprop}
@@ -346,18 +351,19 @@ An optimisation algorithm can then use these computed derivatives to adjust each
 
 Once the derivatives\textemdash or ``gradients''\textemdash have been calculated, an optimisation algorithm is used to determine the exact value each weight should be updated to. When training deep neural networks, some variant of the gradient descent algorithm is often used. Gradient descent~\cite[p. 536]{gradient} is an iterative algorithm designed to find local minima of some differentiable function\textemdash in this case, the loss function. A visualisation of the gradient descent algorithm is shown in Figure \ref{fig:gd}. The gradient descent algorithm evaluates the loss function over the entire dataset before taking a ``step'' in the direction of the gradient computed. A step consists of updating the value of every weight in order to decrease the average loss value that would be achieved by the network when processing the dataset. Evaluating the loss function over the entire dataset once is referred to as an ``epoch''.
 
-\subsubsection{Stochastic Gradient Descent}
-
-Issues arise when using gradient descent with larger datasets, as evaluating the loss function over the entire dataset before a step can be taken becomes increasingly computationally costly~\cite{gdbad}. These issues have given rise to the popularity of the stochastic gradient descent (SGD) and the mini-batch gradient descent optimisation algorithms. SGD is a variant of the gradient descent algorithm that completes an iteration each time a sample is processed rather than only once the entire dataset is processed. Mini-batch gradient descent is yet another variant of gradient descent in which weights are updated after evaluating the loss function over a subset\textemdash or ``batch''\textemdash of the training samples.
-
-The size of the weight update is not only determined by the gradient calculated, but also by a hyper parameter called the ``learning rate''. For example, SGD calculates the update for a single weight $w$ as
+The size of the weight update is not only determined by the gradient calculated, but also by a hyper parameter called the ``learning rate''. For example, gradient descent calculates the update for a single weight $w$ as
 
 \begin{equation}
     w := w - \eta\nabla\ell(w)
 \end{equation}
 
 \noindent
-where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$.
+where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$. Choosing an appropriate learning rate is challenging but is essential to allow an optimisation algorithm to converge to a local minimum. A learning rate that is too large can cause the loss function to fluctuate around the minimum, impeding convergence or even causing divergence. The learning rate hyper parameter has a significant effect on training and is one of the most important parameters tuned in the hyper parameter optimisation process (see Section \ref{sec:hyperparam}).
+
+
+\subsubsection{Stochastic Gradient Descent}
+
+Issues arise when using gradient descent with larger datasets, as evaluating the loss function over the entire dataset before a step can be taken becomes increasingly computationally costly~\cite{gdbad}. These issues have given rise to the popularity of the stochastic gradient descent (SGD) and the mini-batch gradient descent optimisation algorithms. SGD is a variant of the gradient descent algorithm that takes a step each time a sample is processed rather than only once the entire dataset is processed. Mini-batch gradient descent is yet another variant of gradient descent in which weights are updated after evaluating the loss function over a subset\textemdash or ``batch''\textemdash of the training samples.
 
 \begin{figure}[t]
     \centering
@@ -368,7 +374,7 @@ where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the l
 
 \subsubsection{Adam}
 
-First introduced by Kingma and Ba in 2014, Adam~\cite{adam} is an optimisation algorithm that is also based off of SGD. However, rather than using the same learning rate across all parameters, Adam computes individual adaptive learning rates for different parameters. These individual learning rates are based off of estimates of the first and second moments of the gradients. Kingma and Ba showed empirically that Adam works well in practice and compares favourably to other optimisation algorithms when optimising both fully connected ANNs and deep CNNs.
+First introduced by Kingma and Ba in 2014, Adam~\cite{adam} is an optimisation algorithm that is also based off of SGD. However, rather than using the same learning rate across all parameters, Adam computes individual adaptive learning rates for different parameters. These individual learning rates are based off of estimates of the first moment (the mean) and second moment (the uncentered variance) of the gradients~\cite{gdbad}. Kingma and Ba showed empirically that Adam works well in practice and compares favourably to other optimisation algorithms when optimising both fully connected ANNs and deep CNNs.
 
 \subsection{Loss functions}
 \label{sec:loss}
@@ -396,6 +402,12 @@ where $y$ is the actual value, and $\hat{y}$ is the predicted value.
 \subsection{Accuracy Metrics}
 
 Although loss functions can be used to measure performance, their main purpose is to be used to train the network. To quantify the performance achieved by a network, an accuracy metric should instead be used. Accuracy metrics do not play a direct role in training networks, though they can be used indirectly\textemdash for example, to determine whether or not to continue training. Choosing an appropriate accuracy metric is essential and proved challenging throughout this project. The main accuracy metric decided upon was based off of the Hausdorff distance discussed in Section \ref{sec:hausdorff}.
+
+\subsection{Datasets}
+
+Introduce train test val split and what they are all used for.
+
+Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystopping}, early stopping is.
 
 \subsection{Pooling}
 
@@ -446,6 +458,42 @@ Throughout this project, various deep learning techniques are utilised in an att
 
 \chapter{Project Execution}
 \label{chap:execution}
+
+\section{Two Dimensional Boundary Extraction}
+
+\subsection{Labelling the Data}
+
+\subsection{Dataset Curation}
+
+\subsubsection{Splitting the Dataset}
+
+\subsection{Architecture}
+
+\subsection{Data Augmentation}
+
+\subsection{Early Stopping}
+
+\section{Three Dimensional Boundary Extraction}
+
+\subsection{Dataset Expansion}
+
+\subsection{Architecture Modification}
+
+\subsection{Data Loader Implementation}
+
+\subsection{Three Dimensional Data Augmentation}
+
+\section{Accuracy Metric Implementation}
+
+\subsection{Skeletonisation}
+
+(Show algorithm and maybe some source code?)
+
+\subsection{The \texttt{ctypes} Module}
+
+\section{Density Band Width Estimation}
+
+\subsection{Point Sampling}
 
 % {\bf A topic-specific chapter, of roughly $15$ pages} 
 % \vspace{1cm} 
@@ -548,6 +596,10 @@ Throughout this project, various deep learning techniques are utilised in an att
 
 \chapter{Critical Evaluation}
 \label{chap:evaluation}
+
+\section{Comparisons with Existing Techniques}
+
+\section{Future Work}
 
 % {\bf A topic-specific chapter, of roughly $15$ pages} 
 % \vspace{1cm} 

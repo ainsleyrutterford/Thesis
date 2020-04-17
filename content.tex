@@ -160,6 +160,7 @@ Finally, once the density bands are identified, the process of calculating the v
 ANN                 &:     & Artificial Neural Network \\
 CNN                 &:     & Convolutional Neural Network \\
 SGD                 &:     & Stochastic Gradient Descent \\
+CT                  &:     & Computed Tomography \\
 \end{tabular}
 
 % -----------------------------------------------------------------------------
@@ -188,13 +189,28 @@ I am extremely grateful to Dr. Tilo Burghardt whose enthusiasm, support, and gui
 \chapter{Contextual Background}
 \label{chap:context}
 
-This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of corals is discussed. Next, the motivations for an automated process of analysis are outlined and the choice of a deep learning based solution is discussed. Finally, related works in the analysis of corals are highlighted and briefly discussed.
+This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of coral skeletons is discussed. Next, the motivations for an automated analysis process are outlined and the choice of a deep learning based solution is justified. Finally, related works in the analysis of coral skeletons are highlighted and briefly discussed.
 
 \section{Introduction}
 
-\subsection{Corals}
+Coral polyps are tiny soft-bodied organisms. Through a process known as calcification, they use calcium and carbonate ions from the surrounding seawater to build themselves hard calcium carbonate skeletons. These polyps reproduce asexually and can form colonies of up to thousands of individual polyps all contributing to the same connected skeleton.
 
-Introduce coral density bands cite showing they exist. Explain what they can be useful for.
+Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of annual density bands in these calcium carbonate skeletons~\cite{knutson}. An annual density band consists of two portions: a high-density portion produced during the late summer, and a low density portion formed during periods of seasonally lower water temperatures~\cite{highlow}. These bandings are parallel to the growth surface and orthogonal to the direction of growth; examples are shown in Figure \ref{fig:densityexample}. With knowledge of a coral sample's date of collection, these annual band pairs can be counted back through time to provide not only an age of the sample, but also a chronology of the coral's growth. Analysis of the annual banding can also be used to determine changes in a coral sample's environmental conditions as it was growing~\cite{lough2011new}.
+
+\begin{figure}[b!]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/knutson.jpg}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/our-coral.png}
+    \end{subfigure}
+    \caption{Examples of the annual density bands present in Porites skeletons. \textbf{(left)} An X-radiograph of a Porites lobatu coral sample presented by Knutson et al. in 1974~\cite{coralimage}: ``[this is a] positive print of the X-ray negative; dark images correspond to high skeletal density, light images to low density''. \textbf{(right)} An image taken from one of the CT scans of a Porites sample from the dataset used in this project. The image channel has been inverted resulting in dark pixels corresponding to high density, and light pixels corresponding to low density.}
+    \label{fig:densityexample}
+\end{figure}
 
 \section{Motivations}
 
@@ -452,7 +468,9 @@ Throughout this project, various deep learning techniques are utilised in an att
 \subsection{Hausdorff distance}
 \label{sec:hausdorff}
 
-\section{Related Work}
+\section{Supporting Technologies}
+
+\subsection{Keras}
 
 % -----------------------------------------------------------------------------
 
@@ -471,7 +489,7 @@ Throughout this project, various deep learning techniques are utilised in an att
 
 \subsection{Data Augmentation}
 
-\subsection{Early Stopping}
+\subsection{Early Stopping and Checkpointing}
 
 \section{Three Dimensional Boundary Extraction}
 

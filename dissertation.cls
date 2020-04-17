@@ -44,7 +44,7 @@
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
 % http://www.ctan.org/tex-archive/macros/latex/contrib/adjustbox
-\RequirePackage{adjustbox}
+\RequirePackage[export]{adjustbox}
 % http://www.ctan.org/tex-archive/macros/latex/contrib/etoolbox
 \RequirePackage{etoolbox}
 % http://www.ctan.org/tex-archive/macros/latex/contrib/fancyhdr

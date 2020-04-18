@@ -49,13 +49,13 @@
 % \end{itemize}
 % \end{quote}
 
-This project is concerned with the use of deep learning to automate the calculation of the amount of annual skeletal matter produced by corals.
+This project is concerned with the use of deep learning to automate the estimation of the amount of annual skeletal matter produced by corals.
 
 First, the process of labelling density bands present in two dimensional slices is automated. This is achieved using a convolutional neural network based off of the U-Net architecture~\cite{ronneberger2015u}. To train this network, a dataset containing ${\sim}600$ images was curated from slices extracted from seven individual coral samples. Various data augmentation techniques were also used to artificially expand the dataset. To measure performance, an accuracy metric based off of the Hausdorff distance between the predicted and ground truth boundaries is used. This initial architecture achieved an average Hausdorff distance of 1.X pixels.
 
-Second, the process of labelling density bands present in three dimensions is automated. To this end, the U-Net architecture is modified to process three dimensional data. A larger dataset of manually labelled adjacent slices was curated to train this network containing ${\sim}X$ images extracted from $X$ coral samples. This architecture making use of the third dimension achieved an average Hausdorff distance of X pixels.
+Second, the process of labelling density bands present in three dimensions is explored. To this end, the U-Net architecture is modified to process three dimensional data. A larger dataset of manually labelled adjacent slices was curated to train this network containing ${\sim}X$ images extracted from $X$ coral samples.
 
-Finally, once the density bands are identified, the process of calculating the volume of skeletal matter produced annually is automated using various techniques.
+Finally, once the density bands are identified, the estimation of the distance between the bands is automated using various techniques. These distances can then be used to automatically estimate the volume of skeletal matter produced annually.
 
 \begin{itemize}
     \item I spent 25 hours manually labelling coral data.
@@ -189,15 +189,23 @@ I am extremely grateful to Dr. Tilo Burghardt whose enthusiasm, support, and gui
 \chapter{Contextual Background}
 \label{chap:context}
 
-This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of coral skeletons is discussed. Next, the motivations for an automated analysis process are outlined and the choice of a deep learning based solution is justified. Finally, related works in the analysis of coral skeletons are highlighted and briefly discussed.
+This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of coral skeletons is discussed. Next, the motivations for an automated analysis process are outlined and the choice of a deep learning based solution is justified. Related works in the analysis of coral skeletons are then briefly discussed. Finally, the main objectives of the project are summarised and listed.
 
 \section{Introduction}
 
 Coral polyps are tiny soft-bodied organisms. Through a process known as calcification, they use calcium and carbonate ions from the surrounding seawater to build themselves hard calcium carbonate skeletons. These polyps reproduce asexually and can form colonies of up to thousands of individual polyps all contributing to the same connected skeleton.
 
-Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of annual density bands in these calcium carbonate skeletons~\cite{knutson}. An annual density band consists of two portions: a high-density portion produced during the late summer, and a low density portion formed during periods of seasonally lower water temperatures~\cite{highlow}. These bandings are parallel to the growth surface and orthogonal to the direction of growth; examples are shown in Figure \ref{fig:densityexample}. With knowledge of a coral sample's date of collection, these annual band pairs can be counted back through time to provide not only an age of the sample, but also a chronology of the coral's growth. Analysis of the annual banding can also be used to determine changes in a coral sample's environmental conditions as it was growing~\cite{lough2011new}.
+Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of annual density bands in these calcium carbonate skeletons~\cite{knutson}. An annual density band consists of two portions: a high-density portion produced during the late summer, and a low density portion formed during periods of seasonally lower water temperatures~\cite{highlow}. These bandings are parallel to the growth surface and orthogonal to the direction of growth; examples are shown in Figure \ref{fig:densityexample}. With knowledge of a coral sample's date of collection, these annual band pairs can be counted back through time to provide not only an age of the sample, but also a chronology of the coral's growth. More specifically, the annual banding can be used to measure three aspects of coral growth~\cite{lough2011new}:
 
-\begin{figure}[b!]
+\begin{enumerate}
+    \item The linear extension rate (mm y$^{-1}$): the distance that the coral grows per year.
+    \item The density (g cm$^{-3}$): the density of the skeletal matter being produced.
+    \item The calcification rate (g cm$^{-2}$ y$^{-1}$): the mass of skeletal matter being produced per year, calculated by multiplying the linear extension rate with the density.
+\end{enumerate}
+
+Analysis of the annual banding can also be used to determine changes in a coral sample's environmental conditions as it was growing (import something about global warming maybe that they said in the 2011 paper to show that analysing these density bands is important. look near their conclusion too maybe?)~\cite{lough2011new}. This project aims to automate the estimation of the linear extension rate which is then used to estimate the calcification rate. Deep learning is used to extract the boundaries of each annual density band and the distance between these boundaries is then estimated using various techniques.
+
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -208,26 +216,46 @@ Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/our-coral.png}
     \end{subfigure}
-    \caption{Examples of the annual density bands present in Porites skeletons. \textbf{(left)} An X-radiograph of a Porites lobatu coral sample presented by Knutson et al. in 1974~\cite{coralimage}: ``[this is a] positive print of the X-ray negative; dark images correspond to high skeletal density, light images to low density''. \textbf{(right)} An image taken from one of the CT scans of a Porites sample from the dataset used in this project. The image channel has been inverted resulting in dark pixels corresponding to high density, and light pixels corresponding to low density.}
+    \caption{Examples of the annual density bands present in the skeletons of a genus of coral called Porites. \textbf{(left)} An X-radiograph of a Porites lobatu coral sample presented by Buddemeier, Maragos, and Knutson in 1974~\cite{coralimage}: ``[this is a] positive print of the X-ray negative; dark images correspond to high skeletal density, light images to low density''. \textbf{(right)} An image taken from one of the CT scans of a Porites sample from the dataset used in this project. The image channel has been inverted resulting in dark pixels corresponding to high density, and light pixels corresponding to low density.}
     \label{fig:densityexample}
 \end{figure}
 
 \section{Motivations}
 
-\subsection{Manual Processing}
+This section discusses the need for an automated solution and attempts to justify the choice of a deep learning based solution.
+
+\subsection{An Automated Solution}
+
+Although many methods for manually estimating the linear extension and calcification rates exist, an automated solution could be beneficial for multiple reasons.
+
+Firstly, opinions on the positions of a particular boundary between high and low density bands can differ from person to person. It is important to note that an idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back throughout the year~\cite{coralsine}. Thus, an exact boundary between a high and low band does not actually exist. However, an effort can be made to consistently choose boundaries at the same point in the sinusoid each year. Naturally, people can disagree with each other when determining the positions of the boundaries; a researcher labelling the same slice for a second time might even disagree with their previous choices of boundary positions. This is not the case, however, for an artificial neural network. Once trained, a neural network is deterministic; given a particular input, it will always produce the same output.
+
+Another benefit of the proposed automated solution is speed. Manually labelling points on a ... 
+
+\subsection{Deep Learning}
+
+The field of deep learning has... Deep learning is discussed in more detail in Section \ref{sec:deeplearning}.
+
+\subsubsection{The Dataset}
+
+\subsubsection{Image Segmentation}
+
+The problem essientally breaks down to an image segmentation problem and deep learning is the state-of-the-art in segmentation (cite).
 
 Explain the current method that erica and co use to calculate what we are trying to calculate. Introduce the density of coral?
 
-\subsection{Dataset}
+Automated solution will be deterministic and will give same answer. The bands are not always clear and opinions will differ.
 
-Introduce the dataset (whats the name? can use it in the subsection name).
+Automated solution once trained will be much faster. Analysing an entire slice will take a matter of seconds
 
-\subsection{Image Segmentation}
+This project makes use of a dataset of more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. These scans are stored as stacks of \texttt{.tif} images.
 
 Why are we using deep learning for it? why is it an important area of research?
 Introduce image segmentation. Mention U-Net and SegNet are used for this and are discussed in tech bg. Mention that unet is often used for biomedical data for example cells etc and it was in interesting experiment applying it to volumetric ct scans of coral skeletons.
 
 \section{Related Work}
+
+Although there are many examples of classification of coral species using deep learning (cite)
 
 % {\bf A compulsory chapter,     of roughly $5$ pages}
 % \vspace{1cm} 
@@ -315,6 +343,7 @@ The main objective of this project is to automate the calculation of annual skel
 As outlined in Chapter \ref{chap:context}, the objective of this project is to use deep learning to automate the calculation of the amount of skeletal matter produced by corals annually. This chapter introduces and briefly describes the techniques used in order to achieve this goal.
 
 \section{Deep Learning}
+\label{sec:deeplearning}
 
 Based loosely on the structure of the brain, artificial neural networks (ANNs) are computational models that have proved useful in a wide range of applications~\cite{lecun2015deep, healthcare, nlp}\textemdash a notable example being the recent success of convolutional neural networks in the field of computer vision~\cite{compvision, semanticseg}. Deep learning is a form of machine learning that concerns the use of ANNs with many layers\textemdash hence the name ``deep'' learning. The field has seen a significant increase in popularity in recent years since a network named AlexNet famously won the ImageNet Large Scale Visual Recognition Challenge in 2012\footnote{\url{http://www.image-net.org/challenges/LSVRC/2012/results.html}}, performing considerably better than the previous state-of-the-art~\cite{alexnet}.
 
@@ -482,6 +511,8 @@ Throughout this project, various deep learning techniques are utilised in an att
 \subsection{Labelling the Data}
 
 \subsection{Dataset Curation}
+
+\subsection{Sliding Window}
 
 \subsubsection{Splitting the Dataset}
 

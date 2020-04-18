@@ -36,12 +36,19 @@
 
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.16}
-\pgfplotsset{colormap={cool2}{rgb255(0cm)=(255,255,255); rgb255(1cm)=(255,0,255);}}
+\pgfplotsset{colormap={cool2}{rgb255(0cm)=(255,186,110); rgb255(1cm)=(225,80,49);}}
+\pgfplotsset{colormap={cool1}{rgb255(0cm)=(255,255,255); rgb255(1cm)=(255,0,255);}}
 \usepackage{lipsum}
 \usepackage[parfill]{parskip}
 \usepackage{subcaption}
-\newsavebox{\largestimage}
-% \usepackage[export]{adjustbox}
+
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReluColor{rgb:yellow,5;red,5;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
 
 \begin{document}
 

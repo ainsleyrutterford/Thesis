@@ -76,7 +76,7 @@
 
 % configure hyperref
 
-\hypersetup{colorlinks=true,urlcolor=red,citecolor=blue,linkcolor=blue}
+\hypersetup{colorlinks=true,urlcolor=red,citecolor=blue,linkcolor=red}
 
 % configure algorithm2e
 

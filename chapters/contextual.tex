@@ -4,7 +4,7 @@ This chapter outlines and motivates the main objectives of the project. First, t
 
 Coral polyps are tiny soft-bodied organisms. Through a process known as calcification, they use calcium and carbonate ions from the surrounding seawater to build themselves hard calcium carbonate skeletons. These polyps reproduce asexually and can form colonies of up to thousands of individual polyps all contributing to the same connected skeleton.
 
-Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of annual density bands in these calcium carbonate skeletons~\cite{knutson}. An annual density band consists of two portions: a high-density portion produced during the late summer, and a low density portion formed during periods of seasonally lower water temperatures~\cite{highlow}. These bandings are parallel to the growth surface and orthogonal to the direction of growth; examples are shown in Figure \ref{fig:densityexample}. With knowledge of a coral sample's date of collection, these annual band pairs can be counted back through time to provide not only an age of the sample, but also a chronology of the coral's growth. More specifically, the annual banding can be used to measure three aspects of coral growth~\cite{lough2011new}:
+Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of annual density bands in these calcium carbonate skeletons~\cite{knutson}. An annual density band consists of two portions: a high-density portion produced during the late summer and a low density portion formed during periods of seasonally lower water temperatures~\cite{highlow}. These bandings are parallel to the growth surface and orthogonal to the direction of growth; examples are shown in Figure \ref{fig:densityexample}. With knowledge of a coral sample's date of collection, these annual band pairs can be counted back through time to provide not only an age of the sample, but also a chronology of the coral's growth. More specifically, the annual banding can be used to measure three aspects of coral growth~\cite{lough2011new}:
 
 \begin{enumerate}
     \item The linear extension rate (mm y$^{-1}$): the distance that the coral grows per year.
@@ -14,7 +14,7 @@ Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of
 
 Analysis of these aspects of growth can be used to determine changes in a coral sample's environmental conditions as it was growing. Lough and Cooper highlight one significant potential use of the banding information contained within coral skeletons: ``skeletal material contained deep within massive corals can be extracted to allow comparisons of present day growth rates with those pre-dating the industrial revolution and hence examine the consequences of climate and environmental changes on coral reefs''~\cite{lough2011new}.
 
-This project aims to automate the estimation of the linear extension rate which is then used to estimate the calcification rate. Deep learning is used to extract the boundaries of each annual density band and the distance between these boundaries is then estimated using various techniques.
+This project aims to automate the estimation of the linear extension rate which is then used to estimate the calcification rate. Deep learning is used to extract the boundaries of each annual density band and the distance between these boundaries is then estimated using various methods based off of the Hausdorff distance.
 
 \begin{figure}[t]
     \centering
@@ -27,7 +27,7 @@ This project aims to automate the estimation of the linear extension rate which 
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/our-coral.png}
     \end{subfigure}
-    \caption{Examples of the annual density bands present in the skeletons of a genus of coral called Porites. \textbf{(left)} An X-radiograph of a Porites lobatu coral sample presented by Buddemeier, Maragos, and Knutson in 1974~\cite{coralimage}: ``[this is a] positive print of the X-ray negative; dark images correspond to high skeletal density, light images to low density''. \textbf{(right)} An image taken from one of the CT scans of a Porites sample from the dataset used in this project. The image channel has been inverted resulting in dark pixels corresponding to high density, and light pixels corresponding to low density.}
+    \caption{Examples of the annual density bands present in the skeletons of a genus of coral called Porites. \textbf{(left)} An X-radiograph of a Porites lobatu coral sample presented by Buddemeier, Maragos, and Knutson in 1974: ``[this is a] positive print of the X-ray negative; dark images correspond to high skeletal density, light images to low density''~\cite{coralimage}. \textbf{(right)} An image taken from one of the CT scans of a Porites sample from the dataset used in this project. The image channel has been inverted resulting in dark pixels corresponding to high density, and light pixels corresponding to low density.}
     \label{fig:densityexample}
 \end{figure}
 
@@ -59,7 +59,7 @@ Although the labelling process is time consuming and will not be possible for th
 \subsubsection{Semantic Segmentation}
 \label{sec:semseg}
 
-The task of extracting the boundaries between density bands can be presented as a semantic segmentation task. The volumetric CT data can be broken down into two dimensional images and from there, each pixel will be given a label from one of two classes: part of a boundary, or not part of a boundary (see Figure \ref{fig:example-label}).
+The task of extracting the boundaries between density bands can be presented as a semantic segmentation task. The volumetric CT data can be broken down into two dimensional images and from there, each pixel will be given a label from one of two classes: part of a boundary or not part of a boundary (see Figure \ref{fig:example-label}).
 
 \begin{figure}[t]
     \centering
@@ -92,11 +92,11 @@ When implementing an architecture capable of segmenting data in three dimensions
 
 \section{Related Work}
 
-Although there exists many examples of coral species classification using deep learning, to the best of the author's knowledge, no machine learning techniques of any kind have ever been applied to CT scans of coral skeletons and, by extension, the implementation of an automated system to extract the density banding or calculate the linear extension and calcification rates has not yet been attempted or at least published.
+Although there exists many examples of coral species classification using deep learning, no machine learning techniques of any kind have been applied to CT scans of coral skeletons. The implementation of an automated system to extract the density banding or calculate the linear extension and calcification rates has not yet been attempted or at least published.
 
 Steffens et al.~\cite{steff} make use of the DeeplabV3~\cite{deeplab} CNN to segment coral reef images into different types of substrates. However, the ImageCLEFcoral\footnote{\url{https://www.imageclef.org/2019/coral}} dataset that they use to test their implementation consists of images taken of the surfaces of coral reefs. Alonso et al.~\cite{alonso} segment coral reef images of a similar kind from the Eilat Fluorescence Corals dataset~\cite{eilat} using the SegNet CNN architecture~\cite{segnet}. Again, this work attempts to segment images taken of the surfaces of coral reefs rather than any kind of data representing the internals of a coral skeleton.
 
-need to talk about unet on density data segmenting. does it in a skull i think ive seen? however no class imbalance problem as areas are quite large or thick. maybe also mention that the original biomedical data is not too disimilar to our data in that it has one channel and the boundaries are thin?
+Three dimensional implementations of the U-Net architecture do exist. For example, {\c{C}}i{\c{c}}ek et al.~\cite{cicek} modify the U-Net architecture to process 3D data by replacing all 2D operations with their 3D counterparts. They assess the performance of their model on a dataset of Xenopus kidney embryos and propose both semi-automated and fully-automated use cases of the model. It is worth noting that the segmentation task that they are attempting does not give rise to a class imbalance. The nature of the segmentation this project will attempt is dissimilar due to the sparsity of the density boundaries.
 
 % {\bf A compulsory chapter,     of roughly $5$ pages}
 % \vspace{1cm} 

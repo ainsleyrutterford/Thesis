@@ -1,4 +1,4 @@
-This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of coral skeletons is discussed. Next, the motivations for an automated analysis process are outlined and the choice of a deep learning based solution is justified. Related works in the analysis of coral skeletons are then briefly discussed. Finally, the main objectives of the project are summarised and listed.
+This chapter outlines and motivates the main objectives of the project. First, the importance of the analysis of coral skeletons is discussed. Next, the motivations for an automated analysis process are outlined and the choice of a deep learning based solution is justified. The challenges involved in completing the project are highlighted, and related works in the analysis of coral skeletons are then briefly discussed. Finally, the main objectives of the project are summarised and listed.
 
 \section{Introduction}
 
@@ -33,7 +33,7 @@ This project aims to automate the estimation of the linear extension rate which 
 
 \section{Motivations}
 
-This section discusses the need for an automated solution and attempts to justify the choice of a deep learning based solution.
+% This section discusses the need for an automated solution and attempts to justify the choice of a deep learning based solution.
 
 \subsection{An Automated Solution}
 
@@ -46,6 +46,7 @@ Another benefit of the proposed automated solution is speed. An example of a man
 Finally, an automated solution could potentially be more accurate than a manual solution. For example, an automated solution could measure hundreds of distances between two boundaries which could be used to produce a more accurate estimate than a manual solution in which only tens of distances were averaged.
 
 \subsection{Deep Learning}
+\label{sec:contextdl}
 
 Feed-forward artificial neural networks have existed in some form since 1965~\cite{deepoverview, 1966cybernetic}, but the term ``deep learning'' was only coined in 2006~\cite{deepoverview, hintondeep, hintonfast}. In the years since, the field of deep learning has seen a significant rise in both its popularity and practicality for a multitude of reasons and is now the state-of-the-art in many areas. This section outlines the justifications of the choice of a deep learning based solution. Deep learning is discussed in more technical detail in Section \ref{sec:deeplearning}.
 
@@ -56,15 +57,46 @@ This project makes use of a dataset of more than 160 three dimensional computed 
 Although the labelling process is time consuming and will not be possible for the entire dataset, the hope is that researchers at the University of Bristol and the Natural History Museum can continue to label and re-train the proposed system even after this project is over. The abundance of data available makes a deep learning based solution a reasonable choice.
 
 \subsubsection{Semantic Segmentation}
+\label{sec:semseg}
 
-The task of extracting the boundaries between density bands can be presented as a semantic segmentation task. The volumetric CT data can be broken down into two dimensional images and from there, each pixel will be given a label from one of two classes: part of a boundary, or not part of a boundary. Forms of deep convolutional neural networks (CNNs) are currently the state-of-the-art in semantic segmentation\footnote{\url{https://paperswithcode.com/task/semantic-segmentation/latest}}~\cite{chen2018encoder, semanticseg-SOTA}. Multiple CNN architectures could be repurposed for the task. UNet SegNet
+The task of extracting the boundaries between density bands can be presented as a semantic segmentation task. The volumetric CT data can be broken down into two dimensional images and from there, each pixel will be given a label from one of two classes: part of a boundary, or not part of a boundary (see Figure \ref{fig:example-label}).
 
-Why are we using deep learning for it? why is it an important area of research?
-Introduce image segmentation. Mention U-Net and SegNet are used for this and are discussed in tech bg. Mention that unet is often used for biomedical data for example cells etc and it was in interesting experiment applying it to volumetric ct scans of coral skeletons.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\textwidth]{images/label-example.png}
+    \caption{An example of a manually labelled 2D slice. This represents the ideal semantic segmentation of a slice. \textbf{(left)} An unaltered section of a 2D slice taken from a 3D scan of a coral sample. \textbf{(centre)} The manual labelling of the section. The white pixels correspond to the ``part of a boundary'' class, and the black pixels correspond to the ``not part of a bounary'' class. \textbf{(right)} The manual labelling overlaid with the corresponding section of the slice. The contrast and brightness of the slice has been altered to better show the annual banding, and the colour of the labelling has been changed for illustration purposes.}
+    \label{fig:example-label}
+\end{figure}
+
+Several forms of deep convolutional neural networks (CNNs) currently achieve the state-of-the-art in semantic segmentation\footnote{\url{https://paperswithcode.com/task/semantic-segmentation/latest}}~\cite{chen2018encoder, semanticseg-SOTA}. For this project, pre-existing CNN architectures used for semantic segmentation that perform well on existing datasets are a reasonable starting point. Several CNN architectures will be repurposed and/or modified to process the skeletal density data.
+
+The main architecture experimented with is the U-Net architecture~\cite{ronneberger2015u}. U-Net was initially used to perform semantic segmentation on biomedical images such as images of cells on glass recorded with differential interference contrast mi-croscopy. The U-Net architecture has not yet been applied to coral density data and experimentation with the U-Net architecture and the dataset used in this project could yield interesting results. To the best of the author's knowledge, none of the architectures experimented with throughout this project have ever been applied to coral skeleton density data of any kind. This project aims to not only determine how well multiple architectures perform in segmenting the skeletal density data but also to determine if CNNs are currently a viable solution to this task.
+
+\section{Challenges}
+
+% There are multiple challenges involved in the implementation of an automated solution. This section outlines and briefly discusses the most significant of these challenges.
+
+\subsection{Labelling}
+
+As previously discussed, the process of manually labelling the boundaries present in the data is time consuming. Labelling enough data for a CNN to perform well would require tens of hours of work. This process takes particularly long as appropriate slices must be extracted from the 3D CT data using a 3D visualisation program such as Avizo\footnote{\url{https://tiny.cc/avizo}} before they can be labelled. Not only is this process time consuming, it is also challenging. This is especially the case for a person that has not dealt with coral skeleton density data before. Before samples can be manually labelled, an acceptable standard of labelling must be approved by an expert.
+
+\subsection{Class imbalance}
+
+Another challenge involved with this project is dealing with the inherent class imbalance of the boundary labels. In a typical classification problem, class balance occurs when one class contains significantly fewer samples than the other classes. Since semantic segmentation can be seen as per-pixel classification, class imbalance can be an issue in this task as well. Looking at Figure \ref{fig:example-label}, it can be seen that the ratio of white to black pixels in the label is significantly low. There is a severe class imbalance between the ``part of a boundary'' and ``not part of a boundary'' classes. When a class imbalance exists within training data, supervised learning models will typically over-classify the ``majority'' groups due to their increased prior probabilities. As a result, the instances belonging to ``minority'' groups are misclassified more often than those belonging to the majority groups~\cite{classimbalance}.
+
+This class imbalance gives rise to another challenge when assessing the performance of a model in its segmentation of the density data. Since the boundary labels are only one pixel wide, a model predicting boundary positions just one pixel to the left or right could achieve an accuracy of 0\%. To solve this problem, a custom accuracy metric must be conceived in order to reward a model even in predicting a boundary a few pixels away from the manually labelled position.
+
+\subsection{Loading Three Dimensional Data}
+
+When implementing an architecture capable of segmenting data in three dimensions, existing deep learning libraries\textemdash such as the Keras\footnote{\url{https://keras.io/}} library used throughout this project\textemdash make the implementation of a 3D architecture relatively straightforward. However, as of the time of writing, a 3D ``data loader'' capable of loading 3D data from a directory and performing online data augmentation does not yet exist for the Keras library and would have to be designed and implemented.
 
 \section{Related Work}
 
-Although there are many examples of classification of coral species using deep learning (cite)
+Although there exists many examples of coral species classification using deep learning, to the best of the author's knowledge, no machine learning techniques of any kind have ever been applied to CT scans of coral skeletons and, by extension, the implementation of an automated system to extract the density banding or calculate the linear extension and calcification rates has not yet been attempted or at least published.
+
+Steffens et al.~\cite{steff} make use of the DeeplabV3~\cite{deeplab} CNN to segment coral reef images into different types of substrates. However, the ImageCLEFcoral\footnote{\url{https://www.imageclef.org/2019/coral}} dataset that they use to test their implementation consists of images taken of the surfaces of coral reefs. Alonso et al.~\cite{alonso} segment coral reef images of a similar kind from the Eilat Fluorescence Corals dataset~\cite{eilat} using the SegNet CNN architecture~\cite{segnet}. Again, this work attempts to segment images taken of the surfaces of coral reefs rather than any kind of data representing the internals of a coral skeleton.
+
+need to talk about unet on density data segmenting. does it in a skull i think ive seen? however no class imbalance problem as areas are quite large or thick. maybe also mention that the original biomedical data is not too disimilar to our data in that it has one channel and the boundaries are thin?
 
 % {\bf A compulsory chapter,     of roughly $5$ pages}
 % \vspace{1cm} 
@@ -114,9 +146,9 @@ Although there are many examples of classification of coral species using deep l
 In summary, the main objective of this project is to automate the estimation of the calcification rate\textemdash the amount of skeletal matter produced annually by corals. This objective is broken down into multiple tasks:
 
 \begin{enumerate}
-    \item Curate a dataset of image-label pairs from the raw unlabelled dataset provided to us.
-    \item Train an existing two dimensional neural network architecture to extract the annual density boundaries present in the data.
-    \item Modify the architecture to process three dimensional data.
+    \item Curate a dataset of image-label pairs from the raw unlabelled dataset provided.
+    \item Train existing two dimensional convolutional neural network architectures to extract the annual density boundaries present in the data.
+    \item Modify the architectures to process three dimensional data.
     \item Conceive and implement an accuracy metric to assess the performance of different networks on the data.
     \item Optimise hyper parameters of the chosen network architecture to maximise accuracy.
     \item Make use of these extracted boundaries to automate the calculation of the annual skeletal matter produced.

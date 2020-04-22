@@ -129,14 +129,6 @@ Briefly introduce class imbalance once you say that focal loss is to deal with c
 
 Although loss functions can be used to measure performance, their main purpose is to be used to train the network. To quantify the performance achieved by a network, an accuracy metric should instead be used. Accuracy metrics do not play a direct role in training networks, though they can be used indirectly\textemdash for example, to determine whether or not to continue training. Choosing an appropriate accuracy metric is essential and proved challenging throughout this project. The main accuracy metric decided upon was based off of the Hausdorff distance discussed in Section \ref{sec:hausdorff}.
 
-\subsection{Datasets}
-
-Introduce train test val split and what they are all used for.
-
-Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystopping}, early stopping is.
-
-\subsection{Pooling}
-
 \subsection{Overfitting}
 
 The term overfitting is used to describe when a model performs well on the data on which it is trained, yet poorly on data which it has not yet been exposed to.
@@ -146,6 +138,16 @@ The term overfitting is used to describe when a model performs well on the data 
 Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Data augmentation is used to reduce overfitting.
 
 \subsubsection{Dropout}
+
+\subsection{Datasets}
+
+Introduce train test val split and what they are all used for.
+
+\subsubsection{Cross-Validation}
+
+Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystopping}, early stopping is.
+
+\subsection{Ablation Studies}
 
 Another technique often used to reduce overfitting, is ``dropout''.
 

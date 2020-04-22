@@ -14,7 +14,7 @@ Using X-radiographs in 1972, Knutson et al. were able to confirm the presence of
 
 Analysis of these aspects of growth can be used to determine changes in a coral sample's environmental conditions as it was growing. Lough and Cooper highlight one significant potential use of the banding information contained within coral skeletons: ``skeletal material contained deep within massive corals can be extracted to allow comparisons of present day growth rates with those pre-dating the industrial revolution and hence examine the consequences of climate and environmental changes on coral reefs''~\cite{lough2011new}.
 
-This project aims to automate the estimation of the linear extension rate which is then used to estimate the calcification rate. Deep learning is used to extract the boundaries of each annual density band and the distance between these boundaries is then estimated using various methods based off of the Hausdorff distance.
+This project aims to automate the estimation of the linear extension rate which can then used to estimate the calcification rate. Deep learning will be used to extract the boundaries of each annual density band and the distance between these boundaries will then be estimated using various methods based off of the Hausdorff distance.
 
 \begin{figure}[t]
     \centering
@@ -52,7 +52,7 @@ Feed-forward artificial neural networks have existed in some form since 1965~\ci
 
 \subsubsection{The Dataset}
 
-This project makes use of a dataset of more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. These three dimensional scans are stored as stacks of two dimensional \texttt{.tif} images. With each scan being represented by ${\sim}2000$ images, the whole dataset consists of hundreds of thousands of images. The raw dataset provided is unlabelled, so in order to train a supervised machine learning model\textemdash such as an artificial neural network\textemdash to extract the boundaries, some of the data must be manually labelled.
+This project will make use of a dataset of more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. These three dimensional scans are stored as stacks of two dimensional \texttt{.tif} images. With each scan being represented by ${\sim}2000$ images, the whole dataset consists of hundreds of thousands of images. The raw dataset provided is unlabelled, so in order to train a supervised machine learning model\textemdash such as an artificial neural network\textemdash to extract the boundaries, some of the data must be manually labelled.
 
 Although the labelling process is time consuming and will not be possible for the entire dataset, the hope is that researchers at the University of Bristol and the Natural History Museum can continue to label and re-train the proposed system even after this project is over. The abundance of data available makes a deep learning based solution a reasonable choice.
 
@@ -70,7 +70,7 @@ The task of extracting the boundaries between density bands can be presented as 
 
 Several forms of deep convolutional neural networks (CNNs) currently achieve the state-of-the-art in semantic segmentation\footnote{\url{https://paperswithcode.com/task/semantic-segmentation/latest}}~\cite{chen2018encoder, semanticseg-SOTA}. For this project, pre-existing CNN architectures used for semantic segmentation that perform well on existing datasets are a reasonable starting point. Several CNN architectures will be repurposed and/or modified to process the skeletal density data.
 
-The main architecture experimented with is the U-Net architecture~\cite{ronneberger2015u}. U-Net was initially used to perform semantic segmentation on biomedical images such as images of cells on glass recorded with differential interference contrast mi-croscopy. The U-Net architecture has not yet been applied to coral density data and experimentation with the U-Net architecture and the dataset used in this project could yield interesting results. To the best of the author's knowledge, none of the architectures experimented with throughout this project have ever been applied to coral skeleton density data of any kind. This project aims to not only determine how well multiple architectures perform in segmenting the skeletal density data but also to determine if CNNs are currently a viable solution to this task.
+The main architecture experimented with will be the U-Net architecture~\cite{ronneberger2015u}. U-Net was initially used to perform semantic segmentation on biomedical images such as images of cells on glass recorded with differential interference contrast mi-croscopy. The U-Net architecture has not yet been applied to coral density data and experimentation with the U-Net architecture and the dataset used in this project could yield interesting results. To the best of the author's knowledge, none of the architectures experimented with throughout this project have ever been applied to coral skeleton density data of any kind. This project aims to not only determine how well multiple architectures perform in segmenting the skeletal density data but also to determine if CNNs are currently a viable solution to this task.
 
 \section{Challenges}
 

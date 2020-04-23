@@ -58,11 +58,11 @@ As well as the convolution operation, the max-pooling operation is often used. T
         \vspace*{1mm}
         \caption{2D Convolution}
     \end{subfigure}
-    \caption{Illustrations of the 2D max-pooling and convolution operations. \textbf{(a)} The max-pooling operation shown takes an input image $f$ and uses a $2\times 2$ filter and stride of two to produce the output image $g$. Note that the maximum value in each coloured region of the input is the resulting value of the corresponding regions of the output. \textbf{(b)} The convolution operation shown takes an input image $f$ and uses a $3\times 3$ kernel $h$ with a stride of one to produce the output image $g=f\ast h$, where $\ast$ denotes the convolution operation. Note that the kernel shown in the convolution operation is ``flipped'' in both the $x$ and $y$ axes before the element-wise multiplication and summation takes place.}
+    \caption{Illustrations of the 2D max-pooling and convolution operations. \textbf{(a)} The max-pooling operation shown takes an input image $f$ and uses a 2$\times$2 filter and stride of two to produce the output image $g$. Note that the maximum value in each coloured region of the input is the resulting value of the corresponding regions of the output. \textbf{(b)} The convolution operation shown takes an input image $f$ and uses a 3$\times$3 kernel $h$ with a stride of one to produce the output image $g=f\ast h$, where $\ast$ denotes the convolution operation. Note that the kernel shown in the convolution operation is ``flipped'' in both the $x$ and $y$ axes before the element-wise multiplication and summation takes place.}
     \label{fig:operations}
 \end{figure}
 
-Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a $3\times 3$ kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyper parameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyper parameter optimisation is discussed in Section \ref{sec:hyperparam}.
+Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a 3$\times$3 kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyper parameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyper parameter optimisation is discussed in Section \ref{sec:hyperparam}.
 
 \subsection{Backpropagation}
 \label{sec:backprop}
@@ -107,23 +107,41 @@ A loss function takes both the actual and predicted values of a training sample,
 
 \subsubsection{Binary Cross-Entropy Loss}
 
-\begin{equation}
-    L(y, \hat{y})=-\frac{1}{N} \sum_{i=0}^{N}\left(y * \log \left(\hat{y}_{i}\right)+(1-y) * \log \left(1-\hat{y}_{i}\right)\right)
-\end{equation}
-
-where $y$ is the actual value, and $\hat{y}$ is the predicted value.
-
-\subsubsection{Focal Loss}
-
-Briefly introduce class imbalance once you say that focal loss is to deal with class imbalance.
+The binary cross-entropy loss function is used when classifying samples that can belong to two classes. When performing image classification, a model will produce two probabilities\textemdash one for each class. When performing image segmentation, a model effectively classifies each pixel; thus, two probabilities will be produced for each pixel. These are the model's predicted probabilities that a given image (or pixel) belongs to each of the two classes. Since these two classes are the only possible classes that the model can predict, the probabilities should sum to one. The binary cross-entropy loss is defined as:
 
 \begin{equation}
-    \mathrm{FL}\left(p_{\mathrm{t}}\right)=-\left(1-p_{\mathrm{t}}\right)^{\gamma} \log \left(p_{\mathrm{t}}\right)
+    CE(p, y) = 
+    \begin{cases}
+        -\log(p) & \text{if } y = 1\\
+        -\log(1 - p) & \text{otherwise}
+    \end{cases}
 \end{equation}
 
-~\cite{focalloss}
+where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 1]$ is the model's estimated probability for the class with label $y = 1$. This is the loss value achieved when classifying a single training sample.
 
-\subsubsection{Dice coefficient}
+\subsubsection{Binary Focal Loss}
+
+\begin{figure}[t]
+    \centering
+    \input{tikz/focal}
+    \caption{An illustration of the focal loss with varying values of $\gamma$. Recreated from \cite{focalloss}: ``setting $\gamma > 0$ reduces the relative loss for well-classified examples $(p > 0.5)$, putting more focus on hard, misclassified examples''.}
+    \label{fig:focal}
+\end{figure}
+
+Proposed by Lin et al. in 2018, the Focal Loss~\cite{focalloss} is designed to address the ``class imbalance'' problem. In a typical classification problem, class imbalance occurs when one class contains significantly fewer samples than the other classes. Lin et al. highlight the fact that when using the cross-entropy loss function, even samples that are well-classified incur a loss with ``non-trivial'' magnitude. When summed over large numbers of samples from the easily classified majority class, these small loss values can overwhelm the loss resulting from the minority class samples~\cite{focalloss}.
+
+In an attempt to address this problem, the focal loss introduces two new parameters: a weighting factor $\alpha \in [0, 1]$ and a ``focusing'' parameter $\gamma \geq 0$.
+The binary focal loss is then defined as:
+
+\begin{equation}
+    \text{FL}(p, y) = 
+    \begin{cases}
+        -\alpha(1 - p)^{\gamma} \log (p) & \text{if } y = 1\\
+        (1 - \alpha)p^{\gamma} \log (1 - p) & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 1]$ is the model's estimated probability for the class with label $y = 1$. The weighting factor increases the loss produced by the misclassification of minority class samples whilst the focusing factor ``reduces the contribution from easy examples and extends the range in which an example receives low loss''~\cite{focalloss}. When $\gamma = 0$ and $\alpha = 1$, the focal loss is equivalent to the cross-entropy loss. The contribution of the $\gamma$ value to the loss produced can be seen in Figure \ref{fig:focal}.
 
 \subsection{Accuracy Metrics}
 
@@ -164,12 +182,12 @@ Mention that segnet and unet are both fully convolutional so no dense layers (fu
 
 \subsection{U-Net}
 
-Presented by Ronneberger et al. in 2015~\cite{ronneberger2015u}, U-Net is a convolutional neural network architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. The U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled and the number of feature channels is increased. The expansion path then gradually reconstructs the image via `up-convolutions'. Throughout the expansion path, the feature channels from the corresponding contraction layers are appended to the feature channels in the expansion layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown in Figure~\ref{fig:unet}.
+Presented by Ronneberger et al. in 2015~\cite{ronneberger2015u}, U-Net is a convolutional neural network architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. At a high level, the U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled via convolutional and max-pooling layers and the number of feature channels is increased. The expansion path then gradually reconstructs the image via `up-convolutions'. Throughout the expansion path, the feature channels from the corresponding contraction layers are appended to the feature channels in the expansion layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown in Figure~\ref{fig:unet}.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/U-Net.pdf}
-    \caption{A diagram of the U-Net architecture. Each cube represents a layer. The orange cubes represent convolutional layers, the red cubes represent max-pooling, and the blue cubes represent up-convolutions. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another.}
+    \input{tikz/unet}
+    \caption{A diagram of the U-Net architecture. Each cube represents a layer. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another.}
     \label{fig:unet}
 \end{figure}
 

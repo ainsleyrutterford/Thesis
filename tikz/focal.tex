@@ -17,9 +17,11 @@
 	\addplot[samples=300, domain=0:1, thick, teal]   {2 * -(1-x)^5   * log10(x)};
 	\addlegendentry{$\gamma = 5$}
 	
-	\node[] at (0.4, 4) {\scriptsize{$\text{FL}(p, 1) = -(1 - p)^{\gamma} \log (p)$}};
+	\node[] at (0.38, 4) {\scriptsize{$\text{FL}(p, 1) = -(1 - p)^{\gamma} \log (p)$}};
 	\draw [decorate,decoration={brace,amplitude=10pt}]
 	(0.6, 0.6) -- (1, 0.6) node[midway]{};
 	\node[] at (0.8, 1.2) {\scriptsize{well-classified examples}};
+	\draw[dashed] (0.6, 0.6) -- (0.6, 0);
+	\draw[dashed] (1, 0.6) -- (1, 0);
 	\end{axis}
 \end{tikzpicture}

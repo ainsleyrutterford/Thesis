@@ -32,6 +32,36 @@
 \def\FcReluColor{rgb:blue,5;red,5;white,4}
 \def\SoftmaxColor{rgb:magenta,5;black,7}
 
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0.6,0.6,0.6}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.99}
+\definecolor{keycolour}{rgb}{0.10,0.20,0.99}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{keycolour},
+    numberstyle=\scriptsize\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                   
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4
+}
+ 
+\lstset{style=mystyle}
+
 \begin{document}
 
 % This macro creates the standard UoB title page by using information drawn

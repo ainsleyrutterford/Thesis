@@ -149,15 +149,15 @@ Although loss functions can be used to measure performance, their main purpose i
 
 \subsection{Overfitting}
 
-The term overfitting is used to describe when a model performs well on the data on which it is trained, yet poorly on data which it has not yet been exposed to.
+The term overfitting is used to describe when a model performs well on the data on which it is trained, yet poorly on data which it has not yet been exposed to. Due to the nature of deep learning systems?? overfitting is a significatn problem? something cite. Many techniques can be utilised in order to minimize overfitting.
 
 \subsubsection{Data augmentation}
 
-Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Data augmentation is used to reduce overfitting.
+A very common technique used to reduce overfitting is data augmentation. Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Explain here why or how data augmentation reduces overfitting?
 
 \subsubsection{Dropout}
 
-Another technique often used to reduce overfitting, is ``dropout''.
+Another technique often used to reduce overfitting is ``dropout''. When was dropout introduced? is it used in any really famous successful papers or networks? Explain what dropout is. Explain how it is used to reduce overfitting.
 
 \subsubsection{Cross-Validation}
 
@@ -179,13 +179,19 @@ Various CNN architectures are experimented with throughout this project. This se
 
 \subsection{SegNet}
 
-In 2015, Badrinarayanan, Kendall, and Cipolla~\cite{segnet} introduced a fully convolutional neural network architecture for semantic pixel-wise segmentation that they named SegNet. An architecture is ``fully convolutional'' when it contains no fully connected layers.
+In 2015, Badrinarayanan, Kendall, and Cipolla~\cite{segnet} introduced SegNet: a fully convolutional neural network architecture for semantic pixel-wise segmentation that was primarily motivated by road scene understanding applications. An architecture is ``fully convolutional'' when it contains no fully connected layers. The architecture consists of an ``encoder'' and a ``decoder'' with some pass through of information from layers early in the encoder to layers later in the decoder.
+
+An encoder is a model or part of a model that takes some input and ``encodes'' the input into some lower dimensional representation. For example, a typical CNN architecture used for image classification is an example of an encoder since the input could be some high resolution two dimensional image and the output would be a small number of probabilities\textemdash one for each possible class that the image could be classified as. In fact, the encoder architecture used in SegNet is topologically identical to the convolutional layers used in the VGG16 architecture used for image classification~\cite{segnet, vgg16}. A decoder can be thought of as the opposite of an encoder; given some input, a decoder will ``decode'' the input back into some higher dimensional representation.
+
+The decoder uses pooling indices computed in the max-pooling step of corresponding encoder layers to perform non-linear upsampling.
+
+This eliminates the need for learning to upsample.
 
 \subsection{U-Net}
 
 Presented by Ronneberger et al. in 2015~\cite{ronneberger2015u}, U-Net is a convolutional neural network architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. At a high level, the U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled via convolutional and max-pooling layers and the number of feature channels is increased. The expansion path then gradually reconstructs the image via `up-convolutions'. Throughout the expansion path, the feature channels from the corresponding contraction layers are appended to the feature channels in the expansion layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown in Figure~\ref{fig:unet}.
 
-The U-Net and SegNet architectures share multiple similarities. Firstly, both architectures consist of an encoder, a bottleneck, and a decoder, with the encoder following a typical CNN architecture. Note that when describing the U-Net architecture, Ronneberger et al. refer to the encoder and decoder as the contracting and expanding paths respectively. Another similarity is the architectures passing of information from layers in the encoder to corresponding layers in the decoder. However, the passing of information is implemented differently in each architecture. Whilst U-Net passes information by concatenating feature maps from layers in the encoder to the feature maps of layers in the decoder, SegNet passes information by ... 
+The U-Net and SegNet architectures share multiple similarities. They are both fully convolutional architectures designed to perform semantic pixel-wise segmentation. Both architectures also consist of an encoder, a bottleneck, and a decoder, with the encoder following a typical CNN architecture. Note that when describing the U-Net architecture, Ronneberger et al. refer to the encoder and decoder as the contracting and expanding paths respectively. Another similarity between the architectures is their passing of information from layers in the encoder to corresponding layers in the decoder. However, the passing of information is implemented differently in each architecture. Whilst U-Net passes information by concatenating feature maps from layers in the encoder to the feature maps of layers in the decoder, SegNet passes information by ... 
 
 \begin{figure}[t]
     \centering
@@ -207,4 +213,20 @@ Throughout this project, various deep learning techniques are utilised in an att
 
 \subsection{Keras}
 
-The Keras\footnote{\url{https://keras.io}} library is used to implement all architectures experimented with throughout this project. TensorFlow\footnote{\url{https://tensorflow.org}} backend.
+The Keras\footnote{\url{https://keras.io}} library is used to implement all architectures experimented with throughout this project. Brief intro of what keras is what lanuage it uses and how it uses a TensorFlow\footnote{\url{https://tensorflow.org}} backend in order to run on GPUs allowing fast training times.
+
+Explain how to define a model. difference between sequential and functional.
+
+compile the model.
+
+then explain how to train a model.
+
+explain implementation of early stopping or something?
+
+Example shown in Listing \ref{lst:one}.
+
+\begin{lstlisting}[float={h},caption={This is an example listing.},label={lst:one},language=Python]
+import keras
+
+print("Hello, World!")
+\end{lstlisting}

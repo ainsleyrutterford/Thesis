@@ -10,6 +10,17 @@
 
 \subsection{Architecture}
 
+Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
+
+% From Keras docs I think
+% This version performs the same function as Dropout, however it drops
+% entire 2D feature maps instead of individual elements. If adjacent pixels
+% within feature maps are strongly correlated (as is normally the case in
+% early convolution layers) then regular dropout will not regularize the
+% activations and will otherwise just result in an effective learning rate
+% decrease. In this case, SpatialDropout2D will help promote independence
+% between feature maps and should be used instead.
+
 \subsection{Data Augmentation}
 
 \subsection{Early Stopping and Checkpointing}

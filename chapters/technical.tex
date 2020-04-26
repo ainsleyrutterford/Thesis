@@ -41,7 +41,7 @@ where $f$ is the input image, $h$ is an $m\times n$ kernel, and $g$ is the resul
 
 CNNs often contain multiple convolutional layers in which increasingly complex features of an image may be detected by making use of a combination of simpler features detected in previous layers. A convolutional layer convolves the channels of an image with multiple learned kernels. A channel is simply a component of an image\textemdash an RGB image, for example, consists of three channels, whilst a greyscale image consists of only one. The output of these operations will be multiple modified images that are referred to as ``feature maps''. These feature maps can then be used as the input channels to the next layer, and so on.
 
-As well as the convolution operation, the max-pooling operation is often used. The max-pooling operation is used to decrease the dimensionality of the input in attempt to force the network to ``learn'' features present in the input. These operations are illustrated in Figure \ref{fig:operations}.
+As well as the convolution operation, the max-pooling operation is often used. The max-pooling operation is used to decrease the dimensionality of the input in attempt to force the network to ``learn'' features present in the input. Max-pooling layers are also used by a model to achieve some translation invariance over spatial shifts in the input image~\cite{segnet}. These operations are illustrated in Figure \ref{fig:operations}.
 
 \begin{figure}[t]
     \centering
@@ -121,13 +121,6 @@ where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 
 
 \subsubsection{Binary Focal Loss}
 
-\begin{figure}[t]
-    \centering
-    \input{tikz/focal}
-    \caption{An illustration of the focal loss with varying values of $\gamma$. Recreated from \cite{focalloss}: ``setting $\gamma > 0$ reduces the relative loss for well-classified examples $(p > 0.5)$, putting more focus on hard, misclassified examples''.}
-    \label{fig:focal}
-\end{figure}
-
 Proposed by Lin et al. in 2018, the Focal Loss~\cite{focalloss} is designed to address the ``class imbalance'' problem. In a typical classification problem, class imbalance occurs when one class contains significantly fewer samples than the other classes. Lin et al. highlight the fact that when using the cross-entropy loss function, even samples that are well-classified incur a loss with ``non-trivial'' magnitude. When summed over large numbers of samples from the easily classified majority class, these small loss values can overwhelm the loss resulting from the minority class samples~\cite{focalloss}.
 
 In an attempt to address this problem, the focal loss introduces two new parameters: a weighting factor $\alpha \in [0, 1]$ and a ``focusing'' parameter $\gamma \geq 0$.
@@ -143,28 +136,44 @@ The binary focal loss is then defined as:
 
 where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 1]$ is the model's estimated probability for the class with label $y = 1$. The weighting factor increases the loss produced by the misclassification of minority class samples whilst the focusing factor ``reduces the contribution from easy examples and extends the range in which an example receives low loss''~\cite{focalloss}. When $\gamma = 0$ and $\alpha = 1$, the focal loss is equivalent to the cross-entropy loss. The contribution of the $\gamma$ value to the loss produced can be seen in Figure \ref{fig:focal}.
 
+\begin{figure}[t]
+    \centering
+    \input{tikz/focal}
+    \caption{An illustration of the focal loss with varying values of $\gamma$. Recreated from \cite{focalloss}: ``setting $\gamma > 0$ reduces the relative loss for well-classified examples $(p > 0.5)$, putting more focus on hard, misclassified examples''.}
+    \label{fig:focal}
+\end{figure}
+
 \subsection{Accuracy Metrics}
 
 Although loss functions can be used to measure performance, their main purpose is to be used to train the network. To quantify the performance achieved by a network, an accuracy metric should instead be used. Accuracy metrics do not play a direct role in training networks, though they can be used indirectly\textemdash for example, to determine whether or not to continue training. Choosing an appropriate accuracy metric is essential and proved challenging throughout this project. The main accuracy metric decided upon was based off of the Hausdorff distance discussed in Section \ref{sec:hausdorff}.
 
-\subsection{Overfitting}
+\subsection{Overfitting and Regularization}
 
-The term overfitting is used to describe when a model performs well on the data on which it is trained, yet poorly on data which it has not yet been exposed to. Due to the nature of deep learning systems?? overfitting is a significatn problem? something cite. Many techniques can be utilised in order to minimize overfitting.
+The term overfitting refers to the phenomenon when a model performs well on the data on which it is trained, yet poorly on data which it has not yet been exposed to. Overfitting is still a serious problem faced whilst training deep networks due to the large amount of parameters that must be learned~\cite{dropout, reducing, overfitavoid}. Regularization is any technique that is used in order to reduce overfitting and allow a model to generalise better~\cite{regular}. This section introduces some of the regularization techniques used throughout the project.
 
 \subsubsection{Data augmentation}
 
-A very common technique used to reduce overfitting is data augmentation. Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Explain here why or how data augmentation reduces overfitting?
+A very common technique used to reduce overfitting is data augmentation. Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Effective data augmentation allows for a dataset to be artificially expanded, enabling it to represent a more comprehensive set of possible samples.
 
 \subsubsection{Dropout}
 
-Another technique often used to reduce overfitting is ``dropout''. When was dropout introduced? is it used in any really famous successful papers or networks? Explain what dropout is. Explain how it is used to reduce overfitting.
+Another technique often used to reduce overfitting is dropout. The use of dropout as a regularization technique when training neural networks was first popularised by Srivastava et al.~\cite{dropout} in 2014. Throughout the training process, subsets of randomly selected neurons (and their connections) are ``dropped''. Only the resulting reduced network is then trained on a particular training sample. A subset of dropped neurons will only remain dropped whilst processing a single training sample; the dropped neurons will then be added back to the network and a different subset of neurons will be dropped when processing the next training sample. The choice of which subset of neurons to drop for each training sample is random. 
+
+Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~\cite{dropout}. Co-adaptation between neurons refers to the phenomenon when one neuron relies too heavily on the input from another neuron. If one neuron relies too heavily on the input of another neuron, the receiving neuron's performance in producing an activation that would be beneficial to the performance of the network may be hindered by the one ``bad'' input\textemdash even if the inputs from all other incoming neurons were ``good''.
 
 \subsubsection{Cross-Validation}
 
 Introduce train test val split and what they are all used for.
 
 \subsubsection{Early Stopping}
-Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystopping}, early stopping is.
+Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystoppinglunch}, early stopping is a regularization technique in which the training process is stopped given some ``stopping criteria'' rather than after a set number of epochs~\cite{earlystopping}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.45\textwidth]{example-image-a}
+    \caption{Early stopping and cross-validation example? loss plot over training}
+    \label{fig:earlystop}
+\end{figure}
 
 \subsection{Ablation Studies}
 
@@ -179,19 +188,19 @@ Various CNN architectures are experimented with throughout this project. This se
 
 \subsection{SegNet}
 
-In 2015, Badrinarayanan, Kendall, and Cipolla~\cite{segnet} introduced SegNet: a fully convolutional neural network architecture for semantic pixel-wise segmentation that was primarily motivated by road scene understanding applications. An architecture is ``fully convolutional'' when it contains no fully connected layers. The architecture consists of an ``encoder'' and a ``decoder'' with some pass through of information from layers early in the encoder to layers later in the decoder.
+In 2015, Badrinarayanan, Kendall, and Cipolla~\cite{segnet} introduced SegNet: a fully convolutional neural network architecture for semantic pixel-wise segmentation that was primarily motivated by road scene understanding applications. An architecture is ``fully convolutional'' when it contains no fully connected layers. The architecture consists of an ``encoder'' and a ``decoder'' with some extra pass through of information from layers early in the encoder to later layers in the decoder.
 
 An encoder is a model or part of a model that takes some input and ``encodes'' the input into some lower dimensional representation. For example, a typical CNN architecture used for image classification is an example of an encoder since the input could be some high resolution two dimensional image and the output would be a small number of probabilities\textemdash one for each possible class that the image could be classified as. In fact, the encoder architecture used in SegNet is topologically identical to the convolutional layers used in the VGG16 architecture used for image classification~\cite{segnet, vgg16}. A decoder can be thought of as the opposite of an encoder; given some input, a decoder will ``decode'' the input back into some higher dimensional representation.
 
-The decoder uses pooling indices computed in the max-pooling step of corresponding encoder layers to perform non-linear upsampling.
+% The encoder consists of five blocks each containing multiple 3$\times$3 convolutional layers followed by a 2$\times$2 max-pooling layer. The decoder also consists of five of blocks, however, each block contains a 2$\times$2 upsample layer followed by multiple 3$\times$3 convolutional layers. The output of each convolutional layer is passed through a ReLU activation function.
 
-This eliminates the need for learning to upsample.
+The information passed through from the encoder to the decoder is in the form of max-pooling ``indices''. The decoder uses pooling indices computed in the max-pooling step of corresponding encoder layers to perform non-linear upsampling. These indices are simply the locations of the maximum value in each pooling window. This approach eliminates the need for the architecture to ``learn'' the indices to use to upsample with since the indices that it will use are already learned in the max-pooling layers of the encoder.
 
 \subsection{U-Net}
 
 Presented by Ronneberger et al. in 2015~\cite{ronneberger2015u}, U-Net is a convolutional neural network architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. At a high level, the U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled via convolutional and max-pooling layers and the number of feature channels is increased. The expansion path then gradually reconstructs the image via `up-convolutions'. Throughout the expansion path, the feature channels from the corresponding contraction layers are appended to the feature channels in the expansion layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown in Figure~\ref{fig:unet}.
 
-The U-Net and SegNet architectures share multiple similarities. They are both fully convolutional architectures designed to perform semantic pixel-wise segmentation. Both architectures also consist of an encoder, a bottleneck, and a decoder, with the encoder following a typical CNN architecture. Note that when describing the U-Net architecture, Ronneberger et al. refer to the encoder and decoder as the contracting and expanding paths respectively. Another similarity between the architectures is their passing of information from layers in the encoder to corresponding layers in the decoder. However, the passing of information is implemented differently in each architecture. Whilst U-Net passes information by concatenating feature maps from layers in the encoder to the feature maps of layers in the decoder, SegNet passes information by ... 
+The U-Net and SegNet architectures share multiple similarities. They are both fully convolutional architectures designed to perform semantic pixel-wise segmentation. Both architectures also consist of an encoder, a bottleneck, and a decoder, with the encoder following a typical CNN architecture. Note that when describing the U-Net architecture, Ronneberger et al. refer to the encoder and decoder as the contracting and expanding paths respectively. Another similarity between the architectures is their passing of information from layers in the encoder to corresponding layers in the decoder. However, the passing of information is implemented differently in each architecture. Whilst U-Net passes information by concatenating feature maps from layers in the encoder to the feature maps of layers in the decoder, SegNet passes information in the form of pooling indices.
 
 \begin{figure}[t]
     \centering
@@ -209,6 +218,13 @@ Throughout this project, various deep learning techniques are utilised in an att
 \subsection{Hausdorff distance}
 \label{sec:hausdorff}
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.45\textwidth]{example-image-a}
+    \caption{Hausdorff illustration}
+    \label{fig:hausdorff}
+\end{figure}
+
 \section{Supporting Technologies}
 
 \subsection{Keras}
@@ -225,7 +241,7 @@ explain implementation of early stopping or something?
 
 Example shown in Listing \ref{lst:one}.
 
-\begin{lstlisting}[float={h},caption={This is an example listing.},label={lst:one},language=Python]
+\begin{lstlisting}[float={ht},caption={This is an example listing.},label={lst:one},language=Python]
 import keras
 
 print("Hello, World!")

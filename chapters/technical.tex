@@ -163,15 +163,17 @@ Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~
 
 \subsubsection{Cross-Validation}
 
-Introduce train test val split and what they are all used for.
+When training and evaluating a model, the dataset is often split into three subsets: the training set, the validation set, and the test set. The training set is often the biggest subset and is used to fit the model. This is the set that the model ``learns'' from. The validation set is used to provide an unbiased evaluation of the model's performance on the dataset which can then be used to tune hyperparameters (discussed in Section \ref{sec:hyperparam}). Note that the evaluation of the models performance provided by the validation set becomes more biased each time the validation performance is used to tune hyperparameters. It is important to keep the training and validation sets separate; the model must not be directly trained on any validation data. The test set is used to provide an unbiased evaluation of the final model. The test set is only used once the final model hyperparameters are chosen and the model has been trained. Evaluating the model's performance on a single test set may not be robust to ``selection biases''\textemdash biases that arise from selecting a particular test set. Although curating a test set that represents a wide range of possible data samples can help reduce selection bias, some amount of bias is still inevitable.
+
+In order to reduce the effects of selection bias, a cross-validation technique can be used. Cross-validation is designed to give a comprehensive measure of a model's performance throughout the entire dataset, not just a particular subset.  Once the model's hyperparameters and training configuration have been finalised, multiple train/test splits can be used. For each new train/test split, the model can be re-trained and its performance will be evaluated on the new test set. This process can be repeated with multiple random train/test splits and the final reported performance will be the average of the performances achieved on each test set. In order to ensure that the final performance achieved is not biased, it is important to ensure that the model and its hyperparameters are not modified during the cross-validation process.
 
 \subsubsection{Early Stopping}
-Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystoppinglunch}, early stopping is a regularization technique in which the training process is stopped given some ``stopping criteria'' rather than after a set number of epochs. The simplest stopping criteria is to stop training as soon as the loss achieved on the validation set increases after an epoch rather than decreases. However, when training complex models, the ``loss curve'' achieved on the validation set may contain many local minima~\cite{earlystopping}. A more common method is to stop training once the loss achieved on the validation set fails to decrease after a certain number of epochs. This method helps to prevent noise in the validation loss curve from stopping the training process prematurely.
+Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{earlystoppinglunch}, early stopping is a regularization technique in which the training process is stopped given some ``stopping criteria'' rather than after a set number of epochs. The simplest stopping criteria is to stop training as soon as the loss achieved on the validation set increases after an epoch rather than decreases. However, when training complex models, the ``loss curve'' achieved on the validation set may contain many local minima~\cite{earlystopping}. A more common method is to stop training once the loss achieved on the validation set fails to decrease after a certain number of epochs. This method helps to prevent noise in the validation loss curve from stopping the training process prematurely. A simple example of early stopping for an ideal loss curve is shown in Figure \ref{fig:earlystop}.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.45\textwidth]{example-image-a}
-    \caption{Early stopping and cross-validation example? loss plot over training}
+    \input{tikz/overfit}
+    \caption{An illustration of idealised training and validation loss curves. Both the training and validation loss decrease until a point. However, from this point onward, although the training loss continues to decrease, the validation loss begins to increase and the model begins to overfit. This point at which the validation is lowest is the ideal time to stop the training process.}
     \label{fig:earlystop}
 \end{figure}
 
@@ -220,7 +222,7 @@ Many problems in image processing and computer vision involve ``image-to-image t
 \subsection{Hausdorff distance}
 \label{sec:hausdorff}
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.45\textwidth]{example-image-a}
     \caption{Hausdorff illustration}

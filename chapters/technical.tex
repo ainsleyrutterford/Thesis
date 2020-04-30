@@ -62,7 +62,7 @@ As well as the convolution operation, the max-pooling operation is often used. T
     \label{fig:operations}
 \end{figure}
 
-Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a 3$\times$3 kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyper parameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyper parameter optimisation is discussed in Section \ref{sec:hyperparam}.
+Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons present in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a 3$\times$3 kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyperparameter optimisation, kernel sizes from various layers may be tuned in order to increase or decrease the size of neurons' receptive fields. Hyperparameter optimisation is discussed in Section \ref{sec:hyperparam}.
 
 \subsection{Backpropagation}
 \label{sec:backprop}
@@ -75,14 +75,14 @@ An optimisation algorithm can then use these computed derivatives to adjust each
 
 Once the derivatives\textemdash or ``gradients''\textemdash have been calculated, an optimisation algorithm is used to determine the exact value each weight should be updated to. When training deep neural networks, some variant of the gradient descent algorithm is often used. Gradient descent~\cite[p. 536]{gradient} is an iterative algorithm designed to find local minima of some differentiable function\textemdash in this case, the loss function. A visualisation of the gradient descent algorithm is shown in Figure \ref{fig:gd}. The gradient descent algorithm evaluates the loss function over the entire dataset before taking a ``step'' in the direction of the gradient computed. A step consists of updating the value of every weight in order to decrease the average loss value that would be achieved by the network when processing the dataset. Evaluating the loss function over the entire dataset once is referred to as an ``epoch''.
 
-The size of the weight update is not only determined by the gradient calculated, but also by a hyper parameter called the ``learning rate''. For example, gradient descent calculates the update for a single weight $w$ as
+The size of the weight update is not only determined by the gradient calculated, but also by a hyperparameter called the ``learning rate''. For example, gradient descent calculates the update for a single weight $w$ as
 
 \begin{equation}
     w := w - \eta\nabla\ell(w)
 \end{equation}
 
 \noindent
-where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$. Choosing an appropriate learning rate is challenging but is essential to allow an optimisation algorithm to converge to a local minimum. A learning rate that is too large can cause the loss function to fluctuate around the minimum, impeding convergence or even causing divergence. The learning rate hyper parameter has a significant effect on training and is one of the most important parameters tuned in the hyper parameter optimisation process (see Section \ref{sec:hyperparam}).
+where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$. Choosing an appropriate learning rate is challenging but is essential to allow an optimisation algorithm to converge to a local minimum. A learning rate that is too large can cause the loss function to fluctuate around the minimum, impeding convergence or even causing divergence. The learning rate hyperparameter has a significant effect on training and is one of the most important parameters tuned in the hyperparameter optimisation process (see Section \ref{sec:hyperparam}).
 
 
 \subsubsection{Stochastic Gradient Descent}
@@ -179,10 +179,18 @@ Referred to as a ``beautiful free lunch'' by Geoffrey Hinton~\cite[p. 141]{early
 
 \subsection{Ablation Studies}
 
-\subsection{Hyper parameter optimisation}
+In the context of deep neural networks, the term “ablation study” is used to describe a procedure in which certain parts of the network are removed in order to gain a better understanding of the network's behaviour. Ablation studies can also be used as a powerful optimisation tool. For example, if a certain layer or group of layers is removed and the performance of the network remains relatively unchanged, the ablated network would contain fewer parameters resulting in shorter training and inference times.
+
+\subsection{Hyperparameter optimisation}
 \label{sec:hyperparam}
 
-Define what a parameter and hyper parameter is. Talk about diff algorithms (genetic vs brute force).
+A hyperparameter is a type of parameter which is explicitly set by hand as opposed to being learned via the training process. The learning rate and batch sizes are typical examples of hyperparameters, whereas the neuron weights and the learned kernels used in convolutional layers are examples of parameters. The performance achieved by deep neural networks depends critically on the identification of a good set of hyperparameters~\cite{hyperparam, goodhyperparam}.
+
+% \textit{Optimising the chosen hyperparameters can be achieved via many techniques. Grid search. Random search. Grid search with all but one hyperparameter fixed at a time? much faster.}
+
+% \textit{The traditional way of performing hyperparameter optimization has been grid search, or a parameter sweep, which is simply an exhaustive searching through a manually specified subset of the hyperparameter space of a learning algorithm. A grid search algorithm must be guided by some performance metric. Grid search suffers from the curse of dimensionality, but is often embarrassingly parallel because the hyperparameter settings it evaluates are typically independent of each other.}
+
+% \textit{Random Search replaces the exhaustive enumeration of all combinations by selecting them randomly. This can be simply applied to the discrete setting described above, but also generalizes to continuous and mixed spaces. It can outperform Grid search, especially when only a small number of hyperparameters affects the final performance of the machine learning algorithm. (cite 2 wikipedia)}
 
 \section{Network Architectures}
 
@@ -222,7 +230,7 @@ Many problems in image processing and computer vision involve ``image-to-image t
 \subsection{Hausdorff distance}
 \label{sec:hausdorff}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.45\textwidth]{example-image-a}
     \caption{Hausdorff illustration}

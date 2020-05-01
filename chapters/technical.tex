@@ -145,7 +145,9 @@ where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 
 
 \subsection{Accuracy Metrics}
 
-Although loss functions can be used to measure performance, their main purpose is to be used to train the network. To quantify the performance achieved by a network, an accuracy metric should instead be used. Accuracy metrics do not play a direct role in training networks, though they can be used indirectly\textemdash for example, to determine whether or not to continue training. Choosing an appropriate accuracy metric is essential and proved challenging throughout this project. The main accuracy metric decided upon was based off of the Hausdorff distance discussed in Section \ref{sec:hausdorff}.
+Although loss functions can be used to measure performance, their main purpose is to be used to train the network. To quantify the performance achieved by a network, an accuracy metric should instead be used. Accuracy metrics do not play a direct role in training networks, though they can be used indirectly\textemdash for example, to determine whether or not to continue training. Choosing an appropriate accuracy metric is essential and proved challenging throughout this project.
+
+% The main accuracy metric decided upon was based off of the Hausdorff distance discussed in Section \ref{sec:hausdorff}
 
 \subsection{Overfitting and Regularization}
 
@@ -184,13 +186,9 @@ In the context of deep neural networks, the term “ablation study” is used to
 \subsection{Hyperparameter optimisation}
 \label{sec:hyperparam}
 
-A hyperparameter is a type of parameter which is explicitly set by hand as opposed to being learned via the training process. The learning rate and batch sizes are typical examples of hyperparameters, whereas the neuron weights and the learned kernels used in convolutional layers are examples of parameters. The performance achieved by deep neural networks depends critically on the identification of a good set of hyperparameters~\cite{hyperparam, goodhyperparam}.
+A hyperparameter is a type of parameter which is explicitly set by hand as opposed to being learned via the training process. The learning rate and batch sizes are typical examples of hyperparameters, whereas neuron weights and the learned kernels used in convolutional layers are examples of parameters. The performance achieved by deep neural networks is known to depend critically on the identification of a good set of hyperparameters~\cite{hyperparam, goodhyperparam}.
 
-% \textit{Optimising the chosen hyperparameters can be achieved via many techniques. Grid search. Random search. Grid search with all but one hyperparameter fixed at a time? much faster.}
-
-% \textit{The traditional way of performing hyperparameter optimization has been grid search, or a parameter sweep, which is simply an exhaustive searching through a manually specified subset of the hyperparameter space of a learning algorithm. A grid search algorithm must be guided by some performance metric. Grid search suffers from the curse of dimensionality, but is often embarrassingly parallel because the hyperparameter settings it evaluates are typically independent of each other.}
-
-% \textit{Random Search replaces the exhaustive enumeration of all combinations by selecting them randomly. This can be simply applied to the discrete setting described above, but also generalizes to continuous and mixed spaces. It can outperform Grid search, especially when only a small number of hyperparameters affects the final performance of the machine learning algorithm. (cite 2 wikipedia)}
+The grid search technique has traditionally been used to find optimal hyperparameter configurations. A grid search is simply an exhaustive search through all of the possible combinations of a set of accepted hyperparameter values. In recent years, however, the grid search technique has often been replaced with a random search. Rather than exhaustively iterating over all combinations, random search iterates over random selections of combinations. Bergstra and Bengio~\cite{randomsearch} were able to show empirically that even over the same domain, random search is able to find hyperparameter configuratins that are as good as or better than configurations found via grid search. Bergstra and Bengio also demonstrated that random search can find these optimal configurations within a small fraction of the computation time taken by grid search.
 
 \section{Network Architectures}
 
@@ -225,17 +223,17 @@ A generative adversarial network (GAN)~\cite{gans} is a framework in which two m
 
 Many problems in image processing and computer vision involve ``image-to-image translation'': the translation of an input image into some corresponding output image. In recent years, adversarial nets have proved to be an effective general-purpose solution to image-to-image translation~\cite{gansoverview}. For example, the pix2pix model~\cite{pix2pix} demonstrates effective results in different computer vision tasks that had previously required special purpose models, including semantic segmentation and colorisation of black and white images.
 
-\section{Classical Image Processing Techniques}
+% \section{Classical Image Processing Techniques}
 
-\subsection{Hausdorff distance}
-\label{sec:hausdorff}
+% \subsection{Hausdorff distance}
+% \label{sec:hausdorff}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{example-image-a}
-    \caption{Hausdorff illustration}
-    \label{fig:hausdorff}
-\end{figure}
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=0.45\textwidth]{example-image-a}
+%     \caption{Hausdorff illustration}
+%     \label{fig:hausdorff}
+% \end{figure}
 
 \section{Supporting Technologies}
 

@@ -1,18 +1,24 @@
-\begin{lstlisting}[float={ht},caption={This is an example listing.},label={lst:one},language=Python,upquote=true]
+\begin{lstlisting}[float={ht},caption={An small code snippet defining a simple model with an input of a 1D tensor of length 784, two hidden layers both containing 64 units with ReLU actiation functions, and an output layer containing 10 units using the softmax activation function.},label={lst:one},language=Python,upquote=true]
 from keras.layers import Input, Dense
 from keras.models import Model
+from keras.optimizers import Adam
 
+# Define the input layer
 inputs = Input(shape=(784,))
 
+# Define the hidden and output layers
 linear1 = Dense(64, activation='relu')(input)
 linear2 = Dense(64, activation='relu')(linear1)
 outputs = Dense(10, activation='softmax')(linear2)
 
+# Create the model
 model = Model(inputs=inputs, outputs=outputs)
 
-model.compile(optimizer='Adam',
+# Compile the model
+model.compile(optimizer=Adam(lr = 1e-4),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
+# Train the model on labelled data
 model.fit(data, labels)
 \end{lstlisting}

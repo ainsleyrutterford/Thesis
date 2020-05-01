@@ -1,10 +1,16 @@
+This chapter details the implementation of the automated solution proposed in Chapter \ref{chap:context}. First, an overview of the various components implemented throughout the project is given. Next, the implementation of a deep network capable of automatically extracting annual density bands present in two dimensional data is discussed. For each subsystem composing the network, both the design choices and implementation details are discussed. The attempts at implementing a network capable of automatically extracting the annual density bands present in three dimensions are also detailed. The implementation of and reasoning behind the custom accuracy metric are then discussed. And finally, the 
+
+\section{Overview}
+
 \section{Two Dimensional Boundary Extraction}
+
+This section outlines the steps taken to implement and train a CNN capable of extracting the annual density banding present in two dimensional data.
 
 \subsection{Labelling the Data}
 
 \subsection{Dataset Curation}
 
-\subsection{Sliding Window}
+\subsubsection{Sliding Window}
 
 \subsubsection{Splitting the Dataset}
 
@@ -25,17 +31,9 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 
 \subsection{Early Stopping and Checkpointing}
 
-Results?
-
-Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
-
-Hyperparameter optimisation
-
-Ablation study
-
-Cross validation
-
 \section{Three Dimensional Boundary Extraction}
+
+This section discusses the attempts to implement and train a CNN capable of extracting the annual density banding present in three dimensional data.
 
 \subsection{Dataset Expansion}
 

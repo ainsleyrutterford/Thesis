@@ -1,6 +1,10 @@
-This chapter details the implementation of the automated solution proposed in Chapter \ref{chap:context}. First, an overview of the various components implemented throughout the project is given. Next, the implementation of a deep network capable of automatically extracting annual density bands present in two dimensional data is discussed. For each subsystem composing the network, both the design choices and implementation details are discussed. The attempts at implementing a network capable of automatically extracting the annual density bands present in three dimensions are also detailed. The implementation of and reasoning behind the custom accuracy metric are then discussed. And finally, the 
+This chapter details the implementation of the automated solution proposed in Chapter \ref{chap:context}. First, an overview of the various components implemented throughout the project is given. Next, the implementation of a deep network capable of automatically extracting annual density bands present in two dimensional data is discussed. The attempts at implementing a network capable of automatically extracting the annual density bands present in three dimensions are also detailed. Then, the implementation of and reasoning behind the custom accuracy metric are discussed. Finally, the techniques used to estimate the calcification rate from the extracted boundaries are described.
 
 \section{Overview}
+
+A system capable of calculating of the calcification rate given only some section of density data requires the implementation of many separate subcomponents. This diagram below provides an overview of these components and outlines the order in which they were implemented and will be discussed.
+
+\includegraphics[width=1.02\textwidth]{images/our-coral.png}
 
 \section{Two Dimensional Boundary Extraction}
 
@@ -14,7 +18,11 @@ This section outlines the steps taken to implement and train a CNN capable of ex
 
 \subsubsection{Splitting the Dataset}
 
+\subsection{Data Augmentation}
+
 \subsection{Architecture}
+
+Implementation of architecture
 
 Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
 
@@ -26,8 +34,6 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 % activations and will otherwise just result in an effective learning rate
 % decrease. In this case, SpatialDropout2D will help promote independence
 % between feature maps and should be used instead.
-
-\subsection{Data Augmentation}
 
 \subsection{Early Stopping and Checkpointing}
 

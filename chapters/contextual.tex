@@ -52,7 +52,7 @@ Feed-forward artificial neural networks have existed in some form since 1965~\ci
 
 \subsubsection{The Dataset}
 
-This project will make use of a dataset of more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. These three dimensional scans are stored as stacks of two dimensional \texttt{.tif} images. With each scan being represented by ${\sim}2000$ images, the whole dataset consists of hundreds of thousands of images. The raw dataset provided is unlabelled, so in order to train a supervised machine learning model\textemdash such as an artificial neural network\textemdash to extract the boundaries, some of the data must be manually labelled.
+This project will make use of a dataset of more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. These three dimensional scans are stored as stacks of two dimensional \texttt{.tif} images. With each scan being represented by ${\sim}2000$ images, the whole dataset consists of hundreds of thousands of images. The initial dataset provided is unlabelled, so in order to train a supervised machine learning model\textemdash such as an artificial neural network\textemdash to extract the boundaries, some of the data must be manually labelled.
 
 Although the labelling process is time consuming and will not be possible for the entire dataset, the hope is that researchers at the University of Bristol and the Natural History Museum can continue to label and re-train the proposed system even after this project is over. The abundance of data available makes a deep learning based solution a reasonable choice.
 
@@ -146,7 +146,7 @@ Three dimensional implementations of the U-Net architecture do exist. For exampl
 In summary, the main objective of this project is to automate the estimation of the calcification rate\textemdash the amount of skeletal matter produced annually by corals. This objective is broken down into multiple tasks:
 
 \begin{enumerate}
-    \item Curate a dataset of image-label pairs from the raw unlabelled dataset provided.
+    \item Curate a dataset of image-label pairs from the initial unlabelled dataset provided.
     \item Train existing two dimensional convolutional neural network architectures to extract the annual density boundaries present in the data.
     \item Modify the architectures to process three dimensional data.
     \item Conceive and implement an accuracy metric to assess the performance of different networks on the data.

@@ -1,0 +1,20 @@
+\begin{lstlisting}[float={ht},caption={This is an example of a listing.},label={lst:orientation},language=Python,upquote=true]
+import cv2
+import glob
+import numpy as np
+
+example = cv2.imread("RS0030_0000.tif", 0)
+images = sorted(glob.glob("*.tif"))
+
+z = len(images)
+x = example.shape[1]
+y = example.shape[0]
+
+stack = np.zeros((z, y, x), dtype=np.float)
+
+for i, image in enumerate(images):
+    stack[i] = cv2.imread(image, 0)
+
+for i in range(x):
+    cv2.imwrite(f"RS0030_yz_0{i}.tif", stack[:,:,i])
+\end{lstlisting}

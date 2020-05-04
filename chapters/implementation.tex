@@ -12,7 +12,7 @@ This section outlines the steps taken to implement and train a CNN capable of ex
 
 \subsection{Labelling the Data}
 
-In order for an ANN to perform well, large amounts of labelled data much be available to train on. Since the dataset provided was initially unlabelled, a manual labelling process was devised and is described in this section.
+In order for a supervised CNN to perform well, large amounts of labelled data much be available to train on. Since the dataset provided was initially unlabelled, a manual labelling process was devised and is described in this section.
 
 \subsubsection{The Initial Dataset}
 
@@ -37,23 +37,48 @@ A typical scan consists of ${\sim}2000$ slices that each have the same resolutio
 
 \subsubsection{Slice Selection and Extraction}
 
-Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of seven slices that could confidently be labelled were chosen. Once an appropriate slice was identified, a Python script was used to extract the slice and export it as a greyscale PNG image. Some of the adjacent slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}). The Python script used is shown in Listing \ref{lst:orientation}.
-
-\input{listings/orientation}
+Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of seven slices that could confidently be labelled were chosen. Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the adjacent slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
 
 \subsubsection{Slice Labelling}
 
-Each selected slice was then manually labelled using the GNU Image Manipulation Program (GIMP) [????]. An example of a labelled slice is shown in Fig.~\ref{fig:example-label}. A 1px white line is drawn at the beginning and end of each annual high density band and the rest of the image is black\textemdash no values other than black or white are present in the labels. When labelling the slices, it is not always clear where the annual bands begin and end, as can be seen in Fig.~\ref{fig:example-label} (left). In order to ensure that the decisions made regarding the boundaries of the annual bands were as consistent as possible, each slice was manually labelled multiple times, and the most common boundaries were chosen. It is important for the labelling method to be consistent and reproducible as this enables the dataset to be expanded in the future.
+Once the slices were selected, a labelling process was established. Initially, two methods of labelling were considered and shown to Dr Erica Hendy, a senior lecturer in biogeochemical cycles. Of the two methods (shown in Figure \ref{fig:labelstyle}), the ``smooth'' method was deemed as the more realistic choice. An idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}. Thus, an exact boundary between a high and low band does not actually exist, making the ``complex'' method unrealistic both in terms of reproducibility, and in terms of biological accuracy.
 
-Multiple slices from each of the four chosen scans were labelled. Each slice was then used to produce ${\sim}50$-$200$ samples using a sliding-window technique with a stride of 20 pixels. The number of samples produced per slice depended on how large the confidently labelled area was, since often only sections of a slice display identifiable annual banding. The corresponding labels for each sample were also produced. The resulting samples and labels were $224\times 224$ greyscale PNG images. In total, 524 samples were produced. These samples and their corresponding labels were then used to train the network.
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/rough-label.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/smooth-label.png}
+    \end{subfigure}
+    \caption{A comparison of the two methods of labelling that were initially considered. The boundary labels are coloured red and placed over the the same original negative 2D slice. \textbf{(left)} A method of labelling in which the boundaries were placed on the sharpest change in density resulting in complex boundaries whose positions are highly sensitive to noise in the image. \textbf{(right)} A method in which the chosen boundaries are ``smooth'' whilst also being placed as close as possible to the sharpest change in density.}
+    \label{fig:labelstyle}
+\end{figure}
+
+Each selected slice was then manually labelled using the GNU Image Manipulation Program (GIMP)\footnote{\url{https://www.gimp.org}}. A one pixel wide white line is drawn at the beginning and end of each annual high density band and the rest of the image is black---no values other than black or white are present in the labels. In order to ensure that the decisions made regarding the boundaries of the annual bands were as consistent as possible, each slice was manually labelled three or more times, and the most common boundaries were chosen. It is important for the labelling method to be consistent and reproducible as this enables the dataset to be expanded in the future.
 
 \subsection{Dataset Curation}
+
+Since only Once the slices had been manually selected and labelled, a dataset of 
+
+In order for a supervised CNN to perform well, large amounts of labelled data much be available to train on. Since the dataset provided was initially unlabelled, a manual labelling process was devised and is described in this section.
 
 \subsubsection{Sliding Window}
 
 show snippet of the code used for sliding window.
 
 show table of number of produced slices from each sample
+
+Multiple slices from each of the four chosen scans were labelled. Each slice was then used to produce ${\sim}$50 -- 200 samples using a sliding-window technique with a stride of 20 pixels. The number of samples produced per slice depended on how large the confidently labelled area was, since often only sections of a slice display identifiable annual banding. The corresponding labels for each sample were also produced. The resulting samples and labels were 224$\times$224 greyscale PNG images. In total, 524 samples were produced. These samples and their corresponding labels were then used to train the network.
+
+\begin{table}[t]
+\centering
+\caption{A table showing the... blah blah blah}
+\input{tables/curation}
+\end{table}
 
 \subsubsection{Splitting the Dataset}
 

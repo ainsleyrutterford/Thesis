@@ -4,7 +4,7 @@ This chapter details the implementation of the automated solution proposed in Ch
 
 A system capable of calculating of the calcification rate given only some section of density data requires the implementation of many separate subcomponents. The diagram below provides an overview of these components and outlines the order in which they were implemented and will be discussed.
 
-\includegraphics[width=\textwidth, height=0.74\textwidth]{example-image-a}
+\includegraphics[width=\textwidth, height=0.74\textwidth]{images/overview.pdf}
 
 \section{Two Dimensional Boundary Extraction}
 
@@ -54,7 +54,7 @@ Once the slices were selected, a labelling process was established. Initially, t
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/smooth-label.png}
     \end{subfigure}
-    \caption{A comparison of the two methods of labelling that were initially considered. The boundary labels are coloured red and placed over the the same original negative 2D slice. \textbf{(left)} A method of labelling in which the boundaries were placed on the sharpest change in density resulting in complex boundaries whose positions are highly sensitive to noise in the image. \textbf{(right)} A method in which the chosen boundaries are ``smooth'' whilst also being placed as close as possible to the sharpest change in density.}
+    \caption{A comparison of the two methods of labelling that were initially considered. The boundary labels are coloured red and placed over the the same original negative 2D slice. \textbf{(left)} A method of labelling in which the boundaries were placed at the sharpest change in density resulting in complex boundaries whose positions are highly sensitive to noise in the image. \textbf{(right)} A method in which the chosen boundaries are ``smooth'' whilst also being placed as close as possible to the sharpest changes in density.}
     \label{fig:labelstyle}
 \end{figure}
 
@@ -62,11 +62,11 @@ Each selected slice was then manually labelled using the GNU Image Manipulation 
 
 \subsection{Dataset Curation}
 
-Since only Once the slices had been manually selected and labelled, a dataset of 
-
-In order for a supervised CNN to perform well, large amounts of labelled data much be available to train on. Since the dataset provided was initially unlabelled, a manual labelling process was devised and is described in this section.
+With 
 
 \subsubsection{Sliding Window}
+
+Could only label a few slices confidently. Needed to generate more data.
 
 show snippet of the code used for sliding window.
 
@@ -85,6 +85,27 @@ Multiple slices from each of the four chosen scans were labelled. Each slice was
 talk about rationale behind the splits
 
 \subsection{Data Augmentation}
+
+\subsubsection{The Keras \texttt{ImageDataGenerator} class}
+
+Introduction to the imagedatagenerator. Augmentation online.
+
+Explain the exact allowed augmentations.
+
+\subsubsection{Acceptable Augmentations}
+
+Show examples of augmented images and labels. Show examples of too far augmented with unrealistic edges.
+
+Talk about the expansion from the X patches that we normally have to X steps per epoch.
+
+\newpage
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1\textwidth]{images/aug-example.png}
+    \caption{Examples of ... Might need to make a new figure showing bad examples too?}
+    \label{fig:augexample}
+\end{figure}
 
 \subsection{Architecture}
 
@@ -110,11 +131,11 @@ This section discusses the attempts to implement and train a CNN capable of extr
 
 \subsection{Dataset Expansion}
 
-\subsection{Architecture Modification}
-
 \subsection{Data Loader Implementation}
 
 \subsection{Three Dimensional Data Augmentation}
+
+\subsection{Architecture Modification}
 
 \section{Accuracy Metric Implementation}
 

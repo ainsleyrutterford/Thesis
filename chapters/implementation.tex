@@ -18,7 +18,7 @@ In order for a supervised CNN to perform well, large amounts of labelled data mu
 
 The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices''. This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. An example of a Porites skeleton that is part of the dataset is shown in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled.
 
-A typical scan consists of ${\sim}2000$ slices that each have the same resolution of typically ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. The 3D resolution of each scan varies, but the scale (e.g., the number of voxels used to represent a centimetre cubed) is consistent across scans.
+A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. The 3D resolution of each scan varies, but the scale (e.g., the number of voxels used to represent a centimetre cubed) is consistent across scans.
 
 \begin{figure}[t]
     \centering
@@ -37,7 +37,7 @@ A typical scan consists of ${\sim}2000$ slices that each have the same resolutio
 
 \subsubsection{Slice Selection and Extraction}
 
-Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of seven slices that could confidently be labelled were chosen. Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the adjacent slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
+Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. MAYBE HAVE A SENTENCE HERE EXPLAINING THAT THE BEST SLICES ARE OFTEN ORTHOGONAL TO THE GROWTH DIRECTION AND SO ARE ROUGHLY HALFWAY THRU THE SCAN? Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the adjacent slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
 
 \subsubsection{Slice Labelling}
 
@@ -62,43 +62,57 @@ Each selected slice was then manually labelled using the GNU Image Manipulation 
 
 \subsection{Dataset Curation}
 
-With 
+With only a small selection of slices successfully extracted and labelled, a larger dataset of image-label pairs was required for the model to train on.
 
 \subsubsection{Sliding Window}
 
-Could only label a few slices confidently. Needed to generate more data.
-
-show snippet of the code used for sliding window.
-
-show table of number of produced slices from each sample
-
-Multiple slices from each of the four chosen scans were labelled. Each slice was then used to produce ${\sim}$50 -- 200 samples using a sliding-window technique with a stride of 20 pixels. The number of samples produced per slice depended on how large the confidently labelled area was, since often only sections of a slice display identifiable annual banding. The corresponding labels for each sample were also produced. The resulting samples and labels were 224$\times$224 greyscale PNG images. In total, 524 samples were produced. These samples and their corresponding labels were then used to train the network.
+In order to expand the dataset, a sliding window technique was used. A script was written in Python that took a slice, two 2D coordinates, a ``stride'', and a size as arguments. The pair of coordinates corresponded to the top left corner and bottom right corner of the confidently labelled area of the slice. This was the area that the window would slide over in order to create the resulting ``patches''. The stride argument dictated how far the window should slide before each patch was produced. The most common stride value used was 20. The size argument defined how large to resulting patches should be. The patches initially produced had a resolution of 256$\times$256 pixels, but various sizes of patches were experimented with and are discussed in Chapter \ref{chap:evaluation}. The arguments used in order to produce the curated dataset used in this project are shown in Table \ref{tab:slidingwindow}. A total of 388 patches were produced from six slices taken from four different coral skeletons. This dataset of 388 256$\times$256 patches and their corresponding labels were stored as greyscale \texttt{.png} images.
 
 \begin{table}[t]
 \centering
-\caption{A table showing the... blah blah blah}
+\caption{A table showing the arguments used with the Python script for each labelled slice. For each slice, a size argument of 256 was also specified. Note that some slices are represented by two rows as these slices contained two separate areas that could be confidently labelled. It was not possible to use one area that contains the two areas as this would result in multiple patches with no labelling being produced.}
 \input{tables/curation}
+\label{tab:slidingwindow}
 \end{table}
+
+In order to prevent the dataset from representing certain coral samples better than others, an effort was made to equalise the number of patches produced per scan. Due to different slices containing varying sizes of confidently labelled areas, the stride argument was used to increase or reduce the number of patches produced. However, it was also important to produce as much data as possible to enable the network to perform well. Ultimately, some slices produced almost five times as many slices as others resulting in some imbalance in the types of coral scans represented by the dataset. Although this could negatively affect the generalisability of a network trained on this dataset, cross-validation with carefully selected splits to represent each coral scan was ultimately used and is discussed in Section \ref{sec:evalcrossval}.
 
 \subsubsection{Splitting the Dataset}
 
-talk about rationale behind the splits
+For the initial training and testing of the network, the curated dataset was split into a training set, a validation set, and a test set. Of the 388 patches, 322 were used for training, 56 for testing, and 10 for validation. The patches composing the test and validation sets were all produced from slices of a coral skeleton that was not part of the training set. This ensured that the network could not have been overfitting to the nature of the annual banding present in the skeleton used for testing. If this had been the case, the performance on the test data could have been positively skewed.
 
 \subsection{Data Augmentation}
 
+As discussed in Section \ref{sec:regularization}, data augmentation is an important regularization technique. Since only 388 patches had been produced, extensive augmentation was used to artificially expand the dataset. This data augmentation later proved effective in improving the performance achieved by the network and is discussed further in Section \ref{sec:evalaugmentation}.
+
 \subsubsection{The Keras \texttt{ImageDataGenerator} class}
 
-Introduction to the imagedatagenerator. Augmentation online.
+The Keras library allows users easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves.
 
-Explain the exact allowed augmentations.
+Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the random transformations must also be applied to the corresponding labels. This can be achieved by passing the same value to the \texttt{seed} argument of the \texttt{flow\_from\_directory} methods used to load the images and labels. This method is also capable of shuffling the order in which images are loaded and trained with. Using the same seed value also ensures that this shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
+
+Since the training generator will yield randomly augmented image-label pairs indefinitely, the \texttt{steps\-per-epoch} argument defines how many samples should be processed before an epoch is considered complete.
+
+\input{listings/augment}
 
 \subsubsection{Acceptable Augmentations}
 
+The possible transformations specified each have a random chance of being applied to each image. It was important to choose a range of possible transformations that would always produce a reasonable augmented image. The permitted augmentations were:
+
+\begin{itemize}
+    \item A random rotation within the range of $\pm 2$ degrees.
+    \item A random shift in the $x$ axis within the range of $\pm 2\%$ of the image's width.
+    \item A random shift in the $y$ axis within the range of $\pm 2\%$ of the image's height.
+    \item A random shear 
+    \item A random zoom 
+    \item A random brightness shift
+    \item A random horizontal flip
+    \item A random vertical flip
+\end{itemize}
+
+Explain the exact allowed augmentations.
+
 Show examples of augmented images and labels. Show examples of too far augmented with unrealistic edges.
-
-Talk about the expansion from the X patches that we normally have to X steps per epoch.
-
-\newpage
 
 \begin{figure}[t]
     \centering

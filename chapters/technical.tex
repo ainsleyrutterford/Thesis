@@ -247,5 +247,4 @@ The Keras\footnote{\url{https://keras.io}} library is used to implement all arch
 Keras offers two APIs that can be used to define a model architecture: the sequential API and the functional API. The sequential API is easier to use and allows users to define a model architecture by simply passing a list of layer instances to the sequential constructor. However, the sequential API is limited in that it does not allow users to define architectures that share layers or have multiple inputs or outputs. Since the architectures implemented throughout this project contain layers that take inputs from more than one previous layer, the functional API must be used.
 
 A simple example of how to define and train a model architecture using the Keras library is shown in Listing \ref{lst:keras}.
-
 \input{listings/keras}

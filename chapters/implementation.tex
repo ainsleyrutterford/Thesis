@@ -89,41 +89,82 @@ As discussed in Section \ref{sec:regularization}, data augmentation is an import
 
 The Keras library allows users easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves.
 
+\input{listings/augment}
 Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the random transformations must also be applied to the corresponding labels. This can be achieved by passing the same value to the \texttt{seed} argument of the \texttt{flow\_from\_directory} methods used to load the images and labels. This method is also capable of shuffling the order in which images are loaded and trained with. Using the same seed value also ensures that this shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
 
 Since the training generator will yield randomly augmented image-label pairs indefinitely, the \texttt{steps\-per-epoch} argument defines how many samples should be processed before an epoch is considered complete.
 
-\input{listings/augment}
-
 \subsubsection{Acceptable Augmentations}
 
-The possible transformations specified each have a random chance of being applied to each image. It was important to choose a range of possible transformations that would always produce a reasonable augmented image. The permitted augmentations were:
+The possible transformations specified each have a random chance of being applied to each image. It was important to choose a range of possible transformations that would always produce a reasonable augmented image. The permitted augmentations that could be randomly chosen were:
 
 \begin{itemize}
-    \item A random rotation within the range of $\pm 2$ degrees.
-    \item A random shift in the $x$ axis within the range of $\pm 2\%$ of the image's width.
-    \item A random shift in the $y$ axis within the range of $\pm 2\%$ of the image's height.
-    \item A random shear 
-    \item A random zoom 
-    \item A random brightness shift
-    \item A random horizontal flip
-    \item A random vertical flip
+    \item Rotations within a range of $\pm 2$ degrees.
+    \item Shifts in the $x$ axis within a range of $\pm 2\%$ of the images' widths.
+    \item Shifts in the $y$ axis within a range of $\pm 2\%$ of the images' heights.
+    \item Shears within a range of $\pm 2$ degrees.
+    \item Zooms in the $x$ and $y$ axes within a range of $\pm 2\%$ of the images' widths or heights.
+    \item Brightness shifts within a range of $\pm 10\%$.
+    \item Horizontal flips and vertical flips.
 \end{itemize}
 
-Explain the exact allowed augmentations.
-
-Show examples of augmented images and labels. Show examples of too far augmented with unrealistic edges.
+Using larger ranges of permitted transformations resulted in augmented images that did not represent the real data well. Examples of images created using the ranges defined above and images created using ``unrealistic'' ranges are shown in Figure \ref{fig:augexample}.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/aug-example.png}
-    \caption{Examples of ... Might need to make a new figure showing bad examples too?}
+    \begin{subfigure}[t]{0.18\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/orig-aug.png}
+        \caption{Original}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.38\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/bad-aug.png}
+        \caption{Unrealistic}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.38\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/good-aug.png}
+        \caption{Realistic}
+    \end{subfigure}
+    \caption{Examples of augmented images created using both ``realistic'' and ``unrealistic'' sets of permitted transformations. The images are shown at the top and their corresponding labels are shown at the bottom. All labels are thresholded after augmentation to ensure that only white or black values are present. \textbf{(a)} The original image-label pair. \textbf{(b)} Two examples of image-label pairs augmented using a set of unrealistic permitted transformations resulting in images that do not represent the real coral data well. The first image's brightness has been shifted too far. The overly aggressive rotation has resulted in straight labels on the left-most edge which are not realistic. The second image's label has also been rotated too far resulting in a straight label on the right-most edge. \textbf{(c)} Two examples of image-label pairs augmented using the set of permitted transformations used in this project.}
     \label{fig:augexample}
 \end{figure}
 
-\subsection{Architecture}
+\subsection{U-Net}
 
-Implementation of architecture
+As discussed in Chapter \ref{chap:technical}, the U-Net architecture~\cite{ronneberger2015u} is the main architecture experimented with. The implementation used throughout the project was initially based off of an implementation available on GitHub\footnote{\url{https://github.com/zhixuhao/unet}}, though over the course of the project the majority of the code was edited. It is written in Python and makes use of the Keras functional API.
+
+Recall that the original U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function followed by a 2$\times$2 max-pooling layer using a stride of 2. After the first contracting block, each successive block doubles the number of feature channels. The first contracting block is implemented like so:
+\begin{lstlisting}[language=Python,upquote=true,belowskip=0pt]
+conv1 = Conv2D(64, 3, activation="relu", padding="same")(inputs)
+conv1 = Conv2D(64, 3, activation="relu", padding="same")(conv1)
+pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+\end{lstlisting}
+The \texttt{pool1} tensor will be the input to the next contracting block, and so on. The first argument of the \texttt{Conv2D} function is the number of output feature channels. Since the number of feature channels doubles at each contracting block, the next contracting block would have 128 feature channels rather than 64. The second argument is the size of the convolution kernels to use, so 3$\times$3 in this case. The padding argument specifies that the dimensions of the output feature channels should match the dimensions of the inputs. This differs from the implementation of the U-Net architecture used in the original paper and will be explained later in this section. The Keras \texttt{MaxPooling2D} function implicitly uses the same stride size as the pool size specified, so a stride of two in the $x$ and $y$ axes will be used.
+
+The bottleneck contains only one block. This block also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, but no max-pooling layers are present. Thus, the bottleneck block is implemented similarly to the block shown above, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
+
+The expanding path consists of multiple blocks with each block containing an up
+
+\begin{lstlisting}[language=Python,upquote=true,belowskip=0pt]
+up9 = UpSampling2D(size=(2, 2))(conv8)
+up9 = Conv2D(64, 2, activation="relu", padding="same")(up9)
+merge9 = concatenate([conv1, up9], axis=3)
+conv9 = Conv2D(64, 3, activation="relu", padding="same")(merge9)
+conv9 = Conv2D(64, 3, activation="relu", padding="same")(conv9)
+\end{lstlisting}
+
+Every  step  in  the  expansive  path  consists  of  an  upsampling  of  thefeature map followed by a 2x2 convolution (“up-convolution”) that halves thenumber of feature channels, a concatenation with the correspondingly croppedfeature  map  from  the  contracting  path,  and  two  3x3  convolutions,  each  fol-lowed by a ReLU.
+
+How it differs from original unet:
+- padding is 'same' rather than none. Allows reconstruction back to exactly the same size? Is this possible in original paper?
+- the point above means that we no longer need to crop before we concatenate.
+- upsampling rather than upconvolutions?
+
+Implementation of a block
 
 Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
 
@@ -136,7 +177,11 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 % decrease. In this case, SpatialDropout2D will help promote independence
 % between feature maps and should be used instead.
 
-\subsection{Early Stopping and Checkpointing}
+\subsection{SegNet}
+
+\subsection{Training}
+
+\subsubsection{Early Stopping and Checkpointing}
 
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}

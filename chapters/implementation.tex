@@ -137,18 +137,19 @@ Using larger ranges of permitted transformations resulted in augmented images th
 
 As discussed in Chapter \ref{chap:technical}, the U-Net architecture~\cite{ronneberger2015u} is the main architecture experimented with. The implementation used throughout the project was initially based off of an implementation available on GitHub\footnote{\url{https://github.com/zhixuhao/unet}}, though over the course of the project the majority of the code was edited. It is written in Python and makes use of the Keras functional API.
 
-Recall that the original U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function followed by a 2$\times$2 max-pooling layer using a stride of 2. After the first contracting block, each successive block doubles the number of feature channels. The first contracting block is implemented like so:
+Recall that the original U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers followed by a 2$\times$2 max-pooling layer with a stride of two. The convolutional layers both use 3$\times$3 kernels and the ReLU activation function. Apart from the first block, the first convolutional layer of each contracting block doubles the number of feature channels. The first contracting block is implemented like so:
 \begin{lstlisting}[language=Python,upquote=true,belowskip=0pt]
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(inputs)
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 \end{lstlisting}
-The \texttt{pool1} tensor will be the input to the next contracting block, and so on. The first argument of the \texttt{Conv2D} function is the number of output feature channels. Since the number of feature channels doubles at each contracting block, the next contracting block would have 128 feature channels rather than 64. The second argument is the size of the convolution kernels to use, so 3$\times$3 in this case. The padding argument specifies that the dimensions of the output feature channels should match the dimensions of the inputs. This differs from the implementation of the U-Net architecture used in the original paper and will be explained later in this section. The Keras \texttt{MaxPooling2D} function implicitly uses the same stride size as the pool size specified, so a stride of two in the $x$ and $y$ axes will be used.
+The \texttt{pool1} tensor will be the input to the next contracting block, and so on. The first argument of the \texttt{Conv2D} function is the number of output feature channels. Since the number of feature channels doubles at each contracting block, the next contracting block would have two convolutional layers outputting 128 feature channels rather than 64. The second argument is the size of convolutional kernels to use, so 3$\times$3 in this case. The \texttt{"{}same"{}} padding argument specifies that the dimensions of the output feature channels should match the dimensions of the inputs. This differs from the implementation of the U-Net architecture used in the original paper and will be explained later in this section. The Keras \texttt{MaxPooling2D} function implicitly uses the same stride size as the pool size specified, so a stride of two in the $x$ and $y$ axes will be used.
 
-The bottleneck contains only one block. This block also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, but no max-pooling layers are present. Thus, the bottleneck block is implemented similarly to the block shown above, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
+The bottleneck contains only one block also consisting of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, but no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the block shown above, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
 
-The expanding path consists of multiple blocks with each block containing an up
+The expanding path of the architecture described in the original U-Net paper consists of multiple blocks with each block containing a 2$\times$2 ``up-convolution'' (or transposed convolution) layer followed by two convolutional layers each using 3$\times$3 kernels and the ReLU activation function. A 2$\times$2 transposed convolution using a stride of two in the $x$ and $y$ axes results in a doubling of the image size in both axes. The first convolutional layer of each expanding block halves the number of feature channels.
 
+It is in these expanding blocks that the pass-forward of information from the contracting path takes place. The output feature channels from the corresponding blocks in the contracting path are appended to the feature channels that are produced by the transposed convolutions. This new set of feature channels containing both the feature channels from the contracting path, and the feature channels from the transposed convolution are then used as the inputs to the two convolutional layers. As discussed in Chapter \ref{chap:technical}, this allows the features that are learned whilst contracting the image to also be used to reconstruct it. The last expanding block is implemented like so:
 \begin{lstlisting}[language=Python,upquote=true,belowskip=0pt]
 up9 = UpSampling2D(size=(2, 2))(conv8)
 up9 = Conv2D(64, 2, activation="relu", padding="same")(up9)
@@ -156,15 +157,9 @@ merge9 = concatenate([conv1, up9], axis=3)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(merge9)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(conv9)
 \end{lstlisting}
+It can be seen that the 2$\times$2 transposed convolution is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are minor and are explored in Chapter \ref{chap:evaluation}.
 
-Every  step  in  the  expansive  path  consists  of  an  upsampling  of  thefeature map followed by a 2x2 convolution (“up-convolution”) that halves thenumber of feature channels, a concatenation with the correspondingly croppedfeature  map  from  the  contracting  path,  and  two  3x3  convolutions,  each  fol-lowed by a ReLU.
-
-How it differs from original unet:
-- padding is 'same' rather than none. Allows reconstruction back to exactly the same size? Is this possible in original paper?
-- the point above means that we no longer need to crop before we concatenate.
-- upsampling rather than upconvolutions?
-
-Implementation of a block
+After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output value
 
 Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
 

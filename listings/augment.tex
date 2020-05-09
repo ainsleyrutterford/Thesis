@@ -1,4 +1,4 @@
-\begin{lstlisting}[float={t},caption={A simplified example of online augmentation implemented using the \texttt{ImageDataGenerator} class. The model is then trained for five epochs with each epoch consisting of 1000 training samples.},label={lst:augment},language=Python,upquote=true]
+\begin{lstlisting}[float={t},caption={A simplified example of online augmentation implemented using the \texttt{ImageDataGenerator} class.},label={lst:augment},language=Python,upquote=true]
 from keras.preprocessing.image import ImageDataGenerator
 import random
 
@@ -30,5 +30,5 @@ label_generator = label_datagen.flow_from_directory(label_path, seed=seed, ...)
 train_generator = zip(image_generator, label_generator)
 
 # Fit the model using the zipped generator
-model.fit_generator(train_generator, steps_per_epoch=1000, epochs=5, ...)
+model.fit_generator(train_generator, steps_per_epoch=..., epochs=...)
 \end{lstlisting}

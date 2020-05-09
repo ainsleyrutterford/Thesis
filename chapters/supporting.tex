@@ -1,39 +1,13 @@
-% {\bf A compulsory section, of at most $1$ page}
-% \vspace{1cm} 
+Various supporting technologies such as software packages, libraries, and computing resources were used throughout the project. These technologies are outlined below.
 
-% \noindent
-% This section should present a detailed summary, in bullet point form, 
-% of any third-party resources (e.g., hardware and software components) 
-% used during the project.  Use of such resources is always perfectly 
-% acceptable: the goal of this section is simply to be clear about how
-% and where they are used, so that a clear assessment of your work can
-% result.  The content can focus on the project topic itself (rather,
-% for example, than including ``I used \mbox{\LaTeX} to prepare my 
-% dissertation''); an example is as follows:
-
-% \begin{quote}
-% \noindent
-% \begin{itemize}
-% \item I used the Java {\tt BigInteger} class to support my implementation 
-%       of RSA.
-% \item I used a parts of the OpenCV computer vision library to capture 
-%       images from a camera, and for various standard operations (e.g., 
-%       threshold, edge detection).
-% \item I used an FPGA device supplied by the Department, and altered it 
-%       to support an open-source UART core obtained from 
-%       \url{http://opencores.org/}.
-% \item The web-interface component of my system was implemented by 
-%       extending the open-source WordPress software available from
-%       \url{http://wordpress.org/}.
-% \end{itemize}
-% \end{quote}
+\vspace{0.5cm} 
 
 \begin{itemize}
-\item Avizo
-\item GIMP
-\item Keras
-\item TensorFlow
-\item OpenCV
-\item Isambard
-\item BlueCrystal Phase 4
+\item Avizo\footnote{\url{https://tiny.cc/avizo}}: the Avizo software package is a 3D visualisation program and was used to open and view the 3D CT data interactively. It was vital in the selection of the appropriate slices to label and use to create the dataset.
+\item GIMP\footnote{\url{https://www.gimp.org}}: the GNU Image Manipulation Program. GIMP is a free open-source cross-platform image editor and was used to manually label slices once they were extracted.
+\item Keras\footnote{\url{https://keras.io}}: the Keras library is an open-source deep-learning library written in Python. All architectures experimented with throughout the project were implemented using Keras.
+\item TensorFlow\footnote{\url{https://tensorflow.org}}: the Keras library makes use of a TensorFlow backend to allow the code to run on both CPUs and GPUs. The TensorFlow library was also utilised in order to implement the focal loss function~\cite{focalloss} experimented with throughout the project.
+\item OpenCV: 
+\item Isambard: 
+\item BlueCrystal Phase 4:
 \end{itemize}

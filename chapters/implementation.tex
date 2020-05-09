@@ -11,6 +11,7 @@ A system capable of calculating of the calcification rate given only some sectio
 This section outlines the steps taken to implement and train a CNN capable of extracting the annual density banding present in two dimensional data.
 
 \subsection{Labelling the Data}
+\label{sec:2dlabel}
 
 In order for a supervised CNN to perform well, large amounts of labelled data much be available to train on. Since the dataset provided was initially unlabelled, a manual labelling process was devised and is described in this section.
 
@@ -37,7 +38,7 @@ A typical scan consists of ${\sim}2000$ slices that each have the same resolutio
 
 \subsubsection{Slice Selection and Extraction}
 
-Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. MAYBE HAVE A SENTENCE HERE EXPLAINING THAT THE BEST SLICES ARE OFTEN ORTHOGONAL TO THE GROWTH DIRECTION AND SO ARE ROUGHLY HALFWAY THRU THE SCAN? Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the adjacent slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
+Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. MAYBE HAVE A SENTENCE HERE EXPLAINING THAT THE BEST SLICES ARE OFTEN ORTHOGONAL TO THE GROWTH DIRECTION AND SO ARE ROUGHLY HALFWAY THRU THE SCAN? Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the surrounding slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
 
 \subsubsection{Slice Labelling}
 
@@ -61,6 +62,7 @@ Once the slices were selected, a labelling process was established. Initially, t
 Each selected slice was then manually labelled using the GNU Image Manipulation Program (GIMP)\footnote{\url{https://www.gimp.org}}. A one pixel wide white line is drawn at the beginning and end of each annual high density band and the rest of the image is black---no values other than black or white are present in the labels. In order to ensure that the decisions made regarding the boundaries of the annual bands were as consistent as possible, each slice was manually labelled three or more times, and the most common boundaries were chosen. It is important for the labelling method to be consistent and reproducible as this enables the dataset to be expanded in the future.
 
 \subsection{Dataset Curation}
+\label{sec:datasetcuration}
 
 With only a small selection of slices successfully extracted and labelled, a larger dataset of image-label pairs was required for the model to train on.
 
@@ -87,7 +89,7 @@ As discussed in Section \ref{sec:regularization}, data augmentation is an import
 
 \subsubsection{The Keras \texttt{ImageDataGenerator} class}
 
-The Keras library allows users easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves.
+The Keras library allows users to easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves. The batches are input to the model in the form of $batch \times y \times x \times 1$ tensors where $batch$ is the batch size, $y$ and $x$ are the heights and widths of the patches respectively, and 1 is the number of channels since the patches are stored as greyscale images.
 
 \input{listings/augment}
 Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the random transformations must also be applied to the corresponding labels. This can be achieved by passing the same value to the \texttt{seed} argument of the \texttt{flow\_from\_directory} methods used to load the images and labels. This method is also capable of shuffling the order in which images are loaded and trained with. Using the same seed value also ensures that this shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
@@ -135,9 +137,9 @@ Using larger ranges of permitted transformations resulted in augmented images th
 
 \subsection{U-Net}
 
-As discussed in Chapter \ref{chap:technical}, the U-Net architecture~\cite{ronneberger2015u} is the main architecture experimented with. The implementation used throughout the project was initially based off of an implementation available on GitHub\footnote{\url{https://github.com/zhixuhao/unet}}, though over the course of the project the majority of the code was edited. It is written in Python and makes use of the Keras functional API.
+As discussed in Chapter \ref{chap:technical}, the U-Net architecture~\cite{ronneberger2015u} is the main architecture experimented with. The implementation used throughout the project was initially based off of an implementation available on GitHub\footnote{\url{https://github.com/zhixuhao/unet}}, though over the course of the project the majority of the code has been edited. It is written in Python and makes use of the Keras functional API.
 
-Recall that the original U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers followed by a 2$\times$2 max-pooling layer with a stride of two. The convolutional layers both use 3$\times$3 kernels and the ReLU activation function. Apart from the first block, the first convolutional layer of each contracting block doubles the number of feature channels. The first contracting block is implemented like so:
+Recall that the original U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. A high level diagram of the U-Net architecture is shown in Figure \ref{fig:unetushape}. The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers followed by a 2$\times$2 max-pooling layer with a stride of two. The convolutional layers both use 3$\times$3 kernels and the ReLU activation function. Apart from the first block, the first convolutional layer of each contracting block doubles the number of feature channels. The first contracting block is implemented like so:
 \begin{lstlisting}[language=Python,upquote=true,belowskip=0pt]
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(inputs)
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(conv1)
@@ -145,7 +147,16 @@ pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 \end{lstlisting}
 The \texttt{pool1} tensor will be the input to the next contracting block, and so on. The first argument of the \texttt{Conv2D} function is the number of output feature channels. Since the number of feature channels doubles at each contracting block, the next contracting block would have two convolutional layers outputting 128 feature channels rather than 64. The second argument is the size of convolutional kernels to use, so 3$\times$3 in this case. The \texttt{"{}same"{}} padding argument specifies that the dimensions of the output feature channels should match the dimensions of the inputs. This differs from the implementation of the U-Net architecture used in the original paper and will be explained later in this section. The Keras \texttt{MaxPooling2D} function implicitly uses the same stride size as the pool size specified, so a stride of two in the $x$ and $y$ axes will be used.
 
-The bottleneck contains only one block also consisting of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, but no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the block shown above, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
+The bottleneck contains only one block which also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, however no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the contracting block shown previously, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
+
+\begin{figure}[!t]
+    \centering
+    \input{tikz/unet}
+    \caption[A diagram of the U-Net architecture (created using an open-source CNN architecture visualisation tool). The architecture is named after the U-shape that it resembles when illustrated in this way. Each cube represents a layer with the number of output feature maps shown at the bottom of the cube. At the bottleneck there are 1024 feature maps that are each one sixteenth the size of the input image in the $x$ and $y$ dimensions. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another.]{A diagram of the U-Net architecture (created using an open-source CNN architecture visualisation tool\footnotemark). The architecture is named after the U-shape that it resembles when illustrated in this way. Each cube represents a layer with the number of output feature maps shown at the bottom of the cube. At the bottleneck there are 1024 feature maps that are each one sixteenth the size of the input image in the $x$ and $y$ dimensions. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another.}
+    \label{fig:unetushape}
+\end{figure}
+
+\footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}}
 
 The expanding path of the architecture described in the original U-Net paper consists of multiple blocks with each block containing a 2$\times$2 ``up-convolution'' (or transposed convolution) layer followed by two convolutional layers each using 3$\times$3 kernels and the ReLU activation function. A 2$\times$2 transposed convolution using a stride of two in the $x$ and $y$ axes results in a doubling of the image size in both axes. The first convolutional layer of each expanding block halves the number of feature channels.
 
@@ -157,145 +168,78 @@ merge9 = concatenate([conv1, up9], axis=3)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(merge9)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(conv9)
 \end{lstlisting}
-It can be seen that the 2$\times$2 transposed convolution is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are minor and are explored in Chapter \ref{chap:evaluation}.
+It can be seen that the 2$\times$2 transposed convolution is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are minor and are explored in Chapter \ref{chap:evaluation}. Note that the output feature channels of the \texttt{up9} layer are appended to the feature channels of the \texttt{conv1} layer from the first contracting block using the \texttt{concatenate} function.
 
-After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output value
+After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output values represent the probability that a given pixel is ``part of a boundary''.
 
-Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
-
-% From Keras docs I think
-% This version performs the same function as Dropout, however it drops
-% entire 2D feature maps instead of individual elements. If adjacent pixels
-% within feature maps are strongly correlated (as is normally the case in
-% early convolution layers) then regular dropout will not regularize the
-% activations and will otherwise just result in an effective learning rate
-% decrease. In this case, SpatialDropout2D will help promote independence
-% between feature maps and should be used instead.
-
-\subsection{SegNet}
+Finally, the model is stored in an instance of a Keras \texttt{Model} class. Both the input and output tensors are passed as arguments to the \texttt{Model} constructor and the resulting object contains the layers and their connections as attributes.
 
 \subsection{Training}
 
-\subsubsection{Early Stopping and Checkpointing}
+Once the online data augmentation and architecture had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method is used to define which optimiser and loss function to use, and which metrics to monitor. The initial implementation used the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function and only the per-pixel accuracy metric was monitored.
+
+\input{listings/compile}
+
+\subsubsection{Keras Callbacks}
+
+The Keras callbacks are objects that can perform actions at various stages of training (e.g., at the start or end of epochs or batches)\footnote{\url{https://keras.io/api/callbacks}}. Callbacks were used to implement early stopping, model checkpointing, and metric visualisation using TensorBoard\footnote{\url{https://www.tensorflow.org/tensorboard}}.
+
+As discussed in Chapter \ref{chap:technical}, early stopping is a regularization technique in which the training process is stopped given some ``stopping criteria'' rather than after a set number of epochs. The Keras library allows users to implement early stopping using the \texttt{EarlyStopping} callback. The metric to monitor and the ``patience'' must be specified. In this case, the loss achieved on the validation set is monitored. The \texttt{patience} argument defines the number of epochs that the validation loss can increase before the training is stopped.
+
+Model checkpointing and TensorBoard visualisation are implemented with the \texttt{ModelCheckpoint} and \texttt{TensorBoard} callbacks. The \texttt{ModelCheckpoint} callback simply saves the parameters of the entire network after each epoch to a \texttt{.hdf5} file. Using \texttt{save\_best\_only} and a filename formatted using the current epoch number ensures that each epoch is saved as a new file, rather than the previous epoch's save being overwritten. Example usage of the callbacks discussed are shown in Listing \ref{lst:compile}.
+
+\subsection{Initial Results}
+
+\newpage
 
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}
 
-This section discusses the attempts to implement and train a CNN capable of extracting the annual density banding present in three dimensional data.
+This section discusses the attempts to implement and train a modified U-Net architecture capable of extracting the annual density banding present in three dimensional data. As opposed to only utilising the density information a single slice, the modified architecture also makes use of the density information of surrounding slices when determining the boundary positions.
 
 \subsection{Dataset Expansion}
 
+In order to train the modified architecture, the curated dataset discussed in Section \ref{sec:datasetcuration} was expanded to include data from slices surrounding the slices initially labelled. Since the modified architecture makes use of up to nine slices (the central slice and five slices on either side), the slices surrounding the labelled slices needed to be extracted. As mentioned in Section \ref{sec:2dlabel}, when the utilising the sliding window Python script to create the 2D dataset, patches from surrounding slices were also produced. The resulting 3D dataset contains the same amount of samples (388) with the sample consisting of nine patches, and the label consisting of the central labelled patch. The nine sample patches are stored with the same name as the label apart from a suffix of \texttt{\_0} to \texttt{\_8} denoting the patch's position relative to the central patch which has a suffix of \texttt{\_4}.
+
 \subsection{Data Loader Implementation}
+
+Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $9 \times x \times y \times 1$ tensor, this method would not allow for online augmentation to be performed as different random transformations would be applied to all nine of the loaded slices and the central labelled slice. Note also that even if data augmentation were able to be applied to each 2D patch, augmentation in the third dimension would not be possible. Thus, a custom data loader was written.
+
+An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These were designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Similarly to how a pair of generators created using the flow\_from\_directory method were used with the same seed argument to 
 
 \subsection{Three Dimensional Data Augmentation}
 
 \subsection{Architecture Modification}
 
+Although various modified architectures were experimented with and are discussed in Chapter \ref{chap:evaluation}, only the initial modified architecture experimented with will be described here.
+
+\newpage
+
 \section{Accuracy Metric Implementation}
 
 \subsection{Skeletonisation}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/rough-label.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/smooth-label.png}
+    \end{subfigure}
+    \caption{Skeletonisation example}
+    \label{fig:skeletonisation}
+\end{figure}
 
 (Show algorithm and maybe some source code?)
 
 \subsection{The \texttt{ctypes} Module}
 
+\newpage
+
 \section{Density Band Width Estimation}
 
 \subsection{Point Sampling}
-
-% {\bf A topic-specific chapter, of roughly $15$ pages} 
-% \vspace{1cm} 
-
-% \noindent
-% This chapter is intended to describe what you did: the goal is to explain
-% the main activity or activities, of any type, which constituted your work 
-% during the project.  The content is highly topic-specific, but for many 
-% projects it will make sense to split the chapter into two sections: one 
-% will discuss the design of something (e.g., some hardware or software, or 
-% an algorithm, or experiment), including any rationale or decisions made, 
-% and the other will discuss how this design was realised via some form of 
-% implementation.  
-
-% This is, of course, far from ideal for {\em many} project topics.  Some
-% situations which clearly require a different approach include:
-
-% \begin{itemize}
-% \item In a project where asymptotic analysis of some algorithm is the goal,
-%       there is no real ``design and implementation'' in a traditional sense
-%       even though the activity of analysis is clearly within the remit of
-%       this chapter.
-% \item In a project where analysis of some results is as major, or a more
-%       major goal than the implementation that produced them, it might be
-%       sensible to merge this chapter with the next one: the main activity 
-%       is such that discussion of the results cannot be viewed separately.
-% \end{itemize}
-
-% \noindent
-% Note that it is common to include evidence of ``best practice'' project 
-% management (e.g., use of version control, choice of programming language 
-% and so on).  Rather than simply a rote list, make sure any such content 
-% is useful and/or informative in some way: for example, if there was a 
-% decision to be made then explain the trade-offs and implications 
-% involved.
-
-% \section{Example Section}
-
-% This is an example section; 
-% the following content is auto-generated dummy text.
-% \lipsum
-
-% \subsection{Example Sub-section}
-
-% \begin{figure}[t]
-% \centering
-% foo
-% \caption{This is an example figure.}
-% \label{fig}
-% \end{figure}
-
-% \begin{table}[t]
-% \centering
-% \begin{tabular}{|cc|c|}
-% \hline
-% foo      & bar      & baz      \\
-% \hline
-% $0     $ & $0     $ & $0     $ \\
-% $1     $ & $1     $ & $1     $ \\
-% $\vdots$ & $\vdots$ & $\vdots$ \\
-% $9     $ & $9     $ & $9     $ \\
-% \hline
-% \end{tabular}
-% \caption{This is an example table.}
-% \label{tab}
-% \end{table}
-
-% \begin{algorithm}[t]
-% \For{$i=0$ {\bf upto} $n$}{
-%   $t_i \leftarrow 0$\;
-% }
-% \caption{This is an example algorithm.}
-% \label{alg}
-% \end{algorithm}
-
-% \begin{lstlisting}[float={t},caption={This is an example listing.},label={lst},language=C]
-% for( i = 0; i < n; i++ ) {
-%   t[ i ] = 0;
-% }
-% \end{lstlisting}
-
-% This is an example sub-section;
-% the following content is auto-generated dummy text.
-% Notice the examples in Figure~\ref{fig}, Table~\ref{tab}, Algorithm~\ref{alg}
-% and Listing~\ref{lst}.
-% \lipsum
-
-% \subsubsection{Example Sub-sub-section}
-
-% This is an example sub-sub-section;
-% the following content is auto-generated dummy text.
-% \lipsum
-
-% \paragraph{Example paragraph.}
-
-% This is an example paragraph; note the trailing full-stop in the title,
-% which is intended to ensure it does not run into the text.

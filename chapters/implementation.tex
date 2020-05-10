@@ -2,9 +2,48 @@ This chapter details the implementation of the automated solution proposed in Ch
 
 \section{Overview}
 
-A system capable of calculating of the calcification rate given only some section of density data requires the implementation of many separate subcomponents. The diagram below provides an overview of these components and outlines the order in which they were implemented and will be discussed.
+A system capable of calculating of the calcification rate given only some section of density data requires the implementation of many separate subcomponents. Figure \ref{fig:overview} provides an overview of these components and outlines the order in which they were implemented and will be discussed.
 
-\includegraphics[width=\textwidth, height=0.74\textwidth]{images/overview.pdf}
+\begin{figure}[!b]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/real-coral.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/3D-scan.png}
+    \end{subfigure}
+    \caption{\textbf{(left)} An example of a Porites coral skeleton from the Natural History Museum's collection. This particular sample was collected from the Solomon Islands in 1974. In the initial dataset, the scan of this sample is represented by 1945$\times$1508$\times$1208 voxels. \textbf{(right)} A 2D slice extracted from the CT scan of the sample shown on the left. The slice is a negative; brighter pixels correspond to high density and darker pixels correspond to low density.}
+    \label{fig:scanexample}
+\end{figure}
+
+\newpage
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-a}
+    \caption{A diagram providing an overview of the components implemented throughout the project.}
+    \label{fig:overview}
+\end{figure}
+
+\newpage
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/extraction.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/slice-example.png}
+    \end{subfigure}
+    \caption{\textbf{(left)} An example of a Porites coral skeleton from the Natural History Museum's collection. This particular sample was collected from the Solomon Islands in 1974. In the initial dataset, the scan of this sample is represented by 1945$\times$1508$\times$1208 voxels. \textbf{(right)} A 2D slice extracted from the CT scan of the sample shown on the left. The slice is a negative; brighter pixels correspond to high density and darker pixels correspond to low density.}
+    \label{fig:extraction}
+\end{figure}
 
 \section{Two Dimensional Boundary Extraction}
 
@@ -25,29 +64,6 @@ A typical scan consists of ${\sim}2000$ slices that each have the same resolutio
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/real-coral.png}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/slice-example.png}
-    \end{subfigure}
-    \caption{\textbf{(left)} An example of a Porites coral skeleton from the Natural History Museum's collection. This particular sample was collected from the Solomon Islands in 1974. In the initial dataset, the scan of this sample is represented by 1945$\times$1508$\times$1208 voxels. \textbf{(right)} A 2D slice extracted from the CT scan of the sample shown on the left. The slice is a negative; brighter pixels correspond to high density and darker pixels correspond to low density.}
-    \label{fig:scanexample}
-\end{figure}
-
-\subsubsection{Slice Selection and Extraction}
-
-Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. MAYBE HAVE A SENTENCE HERE EXPLAINING THAT THE BEST SLICES ARE OFTEN ORTHOGONAL TO THE GROWTH DIRECTION AND SO ARE ROUGHLY HALFWAY THRU THE SCAN? Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the surrounding slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
-
-\subsubsection{Slice Labelling}
-
-Once the slices were selected, a labelling process was established. Initially, two methods of labelling were considered and shown to Dr Erica Hendy, a senior lecturer in biogeochemical cycles. Of the two methods (shown in Figure \ref{fig:labelstyle}), the ``smooth'' method was deemed as the more realistic choice. An idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}. Thus, an exact boundary between a high and low band does not actually exist, making the ``complex'' method unrealistic both in terms of reproducibility, and in terms of biological accuracy.
-
-\begin{figure}[t]
-    \centering
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
         \includegraphics[width=1\textwidth, valign=c]{images/rough-label.png}
     \end{subfigure}
     ~
@@ -58,6 +74,14 @@ Once the slices were selected, a labelling process was established. Initially, t
     \caption{A comparison of the two methods of labelling that were initially considered. The boundary labels are coloured red and placed over the the same original negative 2D slice. \textbf{(left)} A method of labelling in which the boundaries were placed at the sharpest change in density resulting in complex boundaries whose positions are highly sensitive to noise in the image. \textbf{(right)} A method in which the chosen boundaries are ``smooth'' whilst also being placed as close as possible to the sharpest changes in density.}
     \label{fig:labelstyle}
 \end{figure}
+
+\subsubsection{Slice Selection and Extraction}
+
+Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. Since the density banding boundaries are orthogonal to the growth direction (or ``concordant'' with the growth surface~\cite{knutson}), the slices that present the most obvious density banding are normally parallel to the direction of growth. Once these slices were identified, a Python script was used to extract each slice and export them as greyscale PNG images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the surrounding slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
+
+\subsubsection{Slice Labelling}
+
+Once the slices were selected, a labelling process was established. Initially, two methods of labelling were considered and shown to Dr Erica Hendy, a senior lecturer in biogeochemical cycles. Of the two methods (shown in Figure \ref{fig:labelstyle}), the ``smooth'' method was deemed as the more realistic choice. An idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}. Thus, an exact boundary between a high and low band does not actually exist, making the ``complex'' method unrealistic both in terms of reproducibility, and in terms of biological accuracy.
 
 Each selected slice was then manually labelled using the GNU Image Manipulation Program (GIMP)\footnote{\url{https://www.gimp.org}}. A one pixel wide white line is drawn at the beginning and end of each annual high density band and the rest of the image is black---no values other than black or white are present in the labels. In order to ensure that the decisions made regarding the boundaries of the annual bands were as consistent as possible, each slice was manually labelled three or more times, and the most common boundaries were chosen. It is important for the labelling method to be consistent and reproducible as this enables the dataset to be expanded in the future.
 
@@ -89,28 +113,7 @@ As discussed in Section \ref{sec:regularization}, data augmentation is an import
 
 \subsubsection{The Keras \texttt{ImageDataGenerator} class}
 
-The Keras library allows users to easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves. The batches are input to the model in the form of $batch \times y \times x \times 1$ tensors where $batch$ is the batch size, $y$ and $x$ are the heights and widths of the patches respectively, and 1 is the number of channels since the patches are stored as greyscale images.
-
-\input{listings/augment}
-Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the random transformations must also be applied to the corresponding labels. This can be achieved by passing the same value to the \texttt{seed} argument of the \texttt{flow\_from\_directory} methods used to load the images and labels. This method is also capable of shuffling the order in which images are loaded and trained with. Using the same seed value also ensures that this shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
-
-Since the training generator will yield randomly augmented image-label pairs indefinitely, the \texttt{steps\-per-epoch} argument defines how many samples should be processed before an epoch is considered complete.
-
-\subsubsection{Acceptable Augmentations}
-
-The possible transformations specified each have a random chance of being applied to each image. It was important to choose a range of possible transformations that would always produce a reasonable augmented image. The permitted augmentations that could be randomly chosen were:
-
-\begin{itemize}
-    \item Rotations within a range of $\pm 2$ degrees.
-    \item Shifts in the $x$ axis within a range of $\pm 2\%$ of the images' widths.
-    \item Shifts in the $y$ axis within a range of $\pm 2\%$ of the images' heights.
-    \item Shears within a range of $\pm 2$ degrees.
-    \item Zooms in the $x$ and $y$ axes within a range of $\pm 2\%$ of the images' widths or heights.
-    \item Brightness shifts within a range of $\pm 10\%$.
-    \item Horizontal flips and vertical flips.
-\end{itemize}
-
-Using larger ranges of permitted transformations resulted in augmented images that did not represent the real data well. Examples of images created using the ranges defined above and images created using ``unrealistic'' ranges are shown in Figure \ref{fig:augexample}.
+The Keras library allows users to easily implement augmentation using the \texttt{ImageDataGenerator} class\footnote{\url{https://keras.io/preprocessing/image}}. In this case, the \texttt{flow\_from\_directory} method was used to perform online augmentation. This method first loads images from a directory into batches. A series of random transformations are then applied to each batch before replacing the original batches with these new randomly transformed batches. A network trained on the generator produced by this method will therefore be trained on randomly transformed samples as opposed to the original samples themselves. The batches are input to the model in the form of $(batch \times y \times x \times 1)$ tensors where $batch$ is the batch size, $y$ and $x$ are the heights and widths of the patches respectively, and 1 is the number of channels since the patches are stored as greyscale images.
 
 \begin{figure}[t]
     \centering
@@ -134,6 +137,26 @@ Using larger ranges of permitted transformations resulted in augmented images th
     \caption{Examples of augmented images created using both ``realistic'' and ``unrealistic'' sets of permitted transformations. The images are shown at the top and their corresponding labels are shown at the bottom. All labels are thresholded after augmentation to ensure that only white or black values are present. \textbf{(a)} The original image-label pair. \textbf{(b)} Two examples of image-label pairs augmented using a set of unrealistic permitted transformations resulting in images that do not represent the real coral data well. The first image's brightness has been shifted too far. The overly aggressive rotation has resulted in straight labels on the left-most edge which are not realistic. The second image's label has also been rotated too far resulting in a straight label on the right-most edge. \textbf{(c)} Two examples of image-label pairs augmented using the set of permitted transformations used in this project.}
     \label{fig:augexample}
 \end{figure}
+
+Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the random transformations must also be applied to the corresponding labels. This can be achieved by passing the same value to the \texttt{seed} argument of the \texttt{flow\_from\_directory} methods used to load the images and labels. This method is also capable of shuffling the order in which images are loaded and trained with. Using the same seed value also ensures that this shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
+
+Since the training generator will yield randomly augmented image-label pairs indefinitely, the \texttt{steps\-per-epoch} argument defines how many samples should be processed before an epoch is considered complete.
+
+\subsubsection{Acceptable Augmentations}
+
+The possible transformations specified each have a random chance of being applied to each image. It was important to choose a range of possible transformations that would always produce a reasonable augmented image. The permitted augmentations that could be randomly chosen were:
+
+\begin{itemize}
+    \item Rotations within a range of $\pm 2$ degrees.
+    \item Shifts in the $x$ axis within a range of $\pm 2\%$ of the images' widths.
+    \item Shifts in the $y$ axis within a range of $\pm 2\%$ of the images' heights.
+    \item Shears within a range of $\pm 2$ degrees.
+    \item Zooms in the $x$ and $y$ axes within a range of $\pm 2\%$ of the images' widths or heights.
+    \item Brightness shifts within a range of $\pm 10\%$.
+    \item Horizontal flips and vertical flips.
+\end{itemize}
+
+Using larger ranges of permitted transformations resulted in augmented images that did not represent the real data well. Examples of images created using the ranges defined above and images created using ``unrealistic'' ranges are shown in Figure \ref{fig:augexample}.
 
 \subsection{U-Net}
 
@@ -178,15 +201,13 @@ Finally, the model is stored in an instance of a Keras \texttt{Model} class. Bot
 
 Once the online data augmentation and architecture had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method is used to define which optimiser and loss function to use, and which metrics to monitor. The initial implementation used the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function and only the per-pixel accuracy metric was monitored.
 
-\input{listings/compile}
-
 \subsubsection{Keras Callbacks}
 
 The Keras callbacks are objects that can perform actions at various stages of training (e.g., at the start or end of epochs or batches)\footnote{\url{https://keras.io/api/callbacks}}. Callbacks were used to implement early stopping, model checkpointing, and metric visualisation using TensorBoard\footnote{\url{https://www.tensorflow.org/tensorboard}}.
 
 As discussed in Chapter \ref{chap:technical}, early stopping is a regularization technique in which the training process is stopped given some ``stopping criteria'' rather than after a set number of epochs. The Keras library allows users to implement early stopping using the \texttt{EarlyStopping} callback. The metric to monitor and the ``patience'' must be specified. In this case, the loss achieved on the validation set is monitored. The \texttt{patience} argument defines the number of epochs that the validation loss can increase before the training is stopped.
 
-Model checkpointing and TensorBoard visualisation are implemented with the \texttt{ModelCheckpoint} and \texttt{TensorBoard} callbacks. The \texttt{ModelCheckpoint} callback simply saves the parameters of the entire network after each epoch to a \texttt{.hdf5} file. Using \texttt{save\_best\_only} and a filename formatted using the current epoch number ensures that each epoch is saved as a new file, rather than the previous epoch's save being overwritten. Example usage of the callbacks discussed are shown in Listing \ref{lst:compile}.
+Model checkpointing and TensorBoard visualisation are implemented with the \texttt{ModelCheckpoint} and \texttt{TensorBoard} callbacks. The \texttt{ModelCheckpoint} callback simply saves the parameters of the entire network after each epoch to a \texttt{.hdf5} file. Using the \texttt{save\_best\_only=False} argument and a filename formatted using the current epoch number ensures that each epoch is saved as a new file, rather than the previous epoch's save being overwritten. Example usage of the callbacks discussed are shown in Listing \ref{lst:compile}.
 
 \subsection{Initial Results}
 
@@ -203,11 +224,19 @@ In order to train the modified architecture, the curated dataset discussed in Se
 
 \subsection{Data Loader Implementation}
 
-Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $9 \times x \times y \times 1$ tensor, this method would not allow for online augmentation to be performed as different random transformations would be applied to all nine of the loaded slices and the central labelled slice. Note also that even if data augmentation were able to be applied to each 2D patch, augmentation in the third dimension would not be possible. Thus, a custom data loader was written.
+Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $(9 \times x \times y \times 1)$ tensor, this method would not allow for online augmentation to be performed as different random transformations would be applied to all nine of the loaded slices and the central labelled slice. Note also that even if data augmentation were able to be applied to each 2D patch, augmentation in the third dimension would not be possible. Thus, a custom data loader was written.
 
-An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These were designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Similarly to how a pair of generators created using the flow\_from\_directory method were used with the same seed argument to 
+An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These are designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Recall that in order to produce 2D image-label pairs, a pair of generators created using the \texttt{flow\_from\_directory} method were used with the same seed to augment the image-label pairs with the same transformations. The online augmentation of the 3D data is designed to follow a similar structure; a pair of generators created using the \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes with the same seed argument are used to perform online augmentation to both the sample (consisting of nine patches) and the single label patch. The \texttt{ImageDataGenerator3D} class is used to load and augment the 3D samples and the \texttt{LabelDataGenerator2D} class is used to load and augment the 2D labels.
+
+The \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} class first sorts the \texttt{.png} images from the specified directory by name. Nine images are then loaded and stacked and ``unsqueezed'' resulting in a $(9 \times y \times x \times 1)$ tensor. The unsqueeze operation takes for example a $(y \times x)$ tensor and produces a $(y \times x \times 1)$ tensor. These stacks of nine images are then augmented using techniques discussed in Section \ref{sec:3daug} and are finally stacked again into $(batch \times 9 \times y \times x \times 1)$ tensors where $batch$ is the batch size.
+
+The \texttt{flow\_from\_directory} method of the \texttt{LabelDataGenerator2D} class also sorts the \texttt{.png} images from a specified directory by name. These images are then loaded and unsqueezed resulting in a $(9 \times y \times x \times 1)$ tensor
+
+Note that both the 
+Also say shuffling is performed and explain why it is important.
 
 \subsection{Three Dimensional Data Augmentation}
+\label{sec:3daug}
 
 \subsection{Architecture Modification}
 
@@ -216,6 +245,16 @@ Although various modified architectures were experimented with and are discussed
 \newpage
 
 \section{Accuracy Metric Implementation}
+
+As discussed briefly in Chapter \ref{chap:context}, choosing an appropriate accuracy metric for the boundary extraction task was particularly challenging. This section discusses the need for a custom accuracy metric and then details its implementation.
+
+\subsection{Motivation}
+
+There are two major issues that arise when using a standard per-pixel accuracy metric for example. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%.
+
+Eventually, a metric based off of the average euclidean distances between the predicted and ground truth boundaries was designed.
+
+This class imbalance gives rise to another challenge when assessing the performance of a model in its segmentation of the density data. Since the boundary labels are only one pixel wide, a model predicting boundary positions just one pixel to the left or right could achieve an accuracy of 0\%. To solve this problem, a custom accuracy metric must be conceived in order to reward a model even in predicting a boundary a few pixels away from the manually labelled position.
 
 \subsection{Skeletonisation}
 
@@ -235,6 +274,8 @@ Although various modified architectures were experimented with and are discussed
 \end{figure}
 
 (Show algorithm and maybe some source code?)
+
+\subsection{Average Distance Calculation}
 
 \subsection{The \texttt{ctypes} Module}
 

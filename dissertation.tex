@@ -37,6 +37,8 @@
 \usepackage{textcomp} % Allow straight quotes in listings
 \usepackage{booktabs}
 \usepackage{mathdots}
+\usepackage{silence}
+\WarningFilter{latex}{Text page}
 
 \definecolor{codegreen}{rgb}{0.6,0.6,0.6}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -133,31 +135,13 @@
 
 \bibliography{dissertation}
 
-% -----------------------------------------------------------------------------
+\appendix
 
-% The dissertation concludes with a set of (optional) appendicies; these are 
-% the same as chapters in a sense, but once signaled as being appendicies via
-% the associated macro, LaTeX manages them appropriatly.
+\chapter{Implementation Listings}
+\label{appx:example}
 
-% \appendix
+\input{listings/augment}
 
-% \chapter{An Example Appendix}
-% \label{appx:example}
-
-% Content which is not central to, but may enhance the dissertation can be 
-% included in one or more appendices; examples include, but are not limited
-% to
-
-% \begin{itemize}
-% \item lengthy mathematical proofs, numerical or graphical results which 
-%       are summarised in the main body,
-% \item sample or example calculations, 
-%       and
-% \item results of user studies or questionnaires.
-% \end{itemize}
-
-% \noindent
-% Note that in line with most research conferences, the marking panel is not
-% obliged to read such appendices.
+\input{listings/compile}
 
 \end{document}

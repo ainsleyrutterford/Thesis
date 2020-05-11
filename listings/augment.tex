@@ -28,7 +28,4 @@ label_generator = label_datagen.flow_from_directory(label_path, seed=seed, ...)
 
 # Zip the generators into one generator that yields image-label pairs
 train_generator = zip(image_generator, label_generator)
-
-# Fit the model using the zipped generator
-model.fit_generator(train_generator, steps_per_epoch=..., epochs=...)
 \end{lstlisting}

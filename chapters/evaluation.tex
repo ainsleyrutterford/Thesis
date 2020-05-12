@@ -1,4 +1,14 @@
-\section{2D Experimentation}
+REMEMBER TO TRY AND UNDERSTAND WHY WHAT EVER HAPPENS IS THE CASE AND BACK IT UP ALL THROUGHOUT
+
+\section{Two Dimensional Experimentation}
+
+\subsection{Initial Results}
+
+\subsection{Resolution}
+
+\subsection{Dropout}
+
+\subsubsection{Spatial Dropout}
 
 Need to talk about dropout? maybe only mention it in evaluation?
 Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
@@ -15,7 +25,21 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 \subsection{Augmentation}
 \label{sec:evalaugmentation}
 
+\subsubsection{No Augmentation}
+
+\subsubsection{Augmentation Ranges}
+
 \subsection{Hyperparameter optimisation}
+
+\subsubsection{Optimisation Algorithms}
+
+Said in tech bg that I experimented with diff optimisers so need to add comparisons to SGD etc.
+
+\subsubsection{Focal Loss}
+
+And other loss functions? to combat class imbalance
+
+\subsubsection{L2 Regularization}
 
 \subsection{Ablation}
 
@@ -23,24 +47,53 @@ comparison of convtranspose to upsample and then conv.
 
 remove the relu at the end of the implementation?
 
-remove the 
+Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
 
-\section{3D Experimentation}
+\section{Three Dimensional Experimentation}
+
+\subsection{Augmentation}
+
+\subsection{Alternative Modified Architectures}
+
+\subsection{Fully Three Dimensional Architecture}
+
+\subsubsection{Data}
+
+Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
 
 \section{Final Results}
 
-\section{Comparison with other architectures?}
+\begin{figure}[!p]
+    \centering
+    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-b}
+    \caption{A full page of final results achieved.}
+    \label{fig:finalresults}
+\end{figure}
+
+\section{Comparisons with Other Architectures}
 
 Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
 
 \section{Cross-validation}
 \label{sec:evalcrossval}
 
+\subsection{Train/test Splits}
+
 \section{Critical Evaluation}
+
+\subsection{Boundary Extraction}
+
+\subsubsection{Labelling}
+
+\subsubsection{Lack of Data}
+
+\subsection{Accuracy Metric}
+
+\subsection{Calcification Rate Estimation}
 
 \section{Comparisons with Existing Techniques}
 
-\section{Future Work}
+Erica sent a paper a while ago that used a computer program to calculate the calcification rate  \url{https://www.geosociety.org/datarepository/2015/2015015.pdf} check the email from her with subject DeCarlo Paper
 
 % {\bf A topic-specific chapter, of roughly $15$ pages} 
 % \vspace{1cm} 

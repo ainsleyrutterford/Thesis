@@ -80,6 +80,7 @@
 
 % configure algorithm2e
 
+\SetAlCapSty{} % I added this to unbold the Algorithm caption
 \DontPrintSemicolon
 
 % configure listings

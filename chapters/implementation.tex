@@ -21,16 +21,12 @@ All aspects of the project relied heavily on the provided dataset. The processin
     \label{fig:scanexample}
 \end{figure}
 
-\newpage
-
-\begin{figure}[!h]
+\begin{figure}[!p]
     \centering
     \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-a}
     \caption{A diagram providing an overview of the components implemented throughout the project.}
     \label{fig:overview}
 \end{figure}
-
-\newpage
 
 \begin{figure}[!t]
     \centering
@@ -231,19 +227,13 @@ Model checkpointing and TensorBoard visualisation are implemented with the \text
 \begin{figure}[t]
     \centering
     \includegraphics[width=1\textwidth]{images/initial-outputs.png}
-    \caption{Examples of predicted labels output by the network. The skeleton that these samples are extracted from was not used to train the network. \textbf{(top)} The input samples. \textbf{(center)} The ground truth labels. \textbf{(bottom)} The output labels.}
+    \caption{Initial results achieved by the network. Note that the hyperparameters chosen are not necessarily optimal and that performance may still be improved. \textbf{(top)} The input samples from the test set. \textbf{(center)} The ground truth labels. \textbf{(bottom)} The output labels.}
     \label{fig:outputs}
 \end{figure}
 
 \subsubsection{Initial Results}
 
-The hyperparameters used to train the initial implementation are discussed. An example of the compilation and training of a model is shown in Listing \ref{lst:compile}.
-
-explain all settings used here. how many epochs. how many steps. what learning rate. what optimiser. what loss function.
-
-show training curve? definitely show result images. More examples are shown in the evaluation section once blah blah blah has been completed (hyperparam, ablation, etc.).
-
-initial implementation used the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function and only the per-pixel accuracy metric was monitored.
+A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
 
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}
@@ -259,47 +249,59 @@ This section discusses the attempts to implement and train a modified U-Net arch
 
 \subsection{Dataset Expansion}
 
-In order to train the modified architecture, the curated dataset discussed in Section \ref{sec:datasetcuration} was expanded to include data from slices surrounding the slices initially labelled. Since the modified architecture makes use of up to nine slices (the central slice and four slices on either side), the eight slices surrounding the labelled slices also needed to be extracted. As mentioned in Section \ref{sec:2dlabel}, when the sliding window Python script was used to create the 2D dataset, patches from surrounding slices were also produced. The resulting 3D dataset contains the same amount of samples (388) with each sample consisting of nine patches and the label consisting of the central labelled patch. The nine-sample patches are stored with the same name as the label apart from a suffix of \texttt{\_0} to \texttt{\_8} denoting the patch's position relative to the central patch which has a suffix of \texttt{\_4}.
+In order to train the modified architecture, the curated dataset discussed in Section \ref{sec:datasetcuration} was expanded to include data from slices surrounding the slices initially labelled. Since the modified architecture makes use of up to nine slices (the central slice and four slices on either side), the eight slices surrounding the labelled slices also needed to be extracted. As mentioned in Section \ref{sec:2dlabel}, when the sliding window Python script was used to create the 2D dataset, patches from surrounding slices were also produced. The resulting 3D dataset contains the same amount of samples (388) with each sample consisting of nine patches and the label consisting of the central labelled patch. The nine-sample patches are stored with the same name as the label apart from a suffix of \texttt{\_0} to \texttt{\_8} denoting the patches' positions relative to the central patch which has a suffix of \texttt{\_4}.
 
 \subsection{Data Loader Implementation}
 
-Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $(9 \times x \times y \times 1)$ tensor, this method would not allow for online augmentation to be performed as different random transformations would be applied to all nine of the loaded patches. Note also that even if data augmentation were able to be applied to each 2D patch, transformations in the third dimension would not be possible. Thus, a custom data loader was written.
+Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $(9 \times y \times x \times 1)$ tensor, this method would not allow for online augmentation to be performed since different random transformations would be applied to all nine of the loaded patches. Note also that even if the same transformations were able to be applied to each 2D patch, transformations in the third dimension would not be possible. Thus, a custom data loader was written.
 
 An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These were designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Recall that in order to produce 2D image-label pairs, a pair of generators created using the \texttt{flow\_from\_directory} method were used with the same \texttt{seed} to augment the image-label pairs with the same transformations. The online augmentation of the 3D data is designed to follow a similar structure; a pair of generators created using the \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes with the same \texttt{seed} argument are used to perform online augmentation to both the nine-patch sample and the single label patch. The \texttt{ImageDataGenerator3D} class is used to load and augment the 3D samples and the \texttt{LabelDataGenerator2D} class is used to load and augment the 2D labels.
 
-The \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} class first sorts the \texttt{.png} images from a specified directory by name. Nine images are then loaded, stacked, and ``unsqueezed'' resulting in a $(9 \times y \times x \times 1)$ tensor. The unsqueeze operation takes for example a $(y \times x)$ tensor and produces a $(y \times x \times 1)$ tensor. These stacks of nine images are then augmented using techniques discussed in Section \ref{sec:3daug} and are finally stacked into $(batch \times 9 \times y \times x \times 1)$ tensors where $batch$ is the batch size.
+The \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} class first sorts the \texttt{.png} images from the sample directory alphanumerically. Nine images are then loaded, stacked, and ``unsqueezed'' resulting in a $(9 \times y \times x \times 1)$ tensor. The unsqueeze operation takes for example a $(y \times x)$ tensor and produces a $(y \times x \times 1)$ tensor. These stacks of nine images are then augmented using techniques discussed in Section \ref{sec:3daug} and are finally stacked into $(batch \times 9 \times y \times x \times 1)$ tensors where $batch$ is the batch size.
 
-The \texttt{flow\_from\_directory} method of the \texttt{LabelDataGenerator2D} class also sorts the \texttt{.png} images from a specified directory by name. These images are then loaded and unsqueezed resulting in a $(9 \times y \times x \times 1)$ tensor
+The \texttt{flow\_from\_directory} method of the \texttt{LabelDataGenerator2D} class also sorts the \texttt{.png} images from the label directory alphanumerically. These images are then loaded and unsqueezed resulting in a $(y \times x \times 1)$ tensors containing a single label. The appropriate augmentation transformations are then applied and the resulting tensors are stacked into $(batch \times y \times x \times 1)$ tensors.
 
-Example usage of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes in order to perform online augmentation is shown in % Listing \ref{lst:3daug}.
+The two generators produced by the \texttt{flow\_from\_directory} methods of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes were then zipped together to create a single generator that yielded sample-label pairs with the sample consisting of nine patches, and the label consisting of only the central label. Similarly to the Keras \texttt{flow\_from\_directory} methods used when loading and augmenting the 2D data, these custom methods could also accept a \texttt{seed} argument ensuring that the same transformations are applied to the sample-label pairs. The custom \texttt{flow\_from\_directory} method was also capable of shuffling the order in which samples and labels were loaded and \texttt{seed} argument ensured that the samples and labels were shuffled in the same order.
 
-Note that both the 
-Also say shuffling is performed and explain why it is important.
+Example usage of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes in order to perform online 3D augmentation is shown in Listing \ref{lst:3Daugment}.
 
 \subsection{Three Dimensional Data Augmentation}
 \label{sec:3daug}
+
+% The transformations implemented that made use of the third dimension were random rotations within a range 
+
+% \begin{itemize}
+%     \item Rotation rotations
+% \end{itemize}
 
 \subsection{Architecture Modification}
 
 Although various modified architectures were experimented with and are discussed in Chapter \ref{chap:evaluation}, only the initial modified architecture experimented with will be described here.
 
-At a high level, the modification consisted of replacing all of the 2D operations in the contracting path with their 3D counterparts. However, issues arise when passing a tensor resulting from a 3D layer to a 2D layer. Whereas the \texttt{Conv3D} layer requires an input tensor with shape ($batch \times z \times y \times x \times channels$), the Keras \texttt{Conv2D} layer requires an input tensor with the shape ($batch \times y \times x \times channels$). Thus, in order to pass the resulting tensor to a 2D layer, the tensor of shape ($batch \times z \times y \times x \times channels$) must be reshaped into a ($batch \times y \times x \times (z \times channels)$) tensor.
+At a high level, the modification consisted of replacing all of the 2D operations in the contracting path with their 3D counterparts. However, issues arise when a tensor output from a 3D layer is passed to a 2D layer. Whereas the Keras \texttt{Conv3D} layer requires an input tensor with shape ($batch \times z \times y \times x \times channels$) and produces a tensor with the same shape, the \texttt{Conv2D} layer inputs and outputs tensors with the shape ($batch \times y \times x \times channels$). Thus, in order to pass the resulting tensor to a 2D layer, the tensor of shape ($batch \times z \times y \times x \times channels$) must be reshaped into a ($batch \times y \times x \times (z \times channels)$) tensor.
 
-Although, the nine-patch sample could simply be input into the 2D architecture as a ($batch \times 256 \times 256 \times 9$) tensor allowing the network to make use of nine patches as opposed to one, an input tensor of this shape would not enable 3D convolutions. 
+% The implementation of the first block of the modified contracting path is shown in Listing 
 
-\newpage
+% Although the nine-patch sample could simply be input into the 2D architecture as a 2D images with nine channels allowing the network to make use of nine patches as opposed to one, an input tensor of this shape would not enable 3D convolutions. Without the use of 3D convolutions, the network can not make 
+
+% The modified architecture does not perform as well as the 2D architecture. Inspecting the results both ... are shown in Chapter \ref{chap:evaluation}.
+
+\subsection{Fully Three Dimensional Architecture}
+
+% there was a fully 3d architecture where all 2d were replaced with 3d but not good performance at all. required 9 labelled slices as opposed to 1 central one and so very few sample-label pairs could be created. Discussed in Chapter \ref{chap:evaluation}.
+
+% \newpage
 
 \section{Accuracy Metric Implementation}
+\label{sec:accimplementation}
 
 As discussed briefly in Chapter \ref{chap:context}, choosing an appropriate accuracy metric for the boundary extraction task was particularly challenging. This section discusses the need for a custom accuracy metric and then details its implementation.
 
 \subsection{Motivation}
 
-There are two major issues that arise when using a standard per-pixel accuracy metric for example. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%.
+There are two major issues that arise when using a standard per-pixel accuracy metric to quantify the performance achieved in this task. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%. The inherent class imbalance gives rise to another problem when assessing the performance of the model. Since the boundary labels are only one pixel wide, a model predicting boundary positions just one pixel to the left or right could achieve an accuracy of 0\%. A custom accuracy metric must be conceived in order to reward a model even in predicting a boundary a few pixels away from the manually labelled position. Eventually, a metric based off of the average euclidean distances between the predicted and ground truth boundaries was designed.
 
-Eventually, a metric based off of the average euclidean distances between the predicted and ground truth boundaries was designed.
-
-This class imbalance gives rise to another challenge when assessing the performance of a model in its segmentation of the density data. Since the boundary labels are only one pixel wide, a model predicting boundary positions just one pixel to the left or right could achieve an accuracy of 0\%. To solve this problem, a custom accuracy metric must be conceived in order to reward a model even in predicting a boundary a few pixels away from the manually labelled position.
+\subsection{Overview}
 
 \subsection{Skeletonisation}
 
@@ -319,18 +321,27 @@ This class imbalance gives rise to another challenge when assessing the performa
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/skel-skel.png}
     \end{subfigure}
-    \caption{Skeletonisation example}
+    \caption{Skeletonisation example.....}
     \label{fig:skeletonisation}
 \end{figure}
 
-(Show algorithm and maybe some source code?)
+\begin{algorithm}[t]
+    
+    \For{$i=0$ {\bf upto} $n$}{
+      $t_i \leftarrow 0$\;
+    }
+    \caption{This is an example algorithm.}
+    \label{alg:accuracy}
+\end{algorithm}
+
+(Show algorithm and maybe some source code?) In Algorithm \ref{alg:accuracy}.
 
 \subsection{Average Distance Calculation}
 
 \subsection{The \texttt{ctypes} Module}
 
-\newpage
+% \newpage
 
-\section{Density Band Width Estimation}
+\section{Calcification Rate Estimation}
 
 \subsection{Point Sampling}

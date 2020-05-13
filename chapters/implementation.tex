@@ -23,7 +23,7 @@ All aspects of the project relied heavily on the provided dataset. The processin
 
 \begin{figure}[!p]
     \centering
-    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-a}
+    \includegraphics[width=\textwidth]{images/overview.pdf}
     \caption{A diagram providing an overview of the components implemented throughout the project.}
     \label{fig:overview}
 \end{figure}
@@ -54,9 +54,9 @@ In order for a supervised CNN to perform well, large amounts of labelled data mu
 
 \subsubsection{The Initial Dataset}
 
-The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices'' (see Figure \ref{fig:extraction}). This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. An example of a Porites skeleton that is part of the dataset is shown in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled when compared to other coral genera.
+The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices'' (see Figure \ref{fig:extraction}). This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. An example of a Porites skeleton that is part of the dataset was shown previously in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled when compared to other coral genera.
 
-A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. The 3D resolution of each scan varies, but the scale (e.g., the number of voxels used to represent a centimetre cubed) is consistent across scans.
+A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. However, it is important to note that both the 3D resolution and scale (e.g., the number of voxels used to represent a centimetre cubed) of each scan varies.
 
 \begin{figure}[t]
     \centering
@@ -167,7 +167,7 @@ As discussed in Chapter \ref{chap:technical}, the U-Net architecture~\cite{ronne
 
 The contracting path consists of multiple ``blocks'' with each block consisting of two convolutional layers followed by a 2$\times$2 max-pooling layer with a stride of two. The convolutional layers both use 3$\times$3 kernels and the ReLU activation function. Apart from the first block, the first convolutional layer of each contracting block doubles the number of feature channels. The implementation of the first contracting block is shown in Listing \ref{lst:block1}.
 
-\begin{lstlisting}[float={!t},caption={IThe implementation of the first contracting block of the U-Net architecture using the Keras functional API.},label={lst:block1},language=Python,upquote=true,belowskip=0pt]
+\begin{lstlisting}[float={!t},caption={The implementation of the first contracting block of the U-Net architecture using the Keras functional API.},label={lst:block1},language=Python,upquote=true,belowskip=0pt]
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(inputs)
 conv1 = Conv2D(64, 3, activation="relu", padding="same")(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -257,7 +257,9 @@ Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to
 
 An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These were designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Recall that in order to produce 2D image-label pairs, a pair of generators created using the \texttt{flow\_from\_directory} method were used with the same \texttt{seed} to augment the image-label pairs with the same transformations. The online augmentation of the 3D data is designed to follow a similar structure; a pair of generators created using the \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes with the same \texttt{seed} argument are used to perform online augmentation to both the nine-patch sample and the single label patch. The \texttt{ImageDataGenerator3D} class is used to load and augment the 3D samples and the \texttt{LabelDataGenerator2D} class is used to load and augment the 2D labels.
 
-The \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} class first sorts the \texttt{.png} images from the sample directory alphanumerically. Nine images are then loaded, stacked, and ``unsqueezed'' resulting in a $(9 \times y \times x \times 1)$ tensor. The unsqueeze operation takes for example a $(y \times x)$ tensor and produces a $(y \times x \times 1)$ tensor. These stacks of nine images are then augmented using techniques discussed in Section \ref{sec:3daug} and are finally stacked into $(batch \times 9 \times y \times x \times 1)$ tensors where $batch$ is the batch size.
+\subsubsection{The Custom \texttt{flow\_from\_directory} Methods}
+
+The \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} class first sorts the \texttt{.png} images from the sample directory alphanumerically. Nine images are then loaded, stacked, and ``unsqueezed'' resulting in a $(9 \times y \times x \times 1)$ tensor. The unsqueeze operation takes for example a $(y \times x)$ tensor and produces a $(y \times x \times 1)$ tensor. These stacks of nine images are then augmented using techniques discussed later in this section and are finally stacked into $(batch \times 9 \times y \times x \times 1)$ tensors where $batch$ is the batch size.
 
 The \texttt{flow\_from\_directory} method of the \texttt{LabelDataGenerator2D} class also sorts the \texttt{.png} images from the label directory alphanumerically. These images are then loaded and unsqueezed resulting in a $(y \times x \times 1)$ tensors containing a single label. The appropriate augmentation transformations are then applied and the resulting tensors are stacked into $(batch \times y \times x \times 1)$ tensors.
 
@@ -265,14 +267,16 @@ The two generators produced by the \texttt{flow\_from\_directory} methods of the
 
 Example usage of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes in order to perform online 3D augmentation is shown in Listing \ref{lst:3Daugment}.
 
-\subsection{Three Dimensional Data Augmentation}
+\subsubsection{Three Dimensional Transformations}
 \label{sec:3daug}
 
-% The transformations implemented that made use of the third dimension were random rotations within a range 
-
-% \begin{itemize}
-%     \item Rotation rotations
-% \end{itemize}
+The custom data loader enabled the following transformations:
+\begin{itemize}
+    \item Random rotations in the $x$, $y$, and $z$ dimensions within a range of $\pm 2$ degrees.
+    \item Random flips in the $x$, $y$, and $z$ dimensions.
+    \item Random brightness shifts within a range of $\pm 10$\%.
+\end{itemize}
+Although these are the ranges used to train this particular model, these transformations can use values within any given range, not just the ranges specified above. Shifts in the $x$, $y$, and $z$ axes were also possible but increased training times significantly (taking up to X times as long) and so were not used when training. (maybe say here how long loading the data and augmenting took??)
 
 \subsection{Architecture Modification}
 
@@ -280,7 +284,17 @@ Although various modified architectures were experimented with and are discussed
 
 At a high level, the modification consisted of replacing all of the 2D operations in the contracting path with their 3D counterparts. However, issues arise when a tensor output from a 3D layer is passed to a 2D layer. Whereas the Keras \texttt{Conv3D} layer requires an input tensor with shape ($batch \times z \times y \times x \times channels$) and produces a tensor with the same shape, the \texttt{Conv2D} layer inputs and outputs tensors with the shape ($batch \times y \times x \times channels$). Thus, in order to pass the resulting tensor to a 2D layer, the tensor of shape ($batch \times z \times y \times x \times channels$) must be reshaped into a ($batch \times y \times x \times (z \times channels)$) tensor.
 
-% The implementation of the first block of the modified contracting path is shown in Listing 
+\begin{lstlisting}[float={!t},caption={The implementation of the first contracting block of the modified U-Net architecture using the Keras functional API.},label={lst:3Dblock},language=Python,upquote=true,belowskip=0pt]
+conv1 = Conv3D(8, 3, activation="relu", padding="same")(inputs)
+conv1 = Conv3D(8, 3, activation="relu", padding="same")(conv1)
+pool1 = MaxPooling3D(pool_size=(1, 2, 2))(conv1)
+conv1 = Reshape((256, 256, 72))(conv1)
+\end{lstlisting}
+The implementation of the first block of the modified contracting path is shown in Listing \ref{lst:3Dblock}. It can be seen that the two 2D 3$\times$3 convolutional layers have been replaced with 3D convolutional layers using 3$\times$3$\times$3 kernels (the kernel size is defined by the second argument of the \texttt{Conv3D} method). It can also be seen that although the max-pooling layer still uses a pool size and stride of two in the $x$ and $y$ axes, a value of one is instead used in the $z$ axis. A pool size and stride of two cannot be used in the $z$ axis as the input tensors only have a $z$ dimension of nine. Since there are four max-pooling operations, the tensor would be reduced to a size of just one in the $z$ dimension, assuming that padding was used at each stage to pad the $z$ dimension to an even number.
+
+After the convolutional and max-pooling layers, the tensor is then reshaped to a ($batch \times 256 \times 256 \times 72$) tensor allowing it to be concatenated to the feature channels of the 2D layers present in the expanding path. Note that there are only eight output feature channels. Since the feature channels will be multiplied by nine, a number of feature channels was chosen to make the reshaped tensor as close to the ($batch \times 256 \times 256 \times 64$) tensor that was originally used in the 2D architecture. Various numbers of output channels were experimented with and are discussed in Chapter \ref{chap:evaluation}.
+
+The remaining contracting blocks are implemented similarly to the first block shown in Listing \ref{lst:3Dblock}. However, the tensor resulting from the last block of the contracting path must be reshaped before it is passed to the bottleneck since 2D convolutional layers are still used in the bottleneck block. The remainder of the network is implemented as it was in the 2D architecture.
 
 % Although the nine-patch sample could simply be input into the 2D architecture as a 2D images with nine channels allowing the network to make use of nine patches as opposed to one, an input tensor of this shape would not enable 3D convolutions. Without the use of 3D convolutions, the network can not make 
 
@@ -288,9 +302,15 @@ At a high level, the modification consisted of replacing all of the 2D operation
 
 \subsection{Fully Three Dimensional Architecture}
 
+A fully 3D U-Net architecture was also implemented and experimented with. This network takes nine-patch labels rather than a single central label and attempts to predict the boundaries present in all nine sample patches. In this case, the architecture modification consisted of replacing all of the 2D operations present in the network with their 3D counterparts.
+
+In order to train this fully 3D architecture, a new dataset containing patches nine-patch samples and labels was curated using the same sliding window technique. Since only a small selection of slices were labelled initially, a larger selection of slices adjacent to the initially selected slices were labelled manually. Ultimately, labelling enough data for this model to perform well proved challenging---curating a dataset with the same amount of samples used to train the 2D architecture would require nine times the amount of labelled slices.
+
 % there was a fully 3d architecture where all 2d were replaced with 3d but not good performance at all. required 9 labelled slices as opposed to 1 central one and so very few sample-label pairs could be created. Discussed in Chapter \ref{chap:evaluation}.
 
-% \newpage
+\subsection{Performance}
+
+
 
 \section{Accuracy Metric Implementation}
 \label{sec:accimplementation}
@@ -301,47 +321,51 @@ As discussed briefly in Chapter \ref{chap:context}, choosing an appropriate accu
 
 There are two major issues that arise when using a standard per-pixel accuracy metric to quantify the performance achieved in this task. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%. The inherent class imbalance gives rise to another problem when assessing the performance of the model. Since the boundary labels are only one pixel wide, a model predicting boundary positions just one pixel to the left or right could achieve an accuracy of 0\%. A custom accuracy metric must be conceived in order to reward a model even in predicting a boundary a few pixels away from the manually labelled position. Eventually, a metric based off of the average euclidean distances between the predicted and ground truth boundaries was designed.
 
-\subsection{Overview}
+\subsection{Methodology}
 
-\subsection{Skeletonisation}
+There are multiple steps involved in the calculation of the custom accuracy. First, the prediction output by the model is thresholded using the Otsu method~\cite{otsu}. The Otsu method finds the threshold value that minimises the weighted within-class variance. Once this threshold value $t$ is found, all pixels with values less than the threshold value are set to 0 and all pixels with values greater than $t$ are set to 255. This thresholded image can then be ``skeltonized''. Skeltonization is the process of reducing the foreground regions of binary images to just one pixel wide representations. The scikit\footnote{\url{https://scikit-image.org}} implementation of Zhang's method~\cite{zhang} is used to skeletonize the image. Introduced in 1984, Zhang's method iteratively removes pixels present on the foreground region borders until no more pixels can be removed. An example of the skeletonization of a prediction using this method is shown in Figure \ref{fig:skeletonisation}.
 
 \begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/skel-pred.png}
+        \caption{Original prediction}
     \end{subfigure}
     ~
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/skel-thresh.png}
+        \caption{Thresholded prediction}
     \end{subfigure}
     ~
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
         \includegraphics[width=1\textwidth, valign=c]{images/skel-skel.png}
+        \caption{Skeletonized prediction}
     \end{subfigure}
-    \caption{Skeletonisation example.....}
+    \caption{An example of the skeletonization of a prediction output by the 2D architecture. The image is first thresholded using the Otsu method and then skeletonized using Zhang's method. Similarly to the ground truth labels, the resulting image contains shapes that are only one pixel wide.}
     \label{fig:skeletonisation}
 \end{figure}
 
-\begin{algorithm}[t]
-    
-    \For{$i=0$ {\bf upto} $n$}{
-      $t_i \leftarrow 0$\;
-    }
-    \caption{This is an example algorithm.}
-    \label{alg:accuracy}
-\end{algorithm}
+Once the prediction is skeletonized, the ``average'' distance between the prediction and the ground truth label can be calculated. For each white pixel in the skeletonized prediction, the closest white pixel---the pixel with the shortest Euclidean distance---in the label is found. This is then repeated for all pixels in the prediction and the distances are averaged.
 
-(Show algorithm and maybe some source code?) In Algorithm \ref{alg:accuracy}.
+For each white pixel in the prediction, find its closest white pixel in the label. Do the same from the label to the prediction. Average all of these distances.
 
-\subsection{Average Distance Calculation}
+If a completely black image is produced, a single white pixel is placed in the centre of the image to prevent infinity values as these would not contribute to the average whereas very high values do and negatively affect it.
+
+(Show algorithm and maybe some source code?)
 
 \subsection{The \texttt{ctypes} Module}
 
-% \newpage
+The distance calculation was $O(n^2)$ or something so took very long time for a single image (give average). In order to calculate the average accuracy achieved on the training set this would take 322 * (time taken) * epochs. Wrapping in ctypes gave a 600 or something times speedup and this allows the average accuracy achieved to take ... seconds per epoch.
+
+Explain briefly how to use ctypes and show a tiny listing? explain compiling to a .so library?
 
 \section{Calcification Rate Estimation}
+
+Distance represented by a voxel is ... mm$^3$. So in 2D one pixel represents ... mm$^2$. 
+
+first need to find distances in 2d. then take into account how much one pixel is in mm. then we have the linear extension rate. now need to find the density. talk about how it is found. then multiply the two and we have calcification rate?
 
 \subsection{Point Sampling}

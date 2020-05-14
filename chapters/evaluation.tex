@@ -1,12 +1,36 @@
+This chapter first discusses the experiments carried out in order to both improve the performance, and gain a better understanding, of the sub-components implemented. Experiments such as hyperparameter optimisation and ablation studies including both the two dimensional and three dimensional models are discussed. Once the results are cross-validated, the final results achieved by the optimised models resulting from the experimentation are then presented, interpreted, and compared to results achieved by alternative models. Finally, various aspects of the project are critically evaluated.
+
 REMEMBER TO TRY AND UNDERSTAND WHY WHAT EVER HAPPENS IS THE CASE AND BACK IT UP ALL THROUGHOUT
 
 \section{Two Dimensional Experimentation}
 
+This section introduces the results achieved by the ``baseline'' 2D model implemented in Chapter \ref{chap:implementation} and outlines the experiments carried out in an attempt to improve the performance both qualitatively and quantitatively.
+
 \subsection{Initial Results}
 
-\subsection{Resolution}
+Summarise initial results and the accuracy metric they achieved. Maybe show a figure showing examples where the network performs well and where it doesnt. Maybe show initial training curves and accuracy curves to then be used to compare against later?
 
-\subsection{Dropout}
+\subsection{Hyperparameter optimisation}
+
+reintroduce hyperparam optimisation?
+
+\subsubsection{Learning Rate}
+
+\subsubsection{Optimisation Algorithms}
+
+Said in tech bg that I experimented with diff optimisers so need to add comparisons to SGD etc.
+
+Look at the momentum values of adam? play around a little?
+
+\subsubsection{Loss Functions}
+
+Focal loss and other loss functions? to combat class imbalance
+
+Look at the alpha and gamma values of focal loss? play around with them a little. look at the table in the original paper that says when you should use what.
+
+\subsubsection{Dropout}
+
+vary from 0.1 to 0.9? same with spatial
 
 \subsubsection{Spatial Dropout}
 
@@ -22,6 +46,12 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 % decrease. In this case, SpatialDropout2D will help promote independence
 % between feature maps and should be used instead.
 
+\subsubsection{Kernel Sizes}
+
+\subsubsection{L2 Regularization}
+
+\subsubsection{Resolution}
+
 \subsection{Augmentation}
 \label{sec:evalaugmentation}
 
@@ -29,19 +59,7 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 
 \subsubsection{Augmentation Ranges}
 
-\subsection{Hyperparameter optimisation}
-
-\subsubsection{Optimisation Algorithms}
-
-Said in tech bg that I experimented with diff optimisers so need to add comparisons to SGD etc.
-
-\subsubsection{Focal Loss}
-
-And other loss functions? to combat class imbalance
-
-\subsubsection{L2 Regularization}
-
-\subsection{Ablation}
+\subsection{Ablation Studies}
 
 comparison of convtranspose to upsample and then conv.
 
@@ -63,6 +81,11 @@ Varying numbers of output channels in Conv3D layers as you said youd experiment 
 
 Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
 
+\section{Cross-validation}
+\label{sec:evalcrossval}
+
+\subsection{Train/test Splits}
+
 \section{Final Results}
 
 \begin{figure}[!p]
@@ -76,11 +99,6 @@ Lack of data. Was not consistently labelled. Show adjacent slices. Proves how ha
 
 Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
 
-\section{Cross-validation}
-\label{sec:evalcrossval}
-
-\subsection{Train/test Splits}
-
 \section{Critical Evaluation}
 
 \subsection{Boundary Extraction}
@@ -92,6 +110,8 @@ Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix gener
 \subsection{Accuracy Metric}
 
 Can't tell which boundary it should be looking for. a completely white image would produce 100\% accuracy but the skeletonization makes the amount of white pixels low.
+
+Maybe show concrete examples of where it falls down? images shifted to the right so that one boundary is roughly where another should be? images that have many white lines that are even perpendicular to the right labels should still produce a pretty low score?
 
 \subsection{Calcification Rate Estimation}
 

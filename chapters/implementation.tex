@@ -205,10 +205,7 @@ Finally, the model is stored in an instance of the Keras \texttt{Model} class. B
 
 \begin{figure}[!t]
     \centering
-<<<<<<< HEAD
     \hspace*{-0.3cm}
-=======
->>>>>>> remotes/OldRepo/master
     \input{tikz/unet}
     \caption[A diagram of the U-Net architecture (created using an open-source CNN architecture visualisation tool). The architecture is named after the U-shape that it resembles when illustrated in this way. Each cube represents a layer with the number of output feature maps shown at the bottom of the cube. At the bottleneck there are 1024 feature maps that are each one sixteenth the size of the input image in the $x$ and $y$ dimensions. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another. Note that the max-pooling layers at the end of each contracting block are shown at the start of the next block for easier illustration of the pass forward of the feature channels. Similarly, the up-convolution layers are shown at the end of each contracting block rather than at the start of the next.]{A diagram of the U-Net architecture (created using an open-source CNN architecture visualisation tool\footnotemark). The architecture is named after the U-shape that it resembles when illustrated in this way. Each cube represents a layer with the number of output feature maps shown at the bottom of the cube. At the bottleneck there are 1024 feature maps that are each one sixteenth the size of the input image in the $x$ and $y$ dimensions. The green arrows represent the feedforward of information from one layer to the next, whereas the blue arrows represent the concatenation of the feature maps of one layer to another. Note that the max-pooling layers at the end of each contracting block are shown at the start of the next block for easier illustration of the pass forward of the feature channels. Similarly, the up-convolution layers are shown at the end of each contracting block rather than at the start of the next.}
     \label{fig:unetushape}
@@ -216,11 +213,7 @@ Finally, the model is stored in an instance of the Keras \texttt{Model} class. B
 
 \subsection{Training}
 
-<<<<<<< HEAD
 \footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}\label{plotNN}}
-=======
-\footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}}
->>>>>>> remotes/OldRepo/master
 
 Once the architecture and online data augmentation process had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method can then be used to define which optimiser and loss function to use, and which metrics to monitor, and the \texttt{fit} method can be used to train the network.
 
@@ -245,11 +238,7 @@ A few examples of the initial results achieved are shown in Figure \ref{fig:outp
 
 \begin{table}[t]
     \centering
-<<<<<<< HEAD
     \caption{A summary of the initial hyperparameter settings used.}
-=======
-    \caption{The initial hyperparameter settings used.}
->>>>>>> remotes/OldRepo/master
     \begin{tabular}{@{}ll@{}}
     \toprule
     Hyperparameter   & Setting      \\ \midrule
@@ -269,16 +258,6 @@ A few examples of the initial results achieved are shown in Figure \ref{fig:outp
 
 This section discusses the attempts to implement and train a modified U-Net architecture capable of extracting the annual density banding present in three dimensional data. As opposed to only utilising the density information a single slice, the modified architecture also makes use of the density information of surrounding slices when determining the boundary positions. An overview of the components implemented in this section is shown in Figure \ref{fig:3doverview}.
 
-<<<<<<< HEAD
-=======
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{images/3D-overview.pdf}
-    \caption{An overview of the components implemented in this section. Each training sample that the modified architecture trains on will consist of nine patches. Only the centre slice is labelled and the model attempts to extract the boundaries present in this central slice. A custom 3D ``data loader'' is implemented in order to perform online augmentation of the nine-patch training samples.}
-    \label{fig:3doverview}
-\end{figure}
-
->>>>>>> remotes/OldRepo/master
 \subsection{Dataset Expansion}
 
 In order to train the modified architecture, the curated dataset discussed in Section \ref{sec:datasetcuration} was expanded to include data from slices surrounding the slices initially labelled. Since the modified architecture makes use of up to nine slices (the central slice and four slices on either side), the eight slices surrounding the labelled slices also needed to be extracted. As mentioned in Section \ref{sec:2dlabel}, when the sliding window Python script was used to create the 2D dataset, patches from surrounding slices were also produced. The resulting 3D dataset contains the same amount of samples (388) with each sample consisting of nine patches and the label consisting of the central labelled patch. The nine-sample patches are stored with the same name as the label apart from a suffix of \texttt{\_0} to \texttt{\_8} denoting the patches' positions relative to the central patch which has a suffix of \texttt{\_4}.
@@ -310,7 +289,6 @@ The custom data loader enabled the following transformations:
 \end{itemize}
 Although these are the ranges used to train this particular model, these transformations can use values within any given range, not just the ranges specified above. Shifts in the $x$, $y$, and $z$ axes were also possible but increased training times significantly (taking up to X times as long) and so were not used when training. (maybe say here how long loading the data and augmenting took??)
 
-<<<<<<< HEAD
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.95\textwidth]{images/3D-overview.pdf}
@@ -318,8 +296,6 @@ Although these are the ranges used to train this particular model, these transfo
     \label{fig:3doverview}
 \end{figure}
 
-=======
->>>>>>> remotes/OldRepo/master
 \subsection{Architecture Modification}
 
 Although various modified architectures were experimented with and are discussed in Chapter \ref{chap:evaluation}, only the initial modified architecture experimented with will be described here.
@@ -338,7 +314,6 @@ After the convolutional and max-pooling layers, the tensor is then reshaped to a
 
 The remaining contracting blocks are implemented similarly to the first block shown in Listing \ref{lst:3Dblock}. However, the tensor resulting from the last block of the contracting path must be reshaped before it is passed to the bottleneck since 2D convolutional layers are still used in the bottleneck block. The remainder of the network is implemented as it was in the 2D architecture.
 
-<<<<<<< HEAD
 \begin{figure}[!t]
     \centering
     \hspace*{-0.3cm}
@@ -347,8 +322,6 @@ The remaining contracting blocks are implemented similarly to the first block sh
     \label{fig:unetushape3D}
 \end{figure}
 
-=======
->>>>>>> remotes/OldRepo/master
 % Although the nine-patch sample could simply be input into the 2D architecture as a 2D images with nine channels allowing the network to make use of nine patches as opposed to one, an input tensor of this shape would not enable 3D convolutions. Without the use of 3D convolutions, the network can not make 
 
 % The modified architecture does not perform as well as the 2D architecture. Inspecting the results both ... are shown in Chapter \ref{chap:evaluation}.

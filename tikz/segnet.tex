@@ -1,0 +1,33 @@
+\begin{tikzpicture}[scale=0.4]
+    \node[above] at (14, 1) {\includegraphics[width=1\textwidth]{images/SegNet.pdf}};
+    
+    \filldraw[color=\ConvColor, opacity=0.5] (0,1.5) rectangle (1,2.5);
+    \draw[] (0,1.5) rectangle (1,2.5);
+    \node[right] at (1, 2) {\scriptsize{3$\times$3 Convolution}};
+    
+    \filldraw[color=\ConvReluColor, opacity=0.8] (0,0) rectangle (1,1);
+    \draw[] (0,0) rectangle (1,1);
+    \node[right] at (1, 0.5) {\scriptsize{ReLU}};
+    
+    \filldraw[color=\PoolColor, opacity=0.75] (9,0) rectangle (10,1);
+    \draw[] (9,0) rectangle (10,1);
+    \node[right] at (10, 0.5) {\scriptsize{2$\times$2 Max-pooling}};
+    
+    \filldraw[color=\UnpoolColor, opacity=0.7] (9,1.5) rectangle (10,2.5);
+    \draw[] (9,1.5) rectangle (10,2.5);
+    \node[right] at (10, 2) {\scriptsize{2$\times$2 Upsampling}};
+    
+    % \filldraw[color=\PoolColor, opacity=1] (18,0) rectangle (19,1);
+    % \draw[] (18,0) rectangle (19,1);
+    \node[right] at (19, 0.5) {\scriptsize{Feedforward}};
+    
+    % \filldraw[color=\PoolColor, opacity=1] (18,1.5) rectangle (19,2.5);
+    % \draw[] (18,1.5) rectangle (19,2.5);
+    \node[right] at (19, 2) {\scriptsize{Max-pooling indices}};
+
+    \begin{scope}[decoration={
+        markings, mark=at position 0.75 with {\arrow[scale=1.5]{stealth}}}] 
+        \draw[postaction={decorate}, color={rgb:blue,4;red,1;green,4;black,3}] (18,0.5)--(19,0.5);
+        \draw[postaction={decorate}, color={rgb:blue,4;red,1;green,1;black,3}] (18,2)--(19,2);
+    \end{scope}
+\end{tikzpicture}

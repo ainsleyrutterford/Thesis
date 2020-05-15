@@ -1,0 +1,149 @@
+\documentclass[ % the name of the author
+                author={Ainsley Rutterford},
+                % the name of the supervisor
+                supervisor={Dr. Tilo Burghardt},
+                % the degree programme
+                degree={MEng},
+                % the dissertation    title (which cannot be blank)
+                title={Volumetric Coral Analysis using Deep Learning},
+                % the dissertation subtitle (which can    be blank)
+                subtitle={},
+                % the dissertation     type
+                type={research},
+                % the year of submission
+                year={2020} ]{dissertation}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\pgfplotsset{colormap={cool2}{rgb255(0cm)=(255,210,110); rgb255(1cm)=(225,80,49);}}
+\pgfplotsset{colormap={cool1}{rgb255(0cm)=(255,255,255); rgb255(1cm)=(255,0,255);}}
+\usepackage{lipsum}
+\usepackage[parfill]{parskip}
+\usepackage{subcaption}
+\usepackage{xurl}
+\usepackage{xfrac}
+\usetikzlibrary{decorations.markings}
+
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReluColor{rgb:yellow,5;red,5;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+\def\ConvColorThree{rgb:blue,9;green,1;white,4}
+\def\ReshapeColor{rgb:blue,4;red,2;white,18}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{textcomp} % Allow straight quotes in listings
+\usepackage{booktabs}
+\usepackage{silence}
+\WarningFilter{latex}{Text page}
+
+\definecolor{codegreen}{rgb}{0.6,0.6,0.6}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.99}
+\definecolor{keycolour}{rgb}{0.10,0.20,0.99}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{keycolour},
+    numberstyle=\scriptsize\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                   
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4
+}
+ 
+\lstset{style=mystyle}
+
+\begin{document}
+
+% This macro creates the standard UoB title page by using information drawn
+% from the document class (meaning it is vital you select the correct degree 
+% title and so on).
+
+\maketitle
+
+% After the title page (which is a special case in that it is not numbered)
+% comes the front matter or preliminaries; this macro signals the start of
+% such content, meaning the pages are numbered with Roman numerals.
+
+\frontmatter
+
+% This macro creates the standard UoB declaration; on the printed hard-copy,
+% this must be physically signed by the author in the space indicated.
+
+\makedecl
+
+% LaTeX automatically generates a table of contents, plus associated lists 
+% of figures, tables and algorithms.  The former is a compulsory part of the
+% dissertation, but if you do not require the latter they can be suppressed
+% by simply commenting out the associated macro.
+
+\tableofcontents
+% \listoffigures
+% \listoftables
+% \listofalgorithms
+% \lstlistoflistings
+
+\chapter*{Executive Summary}
+\input{chapters/summary}
+
+\chapter*{Supporting Technologies}
+\input{chapters/supporting}
+
+\chapter*{Notation and Acronyms}
+\input{chapters/acronyms}
+
+\chapter*{Acknowledgements}
+\input{chapters/ack}
+
+\mainmatter
+
+\chapter{Contextual Background}
+\label{chap:context}
+\input{chapters/contextual}
+
+\chapter{Technical Background}
+\label{chap:technical}
+\input{chapters/technical}
+
+\chapter{Implementation}
+\label{chap:implementation}
+\input{chapters/implementation}
+
+\chapter{Results and Evaluation}
+\label{chap:evaluation}
+\input{chapters/evaluation}
+
+\chapter{Conclusion}
+\label{chap:conclusion}
+\input{chapters/conclusion}
+
+\backmatter
+
+\bibliography{dissertation}
+
+\appendix
+
+\chapter{Implementation Listings}
+\label{appx:implementationlistings}
+\input{appendices/implementation}
+
+\chapter{Dataset Tables}
+\label{appx:datasettables}
+% \input{appendices/implementation}
+
+\end{document}

@@ -1,0 +1,31 @@
+\begin{lstlisting}[float={ht},caption={A simplified example of online augmentation implemented using the \texttt{ImageDataGenerator} class.},label={lst:augment},language=Python,upquote=true]
+from keras.preprocessing.image import ImageDataGenerator
+import random
+
+# Specify the transformations allowed and store them in a dictionary
+aug = dict(rotation_range=2,
+           width_shift_range=0.02,
+           height_shift_range=0.02,
+           shear_range=2,
+           zoom_range=0.02,
+           brightness_range=[0.9,1.1],
+           horizontal_flip=True,
+           vertical_flip=True,
+           fill_mode="nearest")
+
+# Pass the contents of the dictionary as arguments to the ImageDataGenerator
+# constructors
+image_datagen = ImageDataGenerator(**aug)
+label_datagen = ImageDataGenerator(**aug)
+
+# Generate a random seed to be used for both the image and label generators
+seed = random.randint(0, 100)
+
+# Create the generators using the flow_from_directory method. The same seed
+# value is passed to both methods ensuring the same transformations are applied.
+image_generator = image_datagen.flow_from_directory(image_path, seed=seed, ...)
+label_generator = label_datagen.flow_from_directory(label_path, seed=seed, ...)
+
+# Zip the generators into one generator that yields image-label pairs
+train_generator = zip(image_generator, label_generator)
+\end{lstlisting}

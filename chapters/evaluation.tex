@@ -1,0 +1,148 @@
+This chapter first discusses the experiments carried out in order to both improve the performance, and gain a better understanding, of the sub-components implemented. Experiments such as hyperparameter optimisation and ablation studies including both the two dimensional and three dimensional models are discussed. Once the results are cross-validated, the final results achieved by the optimised models resulting from the experimentation are then presented, interpreted, and compared to results achieved by alternative models. Finally, various aspects of the project are critically evaluated.
+
+REMEMBER TO TRY AND UNDERSTAND WHY WHAT EVER HAPPENS IS THE CASE AND BACK IT UP ALL THROUGHOUT
+
+\section{Two Dimensional Experimentation}
+
+This section introduces the results achieved by the ``baseline'' 2D model implemented in Chapter \ref{chap:implementation} and outlines the experiments carried out in an attempt to improve the performance both qualitatively and quantitatively.
+
+\subsection{Initial Results}
+
+Summarise initial results and the accuracy metric they achieved. Maybe show a figure showing examples where the network performs well and where it doesnt. Maybe show initial training curves and accuracy curves to then be used to compare against later?
+
+\subsection{Hyperparameter optimisation}
+
+reintroduce hyperparam optimisation?
+
+\subsubsection{Learning Rate}
+
+\subsubsection{Optimisation Algorithms}
+
+Said in tech bg that I experimented with diff optimisers so need to add comparisons to SGD etc.
+
+Look at the momentum values of adam? play around a little?
+
+\subsubsection{Loss Functions}
+
+Focal loss and other loss functions? to combat class imbalance
+
+Look at the alpha and gamma values of focal loss? play around with them a little. look at the table in the original paper that says when you should use what.
+
+\subsubsection{Dropout}
+
+vary from 0.1 to 0.9? same with spatial
+
+\subsubsection{Spatial Dropout}
+
+Need to talk about dropout? maybe only mention it in evaluation?
+Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
+
+% From Keras docs I think
+% This version performs the same function as Dropout, however it drops
+% entire 2D feature maps instead of individual elements. If adjacent pixels
+% within feature maps are strongly correlated (as is normally the case in
+% early convolution layers) then regular dropout will not regularize the
+% activations and will otherwise just result in an effective learning rate
+% decrease. In this case, SpatialDropout2D will help promote independence
+% between feature maps and should be used instead.
+
+\subsubsection{Kernel Sizes}
+
+\subsubsection{L2 Regularization}
+
+\subsubsection{Resolution}
+
+\subsection{Augmentation}
+\label{sec:evalaugmentation}
+
+\subsubsection{No Augmentation}
+
+\subsubsection{Augmentation Ranges}
+
+\subsection{Ablation Studies}
+
+comparison of convtranspose to upsample and then conv.
+
+remove the relu at the end of the implementation?
+
+Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
+
+\section{Three Dimensional Experimentation}
+
+\subsection{Augmentation}
+
+\subsection{Alternative Modified Architectures}
+
+Varying numbers of output channels in Conv3D layers as you said youd experiment with this.
+
+\subsection{Fully Three Dimensional Architecture}
+
+\subsubsection{Data}
+
+Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
+
+\section{Cross-validation}
+\label{sec:evalcrossval}
+
+\subsection{Train/test Splits}
+
+\section{Final Results}
+
+\begin{figure}[!p]
+    \centering
+    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-b}
+    \caption{A full page of final results achieved.}
+    \label{fig:finalresults}
+\end{figure}
+
+\section{Comparisons with Other Architectures}
+
+Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
+
+\section{Critical Evaluation}
+
+\subsection{Boundary Extraction}
+
+\subsubsection{Labelling}
+
+\subsubsection{Lack of Data}
+
+\subsection{Accuracy Metric}
+
+Can't tell which boundary it should be looking for. a completely white image would produce 100\% accuracy but the skeletonization makes the amount of white pixels low.
+
+Maybe show concrete examples of where it falls down? images shifted to the right so that one boundary is roughly where another should be? images that have many white lines that are even perpendicular to the right labels should still produce a pretty low score?
+
+\subsection{Calcification Rate Estimation}
+
+\section{Comparisons with Existing Techniques}
+
+Erica sent a paper a while ago that used a computer program to calculate the calcification rate  \url{https://www.geosociety.org/datarepository/2015/2015015.pdf} check the email from her with subject DeCarlo Paper
+
+% {\bf A topic-specific chapter, of roughly $15$ pages} 
+% \vspace{1cm} 
+
+% \noindent
+% This chapter is intended to evaluate what you did.  The content is highly 
+% topic-specific, but for many projects will have flavours of the following:
+
+% \begin{enumerate}
+% \item functional  testing, including analysis and explanation of failure 
+%       cases,
+% \item behavioural testing, often including analysis of any results that 
+%       draw some form of conclusion wrt. the aims and objectives,
+%       and
+% \item evaluation of options and decisions within the project, and/or a
+%       comparison with alternatives.
+% \end{enumerate}
+
+% \noindent
+% This chapter often acts to differentiate project quality: even if the work
+% completed is of a high technical quality, critical yet objective evaluation 
+% and comparison of the outcomes is crucial.  In essence, the reader wants to
+% learn something, so the worst examples amount to simple statements of fact 
+% (e.g., ``graph X shows the result is Y''); the best examples are analytical 
+% and exploratory (e.g., ``graph X shows the result is Y, which means Z; this 
+% contradicts [1], which may be because I use a different assumption'').  As 
+% such, both positive {\em and} negative outcomes are valid {\em if} presented 
+% in a suitable manner.

@@ -1,0 +1,31 @@
+\begin{lstlisting}[float={ht},caption={NEED TO FINISH THIS CAPTION. Use Keras Adam optimiser implementation, the Keras implementation of the binary cross-entropy loss, and the Keras accuracy metric.},label={lst:compile},language=Python,upquote=true]
+from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from keras.optimizers import Adam
+
+# Create an instance of the Model class using the Model constructor
+model = Model(inputs=..., outputs=...)
+
+# Compile the model using the compile method
+model.compile(optimizer=Adam(lr=1e-4), 
+              loss="binary_crossentropy",
+              metrics=["accuracy"])
+
+# Create a TensorBoard callback
+tb = TensorBoard(log_dir="logs/")
+
+# Create an EarlyStopping callback
+es = EarlyStopping(monitor="val_loss", mode="min", patience=5)
+
+# Create a ModelCheckpoint callback
+mc = ModelCheckpoint("checkpoint-{epoch:02d}.hdf5",
+                     monitor="loss",
+                     save_best_only=False)
+
+# Train the model using data provided by the train_generator defined earlier
+model.fit_generator(train_generator, 
+                    steps_per_epoch=args.steps, 
+                    epochs=args.epochs,
+                    validation_data=val_gen,
+                    validation_steps=33,
+                    callbacks=[tb, mc, es])
+\end{lstlisting}

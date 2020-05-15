@@ -1,0 +1,31 @@
+\begin{tikzpicture}[scale=1.1]
+	\begin{axis}[
+% 	colormap/greenyellow,
+	colormap name=cool2,
+% 	view={0}{90}
+	xlabel=$x$,
+	ylabel=$y$,
+	zlabel=Loss,
+	zmin=0.1, zmax=1.9,
+	xtick distance=175,
+	ytick distance=175,
+	xticklabels=\empty,
+	yticklabels=\empty,
+	zticklabels=\empty
+	]
+% 	\addplot3[surf,
+% 		domain=0:360,samples=40] 
+% 		{0.5*sin(x-100)*sin(y-50) - 0.000005*((x-100)^2) + 0.000005*((y-50)^2) + 1};
+    \addplot3 [surf, mesh/rows=36] table [x=xs, y=ys, z=zs, col sep=comma] {csv/surf.csv};
+    
+	\addplot3 [black, mark=*, line width=0.8pt, mark size=0.8pt] table [x=xs, y=ys, z=zs, col sep=comma] {csv/sgd.csv};
+	
+% 	\addplot3 [black, mark=*, line width=0.8pt, mark size=0.8pt] table [x=xs, y=ys, z=zs, col sep=comma] {csv/sgd2.csv};
+	
+	\addplot3 [black, mark=*, line width=0.8pt, mark size=0.8pt] table [x=xs, y=ys, z=zs, col sep=comma] {csv/sgd3.csv};
+	
+	\node[] at (axis cs: 320, 200, 1.9) {\scriptsize{($x_0, y_0, \ell(x_0, y_0)$)}};
+	
+	\node[] at (axis cs: 260, 200, 0.1) {\scriptsize{($x_n, y_n, \ell(x_n, y_n)$)}};
+	\end{axis}
+\end{tikzpicture}

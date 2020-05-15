@@ -1,0 +1,31 @@
+\begin{lstlisting}[float={ht},caption={A simplified example of online 3D augmentation implemented using the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes. Note the similarities with the 2D augmentation shown in Listing \ref{lst:augment}.},label={lst:3Daugment},language=Python,upquote=true]
+from generator import ImageDataGenerator3D, LabelDataGenerator2D
+import random
+
+# Specify the transformations allowed and store them in a dictionary
+aug = dict(rotation_range=2,
+           width_shift_range=0.02,
+           height_shift_range=0.02,
+           shear_range=2,
+           zoom_range=0.02,
+           brightness_range=[0.9,1.1],
+           horizontal_flip=True,
+           vertical_flip=True,
+           fill_mode="nearest")
+
+# Pass the contents of the dictionary as arguments to the ImageDataGenerator3D
+# and LabelDataGenerator2D constructors
+image_datagen = ImageDataGenerator3D(**aug)
+label_datagen = LabelDataGenerator2D(**aug)
+
+# Generate a random seed to be used for both the image and label generators
+seed = random.randint(0, 100)
+
+# Create the generators using the flow_from_directory method. The same seed
+# value is passed to both methods ensuring the same transformations are applied.
+image_generator = image_datagen.flow_from_directory(image_path, seed=seed, ...)
+label_generator = label_datagen.flow_from_directory(label_path, seed=seed, ...)
+
+# Zip the generators into one generator that yields image-label pairs
+train_generator = zip(image_generator, label_generator)
+\end{lstlisting}

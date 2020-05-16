@@ -24,7 +24,7 @@ All aspects of the project relied heavily on the provided dataset. The processin
 \begin{figure}[!p]
     \centering
     \includegraphics[width=\textwidth]{images/overview.pdf}
-    \caption{A diagram providing an overview of the components implemented throughout the project. The experimentation is discussed in Chapter \ref{chap:evaluation}.}
+    \caption{A diagram providing an overview of the components implemented and discussed throughout the project. The experimentation is discussed in Chapter \ref{chap:evaluation}.}
     \label{fig:overview}
 \end{figure}
 
@@ -56,7 +56,7 @@ In order for a supervised CNN to perform well, large amounts of labelled data mu
 
 The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices'' (see Figure \ref{fig:extraction}). This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. An example of a Porites skeleton that is part of the dataset was shown previously in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled when compared to other coral genera.
 
-A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. However, it is important to note that both the 3D resolution and scale (e.g., the number of voxels used to represent a centimetre cubed) of each scan varies.
+A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. However, note that the 3D resolution, scale (e.g., the number of voxels used to represent a centimetre cubed), and density calibration (e.g., the voxel value used to represent a given density) of each scan varies.
 
 \begin{figure}[t]
     \centering
@@ -90,16 +90,17 @@ With only a small selection of slices successfully extracted and labelled, a lar
 
 \subsubsection{Sliding Window}
 
-In order to expand the dataset, a sliding window technique was used. A script was written in Python that took a slice, two 2D coordinates, a ``stride'', and a size as arguments. The pair of coordinates corresponded to the top left corner and bottom right corner of the confidently labelled area of the slice. This was the area that the window would slide over in order to create the resulting ``patches''. The stride argument dictated how far the window should slide before each patch was produced. The most common stride value used was 20. The size argument defined how large the resulting patches should be. The patches initially produced had a resolution of 256$\times$256 pixels, but various sizes of patches were experimented with and are discussed in Chapter \ref{chap:evaluation}. The arguments used in order to produce the curated dataset used in this project are shown in Table \ref{tab:slidingwindow}. A total of 388 patches were produced from six slices taken from four different coral skeleton scans. This dataset of 388 256$\times$256 patches and their corresponding labels were stored as greyscale \texttt{.png} images.
-
-\begin{table}[t]
-\centering
-\caption{The arguments used with the Python script for each labelled slice. For each slice, a size argument of 256 was also specified. Note that some slices are represented by two rows as these slices contained two separate areas that could be confidently labelled. It was not possible to use one area that contains the two areas as this would result in multiple patches with no labelling being produced.}
-\input{tables/curation}
-\label{tab:slidingwindow}
-\end{table}
+In order to expand the dataset, a sliding window technique was used. A script was written in Python that took a slice, two 2D coordinates, a ``stride'', and a size as arguments. The pair of coordinates corresponded to the top left corner and bottom right corner of the confidently labelled area of the slice. This was the area that the window would slide over in order to create the resulting ``patches''. The stride argument dictated how far the window should slide before each patch was produced. This sliding window technique is visualised in Figure \ref{fig:slidingwindow}. The most common stride value used was 20. The size argument defined how large the resulting patches should be. The patches initially produced had a resolution of 256$\times$256 pixels, but various sizes of patches were experimented with and are discussed in Chapter \ref{chap:evaluation}. The arguments used in order to produce the curated dataset used in this project are shown in Table \ref{tab:slidingwindow}. A total of 388 patches were produced from six slices taken from four different coral skeleton scans. This dataset of 388 256$\times$256 patches and their corresponding labels were stored as greyscale \texttt{.png} images.
 
 In order to prevent the dataset from representing certain coral samples better than others, an effort was made to equalise the number of patches produced per scan. Due to different slices containing varying sizes of confidently labelled areas, the stride argument was used to increase or reduce the number of patches produced. However, it was also important to produce as much data as possible to enable the network to perform well. Ultimately, some slices produced almost five times as many slices as others resulting in some imbalance in the types of coral scans represented by the dataset. Although this could negatively affect the generalisability of a network trained on this dataset, cross-validation with carefully selected splits to represent each coral scan was ultimately used and is discussed in Chapter \ref{chap:evaluation}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/sliding-window.pdf}
+    \caption{A visualisation of the sliding window technique used to produce multiple ``patches'' from a single slice. A portion of an original negative slice is shown with the manual labelling overlaid in white. The red windows show where the patches on the right would be produced from. $size$ is the patch size, and $s$ is the stride value. The windows have a width and height of $size$ and will be moved $s$ pixels to the right before another patch is produced. Once the window reaches the right hand side of the image, the window will be placed back at the start and will be shifted downwards by $s$ pixels before the process starts again.}
+    \label{fig:slidingwindow}
+\end{figure}
+
 
 \subsubsection{Splitting the Dataset}
 
@@ -108,6 +109,13 @@ For the initial training and testing of the network, the curated dataset was spl
 \subsection{Data Augmentation}
 
 As discussed in Chapter \ref{chap:technical}, data augmentation is an important regularization technique. Since only 388 patches had been produced, extensive augmentation was used to artificially expand the dataset. This data augmentation later proved effective in improving the performance achieved by the network and is discussed further in Chapter \ref{chap:evaluation}.
+
+\begin{table}[!t]
+\centering
+\caption{The arguments used with the Python script for each labelled slice. For each slice, a size argument of 256 was also specified. Note that some slices are represented by two rows as these slices contained two separate areas that could be confidently labelled. It was not possible to use one area that contains the two areas as this would result in multiple patches with no labelling being produced.}
+\input{tables/curation}
+\label{tab:slidingwindow}
+\end{table}
 
 \subsubsection{The Keras \texttt{ImageDataGenerator} class}
 
@@ -134,7 +142,7 @@ The possible transformations specified each have a random chance of being applie
     \item Vertical flips.
 \end{itemize}
 
-Using larger ranges of permitted transformations resulted in augmented images that did not represent the real data well. Examples of images created using both the ranges defined above and ``unrealistic'' ranges are shown in Figure \ref{fig:augexample}.
+Using larger ranges of permitted transformations resulted in augmented images that did not represent the real data well. Examples of images created using both the ranges defined above and ``unrealistic'' ranges are shown in Figure \ref{fig:augexample}. The shifts in brightness are particularly important as the calibration of the CT machine differs for each scan. As a result, a wide range of brightness distributions exist across different scans. This is discussed in further detail in Section \ref{sec:calcificationimplementation}.
 
 \begin{figure}[t]
     \centering
@@ -180,12 +188,6 @@ The \texttt{"{}same"{}} padding argument specifies that the dimensions of the ou
 
 The bottleneck contains only one block which also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, however no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the contracting block shown previously, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
 
-\subsubsection{The Expanding Path}
-
-The expanding path of the architecture described in the original U-Net paper consists of multiple blocks with each block containing a 2$\times$2 ``up-convolution'' (or transposed convolution) layer followed by two convolutional layers each using 3$\times$3 kernels and the ReLU activation function. A 2$\times$2 transposed convolution using a stride of two in the $x$ and $y$ axes results in a doubling of the image size in both axes. The first convolutional layer of each expanding block halves the number of feature channels.
-
-It is in these expanding blocks that the pass-forward of information from the contracting path takes place. The output feature channels from the corresponding blocks in the contracting path are appended to the feature channels that are produced by the transposed convolutions. This new set of feature channels containing both the feature channels from the contracting path, and the feature channels from the transposed convolution are then used as the inputs to the two convolutional layers in each block. As discussed in Chapter \ref{chap:technical}, this allows the features that are learned whilst contracting the image to also be used to reconstruct it. The implementation of the last expanding block is shown in Listing \ref{lst:block2}.
-
 \begin{lstlisting}[float={!t},caption={The implementation of the last expanding block of the U-Net architecture using the Keras functional API.},label={lst:block2},language=Python,upquote=true,belowskip=0pt]
 up9 = UpSampling2D(size=(2, 2))(conv8)
 up9 = Conv2D(64, 2, activation="relu", padding="same")(up9)
@@ -193,15 +195,13 @@ merge9 = concatenate([conv1, up9], axis=3)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(merge9)
 conv9 = Conv2D(64, 3, activation="relu", padding="same")(conv9)
 \end{lstlisting}
+\subsubsection{The Expanding Path}
+
+The expanding path of the architecture described in the original U-Net paper consists of multiple blocks with each block containing a 2$\times$2 ``up-convolution'' (or transposed convolution) layer followed by two convolutional layers each using 3$\times$3 kernels and the ReLU activation function. A 2$\times$2 transposed convolution using a stride of two in the $x$ and $y$ axes results in a doubling of the image size in both axes. The first convolutional layer of each expanding block halves the number of feature channels.
+
+It is in these expanding blocks that the pass-forward of information from the contracting path takes place. The output feature channels from the corresponding blocks in the contracting path are appended to the feature channels that are produced by the transposed convolutions. This new set of feature channels containing both the feature channels from the contracting path, and the feature channels from the transposed convolution are then used as the inputs to the two convolutional layers in each block. As discussed in Chapter \ref{chap:technical}, this allows the features that are learned whilst contracting the image to also be used to reconstruct it. The implementation of the last expanding block is shown in Listing \ref{lst:block2}.
+
 Looking at Listing \ref{lst:block2} it can be seen that the 2$\times$2 transposed convolution used in the original U-Net architecture is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are minor and are explored in Chapter \ref{chap:evaluation}. Note that the output feature channels of the \texttt{up9} layer are appended to the feature channels of the \texttt{conv1} layer from the first contracting block using the \texttt{concatenate} function.
-
-\subsubsection{Output}
-
-After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output values represent the probability that a given pixel is ``part of a boundary''. As mentioned earlier, a high level diagram of the U-Net architecture is shown in Figure \ref{fig:unetushape} and can be used to better understand the implementation details described.
-
-\subsubsection{The Keras \texttt{Model} Class}
-
-Finally, the model is stored in an instance of the Keras \texttt{Model} class. Both the input and output tensors are passed as arguments to the \texttt{Model} constructor and the resulting object contains all of the layers and their connections as attributes. Once an instance of the \texttt{Model} class has been created, the model can be configured using the \texttt{compile} method, trained with the \texttt{fit} method, or used for inference with the \texttt{predict} method.
 
 \begin{figure}[!t]
     \centering
@@ -211,9 +211,17 @@ Finally, the model is stored in an instance of the Keras \texttt{Model} class. B
     \label{fig:unetushape}
 \end{figure}
 
-\subsection{Training}
-
 \footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}\label{plotNN}}
+
+\subsubsection{Output}
+
+After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output values represent the probability that a given pixel is ``part of a boundary''. As mentioned earlier, a high level diagram of the U-Net architecture is shown in Figure \ref{fig:unetushape} and can be used to better understand the implementation details described.
+
+\subsubsection{The Keras \texttt{Model} Class}
+
+Finally, the model is stored in an instance of the Keras \texttt{Model} class. Both the input and output tensors are passed as arguments to the \texttt{Model} constructor and the resulting object contains all of the layers and their connections as attributes. Once an instance of the \texttt{Model} class has been created, the model can be configured using the \texttt{compile} method, trained with the \texttt{fit} method, or used for inference with the \texttt{predict} method.
+
+\subsection{Training}
 
 Once the architecture and online data augmentation process had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method can then be used to define which optimiser and loss function to use, and which metrics to monitor, and the \texttt{fit} method can be used to train the network.
 
@@ -232,10 +240,6 @@ Model checkpointing and TensorBoard visualisation are implemented with the \text
     \label{fig:outputs}
 \end{figure}
 
-\subsubsection{Initial Results}
-
-A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. These hyperparameters are summarised in Table \ref{tab:initialhyperparams}. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
-
 \begin{table}[t]
     \centering
     \caption{A summary of the initial hyperparameter settings used.}
@@ -253,6 +257,10 @@ A few examples of the initial results achieved are shown in Figure \ref{fig:outp
     \label{tab:initialhyperparams}
 \end{table}
 
+\subsubsection{Initial Results}
+
+A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. These hyperparameters are summarised in Table \ref{tab:initialhyperparams}. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
+
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}
 
@@ -267,6 +275,13 @@ In order to train the modified architecture, the curated dataset discussed in Se
 Whereas the 2D architecture made use of the \texttt{ImageDataGenerator} class to load 2D images into the model, a 3D version of the \texttt{ImageDataGenerator} class is not currently implemented in the Keras library. Although the \texttt{ImageDataGenerator} class could be used to simply load nine patches one after another and the Keras \texttt{stack} method could be used to stack the images to produce a $(9 \times y \times x \times 1)$ tensor, this method would not allow for online augmentation to be performed since different random transformations would be applied to all nine of the loaded patches. Note also that even if the same transformations were able to be applied to each 2D patch, transformations in the third dimension would not be possible. Thus, a custom data loader was written.
 
 An \texttt{ImageDataGenerator3D} class and a \texttt{LabelDataGenerator2D} class were implemented. These were designed to be similar to the Keras \texttt{ImageDataGenerator} class allowing the same data augmentation arguments to be passed to their constructors. Recall that in order to produce 2D image-label pairs, a pair of generators created using the \texttt{flow\_from\_directory} method were used with the same \texttt{seed} to augment the image-label pairs with the same transformations. The online augmentation of the 3D data is designed to follow a similar structure; a pair of generators created using the \texttt{flow\_from\_directory} method of the \texttt{ImageDataGenerator3D} and \texttt{LabelDataGenerator2D} classes with the same \texttt{seed} argument are used to perform online augmentation to both the nine-patch sample and the single label patch. The \texttt{ImageDataGenerator3D} class is used to load and augment the 3D samples and the \texttt{LabelDataGenerator2D} class is used to load and augment the 2D labels.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/3D-overview.pdf}
+    \caption{An overview of the components implemented in this section. Each training sample that the modified architecture trains on will consist of nine patches. Only the centre slice is labelled and the model attempts to extract the boundaries present in this central slice. A custom 3D ``data loader'' is implemented in order to perform online augmentation of the nine-patch training samples.}
+    \label{fig:3doverview}
+\end{figure}
 
 \subsubsection{The Custom \texttt{flow\_from\_directory} Methods}
 
@@ -289,18 +304,11 @@ The custom data loader enabled the following transformations:
 \end{itemize}
 Although these are the ranges used to train this particular model, these transformations can use values within any given range, not just the ranges specified above. Shifts in the $x$, $y$, and $z$ axes were also possible but increased training times significantly (taking up to X times as long) and so were not used when training. (maybe say here how long loading the data and augmenting took??)
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{images/3D-overview.pdf}
-    \caption{An overview of the components implemented in this section. Each training sample that the modified architecture trains on will consist of nine patches. Only the centre slice is labelled and the model attempts to extract the boundaries present in this central slice. A custom 3D ``data loader'' is implemented in order to perform online augmentation of the nine-patch training samples.}
-    \label{fig:3doverview}
-\end{figure}
-
 \subsection{Architecture Modification}
 
 Although various modified architectures were experimented with and are discussed in Chapter \ref{chap:evaluation}, only the initial modified architecture experimented with will be described here.
 
-At a high level, the modification consisted of replacing all of the 2D operations in the contracting path with their 3D counterparts. However, issues arise when a tensor output from a 3D layer is passed to a 2D layer. Whereas the Keras \texttt{Conv3D} layer requires an input tensor with shape ($batch \times z \times y \times x \times channels$) and produces a tensor with the same shape, the \texttt{Conv2D} layer inputs and outputs tensors with the shape ($batch \times y \times x \times channels$). Thus, in order to pass the resulting tensor to a 2D layer, the tensor of shape ($batch \times z \times y \times x \times channels$) must be reshaped into a ($batch \times y \times x \times (z \times channels)$) tensor.
+At a high level, the modification consisted of replacing all of the 2D operations in the contracting path with their 3D counterparts. However, issues arise when a tensor output from a 3D layer is passed to a 2D layer. Whereas the Keras \texttt{Conv3D} layer requires an input tensor with shape ($batch \times z \times y \times x \times channels$) and produces a tensor with the same shape, the \texttt{Conv2D} layer inputs and outputs tensors with the shape ($batch \times y \times x \times channels$). Thus, in order to pass the resulting tensor to a 2D layer, the tensor of shape ($batch \times z \times y \times x \times channels$) must be reshaped into a ($batch \times y \times x \times (z \times channels)$) tensor. A diagram of the modified U-Net architecture is shown in Figure \ref{fig:unetushape3D}.
 
 \begin{lstlisting}[float={!t},caption={The implementation of the first contracting block of the modified U-Net architecture using the Keras functional API.},label={lst:3Dblock},language=Python,upquote=true,belowskip=0pt]
 conv1 = Conv3D(8, 3, activation="relu", padding="same")(inputs)
@@ -330,13 +338,13 @@ The remaining contracting blocks are implemented similarly to the first block sh
 
 A fully 3D U-Net architecture was also implemented and experimented with. This network takes nine-patch labels rather than a single central label and attempts to predict the boundaries present in all nine sample patches. In this case, the architecture modification consisted of replacing all of the 2D operations present in the network with their 3D counterparts. A pool size and stride of one was again used in the $z$ axis of the max-pooling layers.
 
-In order to train this fully 3D architecture, a new dataset containing nine-patch samples and nine-patch labels was curated using the same sliding window technique. Since only a small selection of slices were labelled initially to curate the original 2D dataset, a larger selection of slices adjacent to the initially selected slices were labelled manually. Ultimately, labelling enough data for this model to perform well proved challenging---curating a dataset with the same amount of samples used to train the 2D architecture would require nine times the amount of labelled slices.
+In order to train this fully 3D architecture, a new dataset containing nine-patch samples and nine-patch labels was curated using the same sliding window technique. Since only a small selection of slices were initially labelled to curate the original 2D dataset, a larger selection of slices adjacent to the initially selected slices were labelled manually. Ultimately, labelling enough data for this model to perform well proved challenging---curating a dataset with the same amount of samples used to train the 2D architecture would require nine times the amount of labelled slices.
 
 This architecture is experimented with and discussed further in Chapter \ref{chap:evaluation}.
 
 \subsection{Initial Results}
 
-
+Examples of the initial results achieved using the modified architecture that outputs a single prediction of the boundaries present in the central slice are shown in Figure \ref{fig:outputs2}. These initial results were output by a network trained using the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. The entire training process took ${\sim}$50 minutes on an Nvidia P100 ``Pascal'' GPU.
 
 \begin{figure}[t]
     \centering
@@ -385,24 +393,41 @@ Once the prediction is skeletonized, the ``average distance'' from the predictio
 
 Once these closest distances have been found for each pixel, they are averaged to calculate the average distance from the prediction to the label. This process is then repeated using the label as the base in order to calculate the average distance from the label to the prediction. These two distances are then averaged once again to calculate a final average distance between the two images. Note that the average distance from the prediction to the label can be significantly different from the the average distance from the label to the prediction and so averaging the two is important.
 
-Since the metric relies on the average distance between white pixels, issues arise when a pure black image is predicted by the network. If a prediction contains no white pixels, what is the average distance from itself to the label? A distance of $\infty$ would not be able to contribute to an accuracy averaged over all samples. It is important for a prediction of an all black image to achieve a low accuracy metric; removing these from the average accuracy achieved would result in the average being positively skewed. Thus, a single white pixel is placed in the centre of a pure black prediction allowing all samples to receive a finite accuracy and contribute to the overall average.
+Since the metric relies on the average distance between white pixels, issues arise when a pure black image is predicted by the network. If a prediction contains no white pixels, what the average distance from itself to the label should be. A distance of $\infty$ would not be able to contribute to an accuracy averaged over all samples. It is important for a prediction of an all black image to achieve a low accuracy metric; removing these from the average accuracy achieved would result in the average being positively skewed. Thus, a single white pixel is placed in the centre of a pure black prediction ensuring that all samples receive a finite accuracy enabling them to contribute to the overall average.
 
 % For example, imagine a label with five boundaries present and a prediction that has only predicted one of the five boundaries but has predicted this boundary well. The average distance from the prediction to the label would be very low as for each white pixel in the one predicted boundary, there are white pixels very close by in the ground truth label. However, the average distance from the label to the prediction would be significantly higher; for each white pixel in the remaining four boundaries, the closest white pixels would be 
 
 \subsection{The \texttt{ctypes} Module}
 
-Since the entirety of the proejct is written in Python, the accuracy metric calculation was also written in Python allowing it to easily be integrated into the training process. However, when written in Python, the calculation of the custom accuracy metric for a single sample took an average of 38 seconds. Calculating the average accuracy achieved across the entire training set would therefore take up to three hours.
+Since the entirety of the proejct is written in Python, the accuracy metric calculation was also written in Python allowing it to easily be integrated into the training process. However, when written in Python, the calculation of the custom accuracy metric for a single sample took an average of 38 seconds. Calculating the average accuracy achieved across the entire training set would therefore take up to three hours. Since the distances from a white pixel in one image to all white pixels in the other must be calculated in order to find the minimum, the time complexity of the algorithm is $O(n^2)$ and this computation is unavoidable.
 
-In order to reduce the time taken to calculate the accuracy metric, an implementation was written in C and the \texttt{ctypes} module was used to wrap the the C implementation in Python. 
+In order to reduce the time taken to calculate the accuracy metric, an implementation was written in C and the \texttt{ctypes} module was used to wrap the the C implementation in Python. The C code is compiled into a \texttt{.so} library and this library can be loaded and its methods can be accessed in Python using the \texttt{ctypes} module. 
 
-Once implemented and wrapped in a Python function, the C implementation took an average of 0.8 seconds to calculate the accuracy metric for a single sample. This is a ${\sim}47$ times speed up compared to the pure Python implementation, and allows for the accuracy across the entire training set to be calculated in just four and a half minutes.
+Once implemented and wrapped in a Python function, the C implementation took an average of 0.8 seconds to calculate the accuracy metric for a single sample. This provides a ${\sim}47$ times speed up compared to the pure Python implementation, and allows for the accuracy across the entire training set to be calculated in just four and a half minutes.
 
-Explain briefly how to use ctypes and show a tiny listing? explain compiling to a .so library?
+\subsection{Initial Accuracy Results}
+
+
 
 \section{Calcification Rate Estimation}
+\label{sec:calcificationimplementation}
 
-Distance represented by a voxel is ... mm$^3$. So in 2D one pixel represents ... mm$^2$. 
+As outlined in Chapter \ref{chap:context}, the objective of this project is to utilise the implemented networks to estimate the calcification rate---the mass of skeletal matter produced annually. In order to estimate the calcification rate, the linear extension rate must first be estimated. The linear extension rate is the distance that the coral grows per year and can be estimated using the boundary positions predicted by the networks. Next, the density of the matter being produced must be estimated. This can be achieved using a calibration curve to estimate the density values that the the greyscale voxel values of the CT scan correspond to. Finally, the calcification rate can be calculated by multiplying the linear extension rate with the density.
 
-first need to find distances in 2d. then take into account how much one pixel is in mm. then we have the linear extension rate. now need to find the density. talk about how it is found. then multiply the two and we have calcification rate?
+% More specifically, the annual banding can be used to measure three aspects of coral growth~\cite{lough2011new}:
 
-\subsection{Point Sampling}
+% \begin{enumerate}
+%     \item The linear extension rate (mm y$^{-1}$): the distance that the coral grows per year.
+%     \item The density (g cm$^{-3}$): the density of the skeletal matter being produced.
+%     \item The calcification rate (g cm$^{-2}$ y$^{-1}$): the mass of skeletal matter being produced per year, calculated by multiplying the linear extension rate with the density.
+% \end{enumerate}
+
+% Distance represented by a voxel is ... mm$^3$. So in 2D one pixel represents ... mm$^2$. 
+
+% first need to find distances in 2d. then take into account how much one pixel is in mm. then we have the linear extension rate. now need to find the density. talk about how it is found. then multiply the two and we have calcification rate?
+
+% \subsection{Point Sampling}
+
+\subsection{Linear Extension Rate}
+
+\subsection{Density}

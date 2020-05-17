@@ -125,7 +125,7 @@ The \texttt{flow\_from\_directory} method only loads one stream of images from a
 
 Since the \texttt{flow\_from\_directory} method applies random transformations to each image, the same random transformations must also be applied to the corresponding labels. This can be achieved by passing the same \texttt{seed} argument to the two \texttt{flow\_from\_directory} methods used to load the images and labels. These methods are also capable of shuffling the order in which images are loaded and trained with, so using the same \texttt{seed} value also ensures that the shuffling follows the same order for both the images and labels. The actual transformations to be used when augmenting the data are specified using various arguments passed to the \texttt{ImageDataGenerator} constructor.
 
-Since the training generator will yield randomly augmented image-label pairs indefinitely, a ``classic'' epoch will never be completed. Instead, when training the network the \texttt{steps\-per-epoch} argument defines how many samples should be processed before an epoch is considered complete. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
+Since the training generator will yield randomly augmented image-label pairs indefinitely, a ``classic'' epoch will never be completed. Instead, when training the network the \texttt{steps-per-epoch} argument defines how many batches should be processed before an epoch is considered complete. A simplified example demonstrating the implementation of the training generator and the transformations used is shown in Listing \ref{lst:augment}.
 
 \subsubsection{Acceptable Augmentations}
 
@@ -259,7 +259,7 @@ Model checkpointing and TensorBoard visualisation are implemented with the \text
 
 \subsubsection{Initial Results}
 
-A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. These hyperparameters are summarised in Table \ref{tab:initialhyperparams}. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
+A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented batches. A batch size of two was used so the total of $20\times500\times2=\text{20,000}$ augmented samples were seen by the network. These hyperparameters are summarised in Table \ref{tab:initialhyperparams}. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
 
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}
@@ -344,7 +344,7 @@ This architecture is experimented with and discussed further in Chapter \ref{cha
 
 \subsection{Initial Results}
 
-Examples of the initial results achieved using the modified architecture that outputs a single prediction of the boundaries present in the central slice are shown in Figure \ref{fig:outputs2}. These initial results were output by a network trained using the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used. The entire training process took ${\sim}$50 minutes on an Nvidia P100 ``Pascal'' GPU.
+Examples of the initial results achieved using the modified architecture that outputs a single prediction of the boundaries present in the central slice are shown in Figure \ref{fig:outputs2}. These initial results were output by a network trained using the Adam optimiser with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented samples. A batch size of two was used so the total of $20\times500\times2=\text{20,000}$ augmented nine-patch samples were seen by the network. The entire training process took ${\sim}$50 minutes on an Nvidia P100 ``Pascal'' GPU.
 
 \begin{figure}[t]
     \centering
@@ -407,7 +407,7 @@ Once implemented and wrapped in a Python function, the C implementation took an 
 
 \subsection{Initial Accuracy Results}
 
-
+Maybe show graphs comparing accuracy metric achieved to the loss achieved? outline exactly what accuracy the 2d and 3d versions got
 
 \section{Calcification Rate Estimation}
 \label{sec:calcificationimplementation}

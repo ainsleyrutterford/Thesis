@@ -3,7 +3,9 @@
 		xlabel=$p$,
 		ylabel=Loss,
 		width=0.58\textwidth,
-        height=\axisdefaultheight
+        height=\axisdefaultheight,
+        legend cell align=left,
+        legend style={fill=white, fill opacity=0.8, draw=none,text opacity=1}
 	]
 	
 	\addplot[samples=300, domain=0:1, thick, blue]   {2 * -(1-x)^0   * log10(x)};

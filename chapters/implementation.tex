@@ -211,9 +211,9 @@ Looking at Listing \ref{lst:block2} it can be seen that the 2$\times$2 transpose
     \label{fig:unetushape}
 \end{figure}
 
-\footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}\label{plotNN}}
-
 \subsubsection{Output}
+
+\footnotetext{\url{https://github.com/HarisIqbal88/PlotNeuralNet}\label{plotNN}}
 
 After the last expanding block, a final 1$\times$1 convolutional layer is present in the original U-Net architecture. This convolutional layer has two output feature channels, one corresponding to each possible class that a pixel could be classified as. Although the original paper does not mention an activation function of any kind, the sigmoid activation function is used in this implementation ensuring that the output values represent the probability that a given pixel is ``part of a boundary''. As mentioned earlier, a high level diagram of the U-Net architecture is shown in Figure \ref{fig:unetushape} and can be used to better understand the implementation details described.
 
@@ -389,13 +389,25 @@ There are multiple steps involved in the calculation of the custom accuracy. Fir
     \label{fig:skeletonisation}
 \end{figure}
 
+\subsubsection{Average Distance Calculation}
+
 Once the prediction is skeletonized, the ``average distance'' from the prediction to the ground truth label can be calculated. For each white pixel in the skeletonized prediction, the closest white pixel in the label is found. The closest white pixel has the shortest Euclidean distance between itself and the prediction's white pixel. These distances are calculated as if the images were overlaid with each other. For example, a white pixel with position (24, 36) in the skeletonized prediction would have a Euclidean distance of zero from a white pixel also with position (24, 36) in the ground truth label.
 
 Once these closest distances have been found for each pixel, they are averaged to calculate the average distance from the prediction to the label. This process is then repeated using the label as the base in order to calculate the average distance from the label to the prediction. These two distances are then averaged once again to calculate a final average distance between the two images. Note that the average distance from the prediction to the label can be significantly different from the the average distance from the label to the prediction and so averaging the two is important.
 
 Since the metric relies on the average distance between white pixels, issues arise when a pure black image is predicted by the network. If a prediction contains no white pixels, what the average distance from itself to the label should be. A distance of $\infty$ would not be able to contribute to an accuracy averaged over all samples. It is important for a prediction of an all black image to achieve a low accuracy metric; removing these from the average accuracy achieved would result in the average being positively skewed. Thus, a single white pixel is placed in the centre of a pure black prediction ensuring that all samples receive a finite accuracy enabling them to contribute to the overall average.
 
-% For example, imagine a label with five boundaries present and a prediction that has only predicted one of the five boundaries but has predicted this boundary well. The average distance from the prediction to the label would be very low as for each white pixel in the one predicted boundary, there are white pixels very close by in the ground truth label. However, the average distance from the label to the prediction would be significantly higher; for each white pixel in the remaining four boundaries, the closest white pixels would be 
+% For example, imagine a label with five boundaries present and a prediction that has only predicted one of the five boundaries but has predicted this boundary well. The average distance from the prediction to the label would be very low as for each white pixel in the one predicted boundary, there are white pixels very close by in the ground truth label. However, the average distance from the label to the prediction would be significantly higher; for each white pixel in the remaining four boundaries, the closest white pixels would be
+
+\subsubsection{Accuracy Calculation}
+
+The average distance between the prediction and the label can be thought of as an error metric rather than an accuracy metric; the lower the distance, the better the model has performed in producing that prediction. Accuracy metrics are often represented as a percentage where a higher percentage value corresponds to better performance. In order to represent this accuracy metric as a percentage, the accuracy achieved is calculated as
+
+\begin{equation*}
+    \frac{d_{max} - {d}}{d_{max}} \times 100
+\end{equation*}
+
+where $d_{max}$ is the maximum average distance that two images could be, and $d$ is the actual distance calculated. $d_{max}$ would theoretically be achieved if the prediction contained a single white pixel in one of the corners, and the ground truth label contained a single white pixel in the opposite corner. This would result in a maximum theoretical distance of 362 for 256$\times$256 patches. However, since the label patches present in the curated dataset must contain labelling across the entire patch, this scenario can never occur. The maximum distance achievable on a single label in the dataset was actually 131 pixels and the average across the entire dataset was ${\sim}110$ pixels. Ultimately, a maximum of 90 pixels was chosen, with errors above 90 pixels being truncated to an accuracy of 0\%. This lower maximum (in comparison with the theoretical maximum of 362) was chosen to ensure that accuracy percentages over 90\% correspond to predictions that are often considered acceptable when inspected visually.
 
 \subsection{The \texttt{ctypes} Module}
 
@@ -430,4 +442,10 @@ As outlined in Chapter \ref{chap:context}, the objective of this project is to u
 
 \subsection{Linear Extension Rate}
 
+In order to estimate the linear extension rate, the average distance between two density boundaries must first be calculated. This distance can be calculated with a technique similar to the one described in Section \ref{sec:accimplementation}.
+
+Then use voxel size stored with each scan. Typical voxel sizes are ${\sim}0.1$ mm?
+
 \subsection{Density}
+
+Use 5 density values to calibrate 

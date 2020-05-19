@@ -1,4 +1,4 @@
-This chapter first discusses the experiments carried out in order to both improve the performance, and gain a better understanding, of the sub-components implemented. Experiments such as hyperparameter optimisation and ablation studies including both the two dimensional and three dimensional models are discussed. Once the results are cross-validated, the final results achieved by the optimised models resulting from the experimentation are then presented, interpreted, and compared to results achieved by alternative models. Finally, various aspects of the project are critically evaluated.
+This chapter first discusses the experiments carried out in order to both improve the performance, and gain a better understanding, of the sub-components implemented. Experiments such as hyperparameter optimisation and ablation studies including both the two dimensional and three dimensional models are discussed. Once the results are cross-validated, the final results achieved by the optimised models are then presented, interpreted, and compared to results achieved by alternative models. Finally, various aspects of the project are critically evaluated.
 
 \section{Two Dimensional Experimentation}
 
@@ -46,14 +46,24 @@ This section reintroduces the initial results achieved by the ``baseline'' 2D mo
         \end{tikzpicture}
         \caption{Loss curve}
     \end{subfigure}
-    \caption{The loss and accuracy curves achieved when training the model over 20 epochs using the hyperparameters outlined in Table \ref{tab:initialhyperparams}.}
+    \caption{The loss and accuracy curves achieved when training the model over 20 epochs using the hyperparameters outlined in Table \ref{tab:initialhyperparams}. It is important to note that although the validation loss begins to increase after epoch 13, the validation accuracy does not begin to decrease. Upon visual inspection of the boundary predictions, it could also be seen that the predictions were qualitatively better when the network was trained for 20 epochs rather than 13. The desirable qualitative features of a prediction are outlined in Figure \ref{fig:goodbad}.}
     \label{fig:basetrainacc}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/initial-outputs.png}
-    \caption{Good and bad results placeholder.}
+    \begin{subfigure}[t]{0.38\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/good-initial.png}
+        \caption{Higher accuracy: 96.8\% and 96.5\%}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.58\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/bad-initial.png}
+        \caption{Lower accuracy: 92.1\%, 88.4\%, and 91.5\%}
+    \end{subfigure}
+    \caption{Examples of both high and low quality outputs from the network trained using the initial hyperparameters outlined in Table \ref{tab:initialhyperparams}. The top images are patches from the validation set, the centre images are the corresponding ground truth labels, and the bottom images are the outputs of the network after they have been skeletonized. \textbf{(a)} Examples of high quality predictions. These examples achieved higher accuracies compared to the rest of the samples in the validation set. It can be seen that the boundaries contain comparatively less ``noise'' than the lower quality examples. \textbf{(b)} Examples of low quality predictions. The first example achieves a lower accuracy score due to the noise present in inner section of the coral on the left side of the image. The second example received a particularly low accuracy score due to the accidental classification of the object in the top left of the image as a boundary. This object is the platform that the coral sample is placed on in the CT machine and should perhaps have been cropped from the slices that these patches were produced from. The third example receives a low accuracy due to the accidental misclassification of a boundary perpendicular to the skeleton's surface. As discussed in Chapter \ref{chap:context}, density banding boundaries should be parallel to the coral skeleton surface.}
     \label{fig:goodbad}
 \end{figure}
 
@@ -75,7 +85,30 @@ The accuracies achieved when training the network using various initial learning
 
 The training loss achieved by the 0.001 learning rate oscillated at ${\sim}0.5$ for the entire training process, even over multiple training attempts. In comparison, the 0.00005 learning rate achieved a training loss of 0.06 and a validation loss of 0.16. These oscillations are a common sign of a learning rate being too high and stepping ``over'' minima~\cite{bishop1995neural}. Pure black images were output for all samples in both the training and validation set resulting in an accuracy of 0\% being achieved.
 
-Although the both the 0.00005 and 0.0001 learning rates all achieved a similar accuracy of ${\sim}96\%$ after 20 epochs, the 0.00005 value was ultimately chosen for multiple reasons. First, the accuracy curve is smoother than the curves resulting from higher values, allowing the accuracy to be more reliably used as a stopping criteria for early stopping. Second, when inspecting the results visually, the 0.00005 learning rate results in predictions that are far clearer in the inner areas of the coral skeleton than any other learning rate. Although most of the learning rates were able to produce acceptable predictions nearer to the surface of the coral, only the 0.00005 learning rate was able to produce acceptable predictions in these inner areas. An example of a patch that benefitted from the 0.00005 learning rate is shown in Figure \ref{fig:lrdiff}.
+Although the both the 0.00005 and 0.0001 learning rates all achieved a similar accuracy of ${\sim}96\%$ after 20 epochs, the 0.00005 value was ultimately chosen for multiple reasons. First, the training and validation accuracy curves are smoother than the curves resulting from higher values, allowing the accuracy to be more reliably used as a stopping criteria for early stopping. Second, when inspecting the results visually, the 0.00005 learning rate results in predictions that are far clearer in the inner areas of the coral skeleton than any other learning rate. Although most of the learning rates were able to produce acceptable predictions nearer to the surface of the coral, only the 0.00005 learning rate was able to produce acceptable predictions in these inner areas. An example of a patch that benefited from the 0.00005 learning rate is shown in Figure \ref{fig:lrdiff}.
+
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/lr-comparison.png}
+        \caption{Ground truth boundaries}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/1e4-example.png}
+        \caption{$\eta=0.0001$ prediction}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/5e5-example.png}
+        \caption{$\eta=0.00005$ prediction}
+    \end{subfigure}
+    \caption{An example of a patch that benefits from the a learning rate $\eta$ of 0.00005. The $\eta=0.0001$ prediction achieved an accuracy of 92.1\% whereas the $\eta=0.00005$ prediction achieved an accuracy of 95.5\%. The 0.0001 prediction achieves a lower accuracy score due to the noise present in inner section of the coral on the left side of the image. The 0.00005 prediction has more realistic predictions in this area of the image with all boundaries seeming close to parallel to the growth surface of the skeleton.}
+    \label{fig:lrdiff}
+\end{figure}
 
 \begin{figure}[!t]
     \begin{subfigure}[b]{0.49\textwidth}
@@ -129,46 +162,28 @@ Although the both the 0.00005 and 0.0001 learning rates all achieved a similar a
         \caption{Varying batch size}
         \label{fig:bsplot}
     \end{subfigure}
-    \caption{The accuracies achieved on the validation set using various hyperparameter values. A TensorBoard smoothing value of 0.3 was used. \textbf{(left)} The accuracies achieved when training the network using various initial learning rate values $\eta$. Apart from the learning rate, the same hyperparameters used to achieve the initial results (outlined in Table \ref{tab:initialhyperparams}) were used once again. \textbf{(right)} The accuracies achieved when training the network using various batch sizes. Apart from a learning rate of 0.00005 being used, the hyperparameters outlined in Table \ref{tab:initialhyperparams} were used once again.}
-\end{figure}
-
-\begin{figure}[!t]
-    \includegraphics[width=\textwidth, height=0.6\textwidth]{example-image-a}
-    \caption{0.0001 vs 0.00005 examples.}
-    \label{fig:lrdiff}
+    \caption{The accuracies achieved on the validation set using various hyperparameter values. A TensorBoard smoothing value of 0.3 was used. \textbf{(a)} The accuracies achieved when training the network using various initial learning rate values $\eta$. Apart from the learning rate, the same hyperparameters used to achieve the initial results (outlined in Table \ref{tab:initialhyperparams}) were used once again. \textbf{(b)} The accuracies achieved when training the network using various batch sizes. Apart from a learning rate of 0.00005 being used, the hyperparameters outlined in Table \ref{tab:initialhyperparams} were used once again.}
 \end{figure}
 
 \subsubsection{Batch Size}
 
-The next parameter experimented with was the batch size. Ranging from anywhere from a size of one up to even a few hundreds in some applications~\cite{bengio2012practical}, the batch size is a parameter 
+The next parameter experimented with was the batch size. Ranging from a size of one up to a few hundreds in some applications~\cite{bengio2012practical}, the batch size not only affects the performance achieved by a network, but can also affect training times significantly.
 
-Values in the range of one to 16 were experimented with. The accuracies achieved when training using these various batch sizes are shown in Figure \ref{fig:bsplot}. Note that in order to ensure that the model was exposed to the same number of samples per epoch, with each increase in batch size, the \texttt{steps-per-epoch} argument of the \texttt{fit} method was also decreased. For example, if the batch size was doubled, the \texttt{steps-per-epoch} was halved.
+Small batches with sizes equal to powers of two were experimented with. The accuracies achieved when training using these various batch sizes are shown in Figure \ref{fig:bsplot}. Looking at Figure \ref{fig:bsplot}, it can already be seen that as the batch size increases, the accuracy achieved by the model decreases (with the exception of a batch size of one). Batch sizes greater than 16 were also experimented with but the accuracy achieved only continued to decrease. It may seem that the accuracy achieved still increase further given more training epochs, however even after 40 epochs the network trained with $batch=8$ only achieved an accuracy of 91\% compared to the accuracy of 95\% achieved when $batch=2$. Note that in order to ensure that the model was exposed to the same number of samples per epoch, with each increase in batch size, the \texttt{steps-per-epoch} argument of the \texttt{fit} method was also decreased. For example, if the batch size was doubled, the \texttt{steps-per-epoch} was halved. This is due to the \texttt{steps-per-epoch} argument specifying how many batches compose an epoch, rather than how many samples compose an epoch.
 
-Values above 16 were not experimented with as the accuracy achieved was decreasing as the batch size increases. 
+In practice, it has often been observed that larger batch sizes result in lower accuracy being achieved in deep learning models~\cite{keskar2016large, smallbatch, largebatch}. Keskar et al. propose that this decrease in performance may be attributed to larger batch sizes converging to ``sharp'' minima~\cite{keskar2016large}. Whilst a ``flatter'' minimum can be described with low precision, a sharp minimum requires high precision. Keskar et al. cite the minimum description length (MDL) theory, which states that statistical models that require fewer bits to describe generalise better~\cite{rissanen}, and argue that since flat minisers can be specified with lower precision, they tend to have better generalisation performance. Note that the accuracy achieved on the validation set is a measure of how well the network generalises, since the network has not yet been trained on any slices present in the validation set.
 
-with each increase in batch size, decrease no of steps per epoch so that the number of samples seen in the end is the same (since steps per epoch specifies the number of batches per epoch, not samples).
-
-unet paper uses 1? 2? sensible ranges are??
-
-try batch sizes 1, 2, 4, 8, 16, 32, 64, 128?
-
-bengio does say that learning rate and batch size should be reoptimised at the end
-
-``With an increase in the number of nodes, the batch size grows. But trainingwith large batch size often results in the lower model accuracy.'': \url{https://arxiv.org/pdf/1708.03888.pdf}
-
-Also in paper above: on page 3 they show table of training alex net with different batch sizes and show that accuracy decreases with increasing batch size.
-
-``it has been observed in practice that when using a larger batch there is a degradation in the quality of the model, as measured by its ability to generalize.'': \url{https://arxiv.org/pdf/1609.04836.pdf}
-
-``It is often better to use a larger batch size so a larger learning rate can be used.'': \url{https://arxiv.org/pdf/1803.09820.pdf}
+Ultimately, a batch size of two was decided upon as the network trained with this size achieved the highest training and validation accuracy. Although a batch size of 16 provided a ${\sim}1.4$ times speed up in the training process, the model still trains in under 20 minutes\footnote{When trained using an Nvidia P100 ``Pascal'' GPU.} when using a batch size of two. For now, the improved performance provided by a smaller batch size outweighs the benefits provided by the training time saved when using larger sizes. If vast amounts of labelled data were available, a larger batch size would likely be necessary to keep training times reasonable.
 
 \subsubsection{Optimisation Algorithms}
 
-Said in tech bg that I experimented with diff optimisers so need to add comparisons to SGD etc.
+This section discusses experimention carried out with the stochastic gradient descent (SGD) optimisation algorithm. SGD was used successfully to train the original U-Net architecture to perform semantic segmentation on 2D greyscale biomedical data~\cite{ronneberger2015u} and so is a reasonable alternative choice to the Adam optimiser used so far.
 
-Look at the momentum values of adam? play around a little?
+The Keras implementation of Stochastic Gradient Descent (SGD) was experimented with. Learning rates of 0.00005, 0.0001, 0.0005, and 0.001 were all experimented with but none yielded acceptable results. Momentum 0.5 and 0.9 still not acceptable results. Maybe show the image output for all SGD implementations? Explain that a nearly constant accuracy of ... was achieved. (just use the last acc value). Tried momentum 0.5 and 0.9 with learning rates 0.001 and 0.01 and still no good results. Tried learning rates from 0.00005 all the way to 0.01 with and without momentum and nothing worked. larger learning rates output black images, lower all output this image:.
 
 Tried SGD with 0.00005, 0.0001, 0.0005, no good results. maybe example output image? maybe the momentum of adam was very important? loss stuck at 0.16 and val loss never came below 0.3. Very similar results for adam with epsilon=1 and epsilon=? maybe suggests that the epsilon (maybe explain what adam say epsilon does?) is very important for the performance of adam?
+
+Maybe mention the momentum weight update rule used in Keras?
 
 \subsubsection{Loss Functions}
 
@@ -178,7 +193,24 @@ Tried SGD with 0.00005, 0.0001, 0.0005, no good results. maybe example output im
     \label{fig:lossfunctiondiff}
 \end{figure}
 
-Focal loss and other loss functions? to combat class imbalance
+As outlined in Chapter \ref{chap:implementation}, the labelling technique used gives rise to a severe class imbalance. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve a low loss value for ${\sim}$98\% of the image. Although this has proved to be a problem when assessing the accuracy of the model, the effects of this class imbalance on the network's ability to learn are not yet obvious. This section outlines the experiments carried out involving the Focal Loss function designed specifically to address the class imbalance problem.
+
+% Proposed by Lin et al. in 2018, the Focal Loss~\cite{focalloss} is designed to address the ``class imbalance'' problem. In a typical classification problem, class imbalance occurs when one class contains significantly fewer samples than the other classes. Lin et al. highlight the fact that when using the cross-entropy loss function, even samples that are well-classified incur a loss with ``non-trivial'' magnitude. When summed over large numbers of samples from the easily classified majority class, these small loss values can overwhelm the loss resulting from the minority class samples~\cite{focalloss}. As highlighted in Section \ref{sec:challenges}, the boundary extraction task inherently contains a severe class imbalance; the focal loss function could be used to reduce the effects of the class imbalance on the performance of the networks used throughout the project.
+
+% There are two major issues that arise when using a standard per-pixel accuracy metric to quantify the performance achieved in this task. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%.
+
+% In an attempt to address this problem, the focal loss introduces two new parameters: a weighting factor $\alpha \in [0, 1]$ and a ``focusing'' parameter $\gamma \geq 0$.
+% The binary focal loss is then defined as:
+
+% \begin{equation}
+%     \text{FL}(p, y) = 
+%     \begin{cases}
+%         -\alpha(1 - p)^{\gamma} \log (p) & \text{if } y = 1\\
+%         (1 - \alpha)p^{\gamma} \log (1 - p) & \text{otherwise}
+%     \end{cases}
+% \end{equation}
+
+% where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 1]$ is the model's estimated probability for the class with label $y = 1$. The weighting factor increases the loss produced by the misclassification of minority class samples whilst the focusing factor ``reduces the contribution from easy examples and extends the range in which an example receives low loss''~\cite{focalloss}. When $\gamma = 0$ and $\alpha = 1$, the focal loss is equivalent to the cross-entropy loss. The contribution of the $\gamma$ value to the loss produced can be seen in Figure \ref{fig:focal}.
 
 Look at the alpha and gamma values of focal loss? play around with them a little. look at the table in the original paper that says when you should use what.
 
@@ -202,6 +234,10 @@ At the end of this section, resummarise the configuration of chosen params now i
 \end{table}
 
 \subsubsection{Dropout}
+
+% Another technique often used to reduce overfitting is dropout. The use of dropout as a regularization technique when training neural networks was first popularised by Srivastava et al.~\cite{dropout} in 2014. Throughout the training process, subsets of randomly selected neurons (and their connections) are ``dropped''. Only the resulting reduced network is then trained on a particular training sample. A subset of dropped neurons will only remain dropped whilst processing a single training sample; the dropped neurons will then be added back to the network and a different subset of neurons will be dropped when processing the next training sample. The choice of which subset of neurons to drop for each training sample is random. 
+
+% Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~\cite{dropout}. Co-adaptation between neurons refers to the phenomenon when one neuron relies too heavily on the input from another neuron. If one neuron relies too heavily on the input of another neuron, the receiving neuron's performance in producing an activation that would be beneficial to the performance of the network may be hindered by the one ``bad'' input---even if the inputs from all other incoming neurons were ``good''. In this case, the terms good and bad are used to describe whether or not an input helped in contributing to the the beneficial activation value calculated via backpropagation.
 
 REMEMBER TO TRY AND UNDERSTAND WHY WHAT EVER HAPPENS IS THE CASE AND BACK IT UP ALL THROUGHOUT
 
@@ -227,10 +263,14 @@ Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf
 
 \subsection{Resolution}
 
+In order to gain a better understanding of the U-Net architecture, the resolutions
+
 \subsection{Augmentation}
 \label{sec:evalaugmentation}
 
 \subsubsection{No Augmentation}
+
+I said in Chapter \ref{chap:implementation} that augmentation was very important.
 
 \subsubsection{Augmentation Ranges}
 
@@ -241,6 +281,32 @@ comparison of convtranspose to upsample and then conv.
 remove the relu at the end of the implementation?
 
 Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
+
+\begin{figure}[!t]
+    \centering
+    \begin{tikzpicture}[scale=0.9]
+        \begin{axis}[
+            height=\axisdefaultheight,
+            width=0.6\textwidth,
+            ylabel=\small{Accuracy (\%)},
+            xlabel=\small{Epochs},
+            grid=major,
+            legend pos=south east,
+            legend cell align=left,
+            legend style={fill=white, fill opacity=0.8, draw=none,text opacity=1}]
+            \addplot[magenta, mark=x] table [x=xs, y=lr00001_vacc, col sep=comma] {csv/lr.csv};
+            \addlegendentry{\small{$\eta=0.00001$}}
+            \addplot[darkgray, mark=x] table [x=xs, y=lr00005_vacc, col sep=comma] {csv/lr.csv};
+            \addlegendentry{\small{$\eta=0.00005$}}
+            \addplot[blue, mark=x] table [x=xs, y=lr0001_vacc, col sep=comma] {csv/lr.csv};
+            \addlegendentry{\small{$\eta=0.0001$}}
+            \addplot[orange, mark=x] table [x=xs, y=lr0005_vacc, col sep=comma] {csv/lr.csv};
+            \addlegendentry{\small{$\eta=0.0005$}}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ablation}
+    \label{fig:ablationplot}
+\end{figure}
 
 \section{Three Dimensional Experimentation}
 
@@ -265,7 +331,11 @@ Lack of data. Was not consistently labelled. Show adjacent slices. Proves how ha
 \section{Cross-validation}
 \label{sec:evalcrossval}
 
+As outlined in Chapter \ref{chap:technical}, cross-validation is designed to give a comprehensive measure of a model's performance throughout the entire dataset, rather than just a particular subset. Cross-validation techniques reduce the effects of selection bias on the reported performance. Since the slices composing the test set and the slices composing the training set were extracted from different samples, some form of selection bias is inevitable and the performance achieved on the current test set does not necessarily represent the performance that would be achieved on the entire dataset.
+
 \subsection{Train/test Splits}
+
+In order to perform cross-validation, the dataset must be split into multiple training and testing sets---``train/test'' splits. Similarly to how the dataset was split in Chapter \ref{chap:implementation}, the
 
 \section{Final Results}
 
@@ -284,11 +354,15 @@ Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix gener
 
 \subsection{pix2pix}
 
+
+
 \section{Critical Evaluation}
 
 \subsection{Boundary Extraction}
 
 \subsubsection{Labelling}
+
+Could have chosen the thick style as this would get rid of the class imbalance and would allow for a normal accuracy metric etc. Mention again how hard it is to be consistent.
 
 \subsubsection{Lack of Data}
 
@@ -300,7 +374,7 @@ Can't tell which boundary it should be looking for. a completely white image wou
 
 Maybe show concrete examples of where it falls down? images shifted to the right so that one boundary is roughly where another should be? images that have many white lines that are even perpendicular to the right labels should still produce a pretty low score?
 
-Show image produced by SGD. completely wrong but still gets 60\% due to the white part in the bottom left of the image.
+Show image produced by SGD. completely wrong but still gets 60\% due to the white part in the bottom left of the image. this might be fixed now that we use a max of 90?
 
 visual inspection is still needed take for example the learning rate plots, they all achieve accuracies within a percentage of each other but some are clearly worse than others?
 

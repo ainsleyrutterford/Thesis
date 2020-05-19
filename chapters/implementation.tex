@@ -235,8 +235,8 @@ Model checkpointing and TensorBoard visualisation are implemented with the \text
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/initial-outputs.png}
-    \caption{Initial results achieved by the network. Note that the hyperparameters chosen are not necessarily optimal and that performance may still be improved. \textbf{(top)} The input samples from the test set. \textbf{(center)} The ground truth labels. \textbf{(bottom)} The output labels.}
+    \includegraphics[width=1\textwidth]{images/initial-results.png}
+    \caption{Initial results achieved by the network. Note that the hyperparameters chosen are not necessarily optimal and that performance may still be improved. \textbf{(top)} The input samples from the test set. \textbf{(centre-top)} The ground truth labels. \textbf{(centre-bottom)} The predictions output by the network. \textbf{(bottom)} The ground truth labels (in green) overlaid with the predictions.}
     \label{fig:outputs}
 \end{figure}
 
@@ -348,8 +348,8 @@ Examples of the initial results achieved using the modified architecture that ou
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/initial-outputs-3D.png}
-    \caption{Initial results achieved by the modified network that predicts a central label only. Note that the hyperparameters chosen are not necessarily optimal and that performance may still be improved. \textbf{(top)} The input samples from the test set. \textbf{(center)} The ground truth labels. \textbf{(bottom)} The output labels.}
+    \includegraphics[width=1\textwidth]{images/initial-results-3D.png}
+    \caption{Initial results achieved by the modified network that predicts a central label only. Note that the hyperparameters chosen are not necessarily optimal and that performance may still be improved. \textbf{(top)} The input samples from the test set. \textbf{(centre-top)} The ground truth labels. \textbf{(centre-bottom)} The predictions output by the network. \textbf{(bottom)} The ground truth labels (in green) overlaid with the predictions.}
     \label{fig:outputs2}
 \end{figure}
 
@@ -415,7 +415,7 @@ Since the entirety of the proejct is written in Python, the accuracy metric calc
 
 In order to reduce the time taken to calculate the accuracy metric, an implementation was written in C and the \texttt{ctypes} module was used to wrap the the C implementation in Python. The C code is compiled into a \texttt{.so} library and this library can be loaded and its methods can be accessed in Python using the \texttt{ctypes} module. 
 
-Once implemented and wrapped in a Python function, the C implementation took an average of 0.8 seconds to calculate the accuracy metric for a single sample. This provides a ${\sim}47$ times speed up compared to the pure Python implementation, and allows for the accuracy across the entire training set to be calculated in just four and a half minutes.
+Once implemented and wrapped in a Python function, the C implementation took an average of 0.12 seconds to calculate the accuracy metric for a single sample\footnote{The times achieved by the Python and C implementations are taken when using an Intel Core i5 9400 processor.}. This provides a ${\sim}315$ times speed up compared to the pure Python implementation, and allows for the accuracy across the entire training set to be calculated in under a minute.
 
 \subsection{Initial Accuracy Results}
 

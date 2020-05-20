@@ -106,7 +106,7 @@ Although the both the 0.00005 and 0.0001 learning rates all achieved a similar a
         \includegraphics[width=1\textwidth, valign=c]{images/5e5-example.png}
         \caption{$\eta=0.00005$ prediction}
     \end{subfigure}
-    \caption{An example of a patch that benefits from the a learning rate $\eta$ of 0.00005. The $\eta=0.0001$ prediction achieved an accuracy of 92.1\% whereas the $\eta=0.00005$ prediction achieved an accuracy of 95.5\%. The 0.0001 prediction achieves a lower accuracy score due to the noise present in inner section of the coral on the left side of the image. The 0.00005 prediction has more realistic predictions in this area of the image with all boundaries seeming close to parallel to the growth surface of the skeleton.}
+    \caption{An example of a patch that benefits from the a learning rate $\eta$ of 0.00005. The predictions shown have been skeletonized using the technique discussed in Chapter \ref{chap:implementation}. The $\eta=0.0001$ prediction achieved an accuracy of 92.1\% whereas the $\eta=0.00005$ prediction achieved an accuracy of 95.5\%. The 0.0001 prediction achieves a lower accuracy score due to the noise present in inner section of the coral on the left side of the image. The 0.00005 prediction has more realistic predictions in this area of the image with all boundaries seeming close to parallel to the growth surface of the skeleton.}
     \label{fig:lrdiff}
 \end{figure}
 
@@ -171,59 +171,58 @@ The next parameter experimented with was the batch size. Ranging from a size of 
 
 Small batches with sizes equal to powers of two were experimented with. The accuracies achieved when training using these various batch sizes are shown in Figure \ref{fig:bsplot}. Looking at Figure \ref{fig:bsplot}, it can already be seen that as the batch size increases, the accuracy achieved by the model decreases (with the exception of a batch size of one). Batch sizes greater than 16 were also experimented with but the accuracy achieved only continued to decrease. It may seem that the accuracy achieved still increase further given more training epochs, however even after 40 epochs the network trained with $batch=8$ only achieved an accuracy of 91\% compared to the accuracy of 95\% achieved when $batch=2$. Note that in order to ensure that the model was exposed to the same number of samples per epoch, with each increase in batch size, the \texttt{steps-per-epoch} argument of the \texttt{fit} method was also decreased. For example, if the batch size was doubled, the \texttt{steps-per-epoch} was halved. This is due to the \texttt{steps-per-epoch} argument specifying how many batches compose an epoch, rather than how many samples compose an epoch.
 
-In practice, it has often been observed that larger batch sizes result in lower accuracy being achieved in deep learning models~\cite{keskar2016large, smallbatch, largebatch}. Keskar et al. propose that this decrease in performance may be attributed to larger batch sizes converging to ``sharp'' minima~\cite{keskar2016large}. Whilst a ``flatter'' minimum can be described with low precision, a sharp minimum requires high precision. Keskar et al. cite the minimum description length (MDL) theory, which states that statistical models that require fewer bits to describe generalise better~\cite{rissanen}, and argue that since flat minisers can be specified with lower precision, they tend to have better generalisation performance. Note that the accuracy achieved on the validation set is a measure of how well the network generalises, since the network has not yet been trained on any slices present in the validation set.
+In practice, it has often been observed that larger batch sizes result in lower accuracy being achieved in deep learning models~\cite{keskar2016large, smallbatch, largebatch}. Keskar et al. propose that this decrease in performance may be attributed to larger batch sizes converging to ``sharp'' minima~\cite{keskar2016large}. Whilst a ``flatter'' minimum can be described with low precision, a sharp minimum requires high precision. Keskar et al. cite the minimum description length (MDL) theory, which states that statistical models that require fewer bits to describe generalise better~\cite{rissanen}, and argue that since flat minima can be specified with lower precision, they tend to have better generalisation performance. Note that the accuracy achieved on the validation set is a measure of how well the network generalises, since the network has not yet been trained on any slices present in the validation set.
 
 Ultimately, a batch size of two was decided upon as the network trained with this size achieved the highest training and validation accuracy. Although a batch size of 16 provided a ${\sim}1.4$ times speed up in the training process, the model still trains in under 20 minutes\footnote{When trained using an Nvidia P100 ``Pascal'' GPU.} when using a batch size of two. For now, the improved performance provided by a smaller batch size outweighs the benefits provided by the training time saved when using larger sizes. If vast amounts of labelled data were available, a larger batch size would likely be necessary to keep training times reasonable.
 
 \subsubsection{Optimisation Algorithms}
 
-This section discusses experimention carried out with the stochastic gradient descent (SGD) optimisation algorithm. SGD was used successfully to train the original U-Net architecture to perform semantic segmentation on 2D greyscale biomedical data~\cite{ronneberger2015u} and so is a reasonable alternative choice to the Adam optimiser used so far.
+This section discusses experimention carried out with the stochastic gradient descent (SGD) optimisation algorithm. SGD was used successfully to train the original U-Net architecture to perform semantic segmentation on 2D greyscale biomedical data~\cite{ronneberger2015u} and so is a reasonable alternative to the Adam optimiser used so far.
 
-The Keras implementation of Stochastic Gradient Descent (SGD) was experimented with. Learning rates of 0.00005, 0.0001, 0.0005, and 0.001 were all experimented with but none yielded acceptable results. Momentum 0.5 and 0.9 still not acceptable results. Maybe show the image output for all SGD implementations? Explain that a nearly constant accuracy of ... was achieved. (just use the last acc value). Tried momentum 0.5 and 0.9 with learning rates 0.001 and 0.01 and still no good results. Tried learning rates from 0.00005 all the way to 0.01 with and without momentum and nothing worked. larger learning rates output black images, lower all output this image:.
+The Keras implementation of SGD using learning rates of 0.00005, 0.0001, 0.0005, 0.001, 0.005, and 0.01 were experimented with but in all cases no acceptable results were produced. When trained with each of these learning rates, the losses and accuracies for both the training and validation sets remained almost constant from the first epoch onwards and the produced predictions resembled the input images more than the corresponding labels. Examples of the predictions produced are shown in Figure \ref{fig:sgdpredictions}.
 
-Tried SGD with 0.00005, 0.0001, 0.0005, no good results. maybe example output image? maybe the momentum of adam was very important? loss stuck at 0.16 and val loss never came below 0.3. Very similar results for adam with epsilon=1 and epsilon=? maybe suggests that the epsilon (maybe explain what adam say epsilon does?) is very important for the performance of adam?
+In an attempt to improve the performance achieved by SGD, various levels of the Keras implementation of classical momentum~\cite{polyak} were experimented with. When momentum is enabled, the weight updates determined by SGD are calculated as a linear combination of the gradient and the previous updates made~\cite{momentum}. Momentum values of 0.1 to 0.9 in combination with all of the learning rates mentioned previously were experimented with but no acceptable results were produced once again. Although no acceptable results were produced, it is important to note that when using a momentum value above 0.5 in combination with a learning rate above 0.001, the validation loss was no longer constant, and a typical loss curve was produced. This suggests that the momentum implemented in Adam may play an important roll in allowing the training loss to fall as the training process continues.
 
-Maybe mention the momentum weight update rule used in Keras?
+Although the SGD optimiser was utilised successfully in the original U-Net paper, the attempts to train this implementation of the architecture were not successful. Thus, the Adam optimiser continued to be used for the remainder of the experiments.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/sgd1.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/sgd5.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/sgd3.png}
+    \end{subfigure}
+    \caption{Example predictions output by the network when trained using the SGD optimisation algorithm using a learning rate of 0.0001. Predictions almost identical to these were output by all learning rates when a momentum value lower than 0.5 was used. It appears as though the input's channel has been inverted and the image has been blurred slightly.}
+    \label{fig:sgdpredictions}
+\end{figure}
 
 \subsubsection{Loss Functions}
 
-\begin{figure}[!t]
-    \includegraphics[width=\textwidth, height=0.6\textwidth]{example-image-b}
-    \caption{Focal loss examples vs cross-entropy loss examples.}
-    \label{fig:lossfunctiondiff}
-\end{figure}
+As outlined in Chapter \ref{chap:implementation}, with ${\sim}$98\% of an average labelled patch being black (part of the ``not part of a boundary'' class), the utilised labelling technique gives rise to a severe class imbalance. As a result, a model that learns to output a pure black image would achieve a low loss value for ${\sim}$98\% of the image. Although this has proved to be a problem when assessing the accuracy of the model, the effects of this class imbalance on the network's ability to learn are not yet obvious. This section outlines the experiments carried out involving the focal loss function~\cite{focalloss} designed specifically to address the class imbalance problem.
 
-As outlined in Chapter \ref{chap:implementation}, the labelling technique used gives rise to a severe class imbalance. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve a low loss value for ${\sim}$98\% of the image. Although this has proved to be a problem when assessing the accuracy of the model, the effects of this class imbalance on the network's ability to learn are not yet obvious. This section outlines the experiments carried out involving the Focal Loss function designed specifically to address the class imbalance problem.
+The focal loss introduces two tunable parameters: a weighting factor $\alpha \in [0, 1]$ used to increase the loss produced by the misclassification of minority class samples, and a ``focusing'' parameter $\gamma \geq 0$ used to reduce the contribution to the loss that ``easy'' examples have~\cite{focalloss}. When the recommended default values of $\gamma=2$ and $\alpha=0.25$ were used, the network produced predictions comparable to those produced using cross-entropy both qualitatively and quantitatively with a validation accuracy of 93\% being achieved. When varying the the $\alpha$ and $\gamma$ parameters, the best accuracy of 94\% was achieved with $\alpha=0.25$ and $\gamma=1$.
 
-% Proposed by Lin et al. in 2018, the Focal Loss~\cite{focalloss} is designed to address the ``class imbalance'' problem. In a typical classification problem, class imbalance occurs when one class contains significantly fewer samples than the other classes. Lin et al. highlight the fact that when using the cross-entropy loss function, even samples that are well-classified incur a loss with ``non-trivial'' magnitude. When summed over large numbers of samples from the easily classified majority class, these small loss values can overwhelm the loss resulting from the minority class samples~\cite{focalloss}. As highlighted in Section \ref{sec:challenges}, the boundary extraction task inherently contains a severe class imbalance; the focal loss function could be used to reduce the effects of the class imbalance on the performance of the networks used throughout the project.
+When varying the $\gamma$ parameter, an interesting phenomena was observed. Looking at Figure \ref{fig:lossfunctiondiff}, it can be seen that an increase in $\gamma$ results in more pixels being classified as the minority class---the ``part of a boundary'' class. Since the loss value produced per correctly classified black pixel is lower as $\gamma$ increases, the contribution of an incorrectly classified white pixel to the overall loss is far higher. As a result, the network values the correct classification of a white pixel more than the correct classification of a black pixel and so produces more white pixels overall.
 
-% There are two major issues that arise when using a standard per-pixel accuracy metric to quantify the performance achieved in this task. The first issue stems from the severe class imbalance present in the labels. On average, ${\sim}$98\% of a labelled patch is black---part of the ``not part of a boundary'' class. As a result, a model that learned to output a pure black image would achieve an average accuracy of 98\%.
-
-% In an attempt to address this problem, the focal loss introduces two new parameters: a weighting factor $\alpha \in [0, 1]$ and a ``focusing'' parameter $\gamma \geq 0$.
-% The binary focal loss is then defined as:
-
-% \begin{equation}
-%     \text{FL}(p, y) = 
-%     \begin{cases}
-%         -\alpha(1 - p)^{\gamma} \log (p) & \text{if } y = 1\\
-%         (1 - \alpha)p^{\gamma} \log (1 - p) & \text{otherwise}
-%     \end{cases}
-% \end{equation}
-
-% where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 1]$ is the model's estimated probability for the class with label $y = 1$. The weighting factor increases the loss produced by the misclassification of minority class samples whilst the focusing factor ``reduces the contribution from easy examples and extends the range in which an example receives low loss''~\cite{focalloss}. When $\gamma = 0$ and $\alpha = 1$, the focal loss is equivalent to the cross-entropy loss. The contribution of the $\gamma$ value to the loss produced can be seen in Figure \ref{fig:focal}.
-
-Look at the alpha and gamma values of focal loss? play around with them a little. look at the table in the original paper that says when you should use what.
-
-At the end of this section, resummarise the configuration of chosen params now in Table \ref{tab:hyperparams1}.
+Since even the optimal parameterisation of the focal loss did not yield any improvements over the cross-entropy loss, the cross-entropy loss was ultimately decided upon. The hyperparameters used for the remainder of the experiments are summarised in Table \ref{tab:hyperparams1}.
 
 \begin{table}[t]
     \centering
-    \caption{A summary of the initial hyperparameter settings used.}
+    \caption{A summary of the training hyperparameters decided upon as a result of the various experiments run.}
     \begin{tabular}{@{}ll@{}}
     \toprule
     Hyperparameter   & Setting      \\ \midrule
     Architecture     & 2D U-Net   \\
-    Optimiser & Adam \\
+    Optimisation Algorithm & Adam \\
     Learning rate & 0.00005 \\
     Loss function & Cross-entropy \\
     Epochs & 20 \\
@@ -233,37 +232,36 @@ At the end of this section, resummarise the configuration of chosen params now i
     \label{tab:hyperparams1}
 \end{table}
 
-\subsubsection{Dropout}
-
-% Another technique often used to reduce overfitting is dropout. The use of dropout as a regularization technique when training neural networks was first popularised by Srivastava et al.~\cite{dropout} in 2014. Throughout the training process, subsets of randomly selected neurons (and their connections) are ``dropped''. Only the resulting reduced network is then trained on a particular training sample. A subset of dropped neurons will only remain dropped whilst processing a single training sample; the dropped neurons will then be added back to the network and a different subset of neurons will be dropped when processing the next training sample. The choice of which subset of neurons to drop for each training sample is random. 
-
-% Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~\cite{dropout}. Co-adaptation between neurons refers to the phenomenon when one neuron relies too heavily on the input from another neuron. If one neuron relies too heavily on the input of another neuron, the receiving neuron's performance in producing an activation that would be beneficial to the performance of the network may be hindered by the one ``bad'' input---even if the inputs from all other incoming neurons were ``good''. In this case, the terms good and bad are used to describe whether or not an input helped in contributing to the the beneficial activation value calculated via backpropagation.
-
-REMEMBER TO TRY AND UNDERSTAND WHY WHAT EVER HAPPENS IS THE CASE AND BACK IT UP ALL THROUGHOUT
-
-vary from 0.1 to 0.9? same with spatial
-
-\subsubsection{Spatial Dropout}
-
-Need to talk about dropout? maybe only mention it in evaluation?
-Spatial drop out better for fully conv? \url{https://arxiv.org/pdf/1411.4280.pdf}
-
-% From Keras docs I think
-% This version performs the same function as Dropout, however it drops
-% entire 2D feature maps instead of individual elements. If adjacent pixels
-% within feature maps are strongly correlated (as is normally the case in
-% early convolution layers) then regular dropout will not regularize the
-% activations and will otherwise just result in an effective learning rate
-% decrease. In this case, SpatialDropout2D will help promote independence
-% between feature maps and should be used instead.
-
-\subsubsection{Kernel Sizes}
-
-\subsubsection{L2 Regularization}
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/focal_g01.png}
+        \caption{$\gamma=0.1$}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/focal_g2.png}
+        \caption{$\gamma=2$}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/focal_g5.png}
+        \caption{$\gamma=5$}
+    \end{subfigure}
+    \caption{An illustration of how the focusing parameter $\gamma$ of the focal loss function affects the predictions output by the network. Although Lin et al. suggest increasing $\alpha$ to 0.75 when $\gamma$ is decreased to 0.1, $\alpha$ was set to a constant value of 0.25 for all values of $\gamma$ to better illustrate how $\gamma$ affects the performance of the network. It can be seen that as $\gamma$ increases, the percentage of pixels that are predicted as the ``part of a boundary'' class also increases.}
+    \label{fig:lossfunctiondiff}
+\end{figure}
 
 \subsection{Resolution}
 
-In order to gain a better understanding of the U-Net architecture, the resolutions
+In order to gain a better understanding of the U-Net architecture, the resolution of the patches input to the network was experimented with. These experiments could 
+
+Even with far more data for smaller patches, the performance was not good. suggests that the network needs context in order to perform well.
+
+larger slices just did not have enough data but should probably work better using same logic as above?
 
 \subsection{Augmentation}
 \label{sec:evalaugmentation}
@@ -279,6 +277,22 @@ I said in Chapter \ref{chap:implementation} that augmentation was very important
 comparison of convtranspose to upsample and then conv.
 
 remove the relu at the end of the implementation?
+
+Make all max-poolings just 1x1? so no max pooling.
+
+Make all blocks just 1 conv layer instead of 2?
+
+\subsubsection{Kernel Sizes}
+
+increases sizes of receptive fields
+
+\subsubsection{Dropout}
+
+% Another technique often used to reduce overfitting is dropout. The use of dropout as a regularization technique when training neural networks was first popularised by Srivastava et al.~\cite{dropout} in 2014. Throughout the training process, subsets of randomly selected neurons (and their connections) are ``dropped''. Only the resulting reduced network is then trained on a particular training sample. A subset of dropped neurons will only remain dropped whilst processing a single training sample; the dropped neurons will then be added back to the network and a different subset of neurons will be dropped when processing the next training sample. The choice of which subset of neurons to drop for each training sample is random. 
+
+% Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~\cite{dropout}. Co-adaptation between neurons refers to the phenomenon when one neuron relies too heavily on the input from another neuron. If one neuron relies too heavily on the input of another neuron, the receiving neuron's performance in producing an activation that would be beneficial to the performance of the network may be hindered by the one ``bad'' input---even if the inputs from all other incoming neurons were ``good''. In this case, the terms good and bad are used to describe whether or not an input helped in contributing to the the beneficial activation value calculated via backpropagation.
+
+Remove bottleneck?
 
 Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
 
@@ -367,6 +381,14 @@ Could have chosen the thick style as this would get rid of the class imbalance a
 \subsubsection{Lack of Data}
 
 very hard for a non expert to label.
+
+\subsubsection{Further Possible Experiments}
+
+Spatial Dropout?
+
+L2 Regularization
+
+Batch Normalization
 
 \subsection{Accuracy Metric}
 

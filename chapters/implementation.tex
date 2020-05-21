@@ -101,7 +101,6 @@ In order to prevent the dataset from representing certain coral samples better t
     \label{fig:slidingwindow}
 \end{figure}
 
-
 \subsubsection{Splitting the Dataset}
 
 For the initial training and testing of the network, the curated dataset was split into a training set, a validation set, and a test set. Of the 388 patches, 322 were used for training, 56 for testing, and 10 for validation. The patches composing the test and validation sets were all produced from slices of a coral skeleton that was not part of the training set. This ensured that the network could not have been overfitting to the nature of the annual banding present in the skeleton used for testing. If this had been the case, the performance on the test data could have been positively skewed.
@@ -186,7 +185,7 @@ The \texttt{"{}same"{}} padding argument specifies that the dimensions of the ou
 
 \subsubsection{The Bottleneck}
 
-The bottleneck contains only one block which also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, however no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the contracting block shown previously, only without the max-pooling layer. Note that at this point, the number of output feature channels has reached 1024.
+The bottleneck contains only one block which also consists of two convolutional layers each using 3$\times$3 kernels and the ReLU activation function, however no max-pooling layers are present. As a result, the bottleneck block is implemented similarly to the contracting block shown previously, only without the max-pooling layer. At this point, the number of output feature channels has reached 1024. Note that although the original U-Net architecture does not mention any dropout layers, a dropout layer is placed after the last block of the contracting path and another dropout layer is also placed after the bottleneck block. The dropout \texttt{rate} arguments that specify the probability that a neuron is dropped were initially set to 0.5 but this value is experimented with and discussed further in Chapter \ref{chap:evaluation}.
 
 \begin{lstlisting}[float={!t},caption={The implementation of the last expanding block of the U-Net architecture using the Keras functional API.},label={lst:block2},language=Python,upquote=true,belowskip=0pt]
 up9 = UpSampling2D(size=(2, 2))(conv8)
@@ -261,6 +260,10 @@ Model checkpointing and TensorBoard visualisation are implemented with the \text
 
 A few examples of the initial results achieved are shown in Figure \ref{fig:outputs}. These initial results were output by a network trained using the Adam optimiser~\cite{adam} with a learning rate of 0.0001 to optimise the binary cross-entropy loss function. The network was trained for 20 epochs with each epoch consisting of 500 augmented batches. A batch size of two was used so the total of $20\times500\times2=\text{20,000}$ augmented samples were seen by the network. These hyperparameters are summarised in Table \ref{tab:initialhyperparams}. An average per-pixel accuracy of 96.7\% was acheived. Note that this high accuracy is misleading and is discussed in Section \ref{sec:accimplementation}. The entire training process took ${\sim}$16 minutes on an Nvidia P100 ``Pascal'' GPU. Many more examples of boundary predictions resulting from networks trained with different hyperparameters are shown throughout Chapter \ref{chap:evaluation}. Listing \ref{lst:compile} shows a simplified example of the compilation of a network configured with these hyperparameters.
 
+\subsection{Version Control}
+
+The Git version control system was used to backup and keep track of the various iterations of the code implemented throughout the project. The code for all of the network implementations and the scripts used are available on GitHub\footnote{\url{https://FILLTHISIN}}\footnote{\url{https://FILLTHISIN2}} (FILL THIS IN). 
+
 \section{Three Dimensional Boundary Extraction}
 \label{sec:threedimension}
 
@@ -318,7 +321,7 @@ conv1 = Reshape((256, 256, 72))(conv1)
 \end{lstlisting}
 The implementation of the first block of the modified contracting path is shown in Listing \ref{lst:3Dblock}. It can be seen that the two 2D 3$\times$3 convolutional layers have been replaced with 3D convolutional layers using 3$\times$3$\times$3 kernels (the kernel size is defined by the second argument of the \texttt{Conv3D} method). It can also be seen that although the max-pooling layer still uses a pool size and stride of two in the $x$ and $y$ axes, a value of one is instead used in the $z$ axis. A pool size and stride of two cannot be used in the $z$ axis as the input tensors only have a $z$ dimension of nine. Since there are four max-pooling operations, the tensor would be reduced to a size of just one in the $z$ dimension, assuming that padding was used at each stage to pad the $z$ dimension to an even number.
 
-After the convolutional and max-pooling layers, the tensor is then reshaped to a ($batch \times 256 \times 256 \times 72$) tensor allowing it to be concatenated to the feature channels of the 2D layers present in the expanding path. Note that there are only eight output feature channels. Since the feature channels will be multiplied by nine, a number of feature channels was chosen to make the reshaped tensor as close to the ($batch \times 256 \times 256 \times 64$) tensor that was originally used in the 2D architecture. Various numbers of output channels were experimented with and are discussed in Chapter \ref{chap:evaluation}.
+After the convolutional and max-pooling layers, the tensor is then reshaped to a ($batch \times 256 \times 256 \times 72$) tensor allowing it to be concatenated to the feature channels of the 2D layers present in the expanding path. Note that there are only eight output feature channels. Since the number of output feature channels will be multiplied by nine, a number of feature channels was chosen in order to make the reshaped tensor as close to the ($batch \times 256 \times 256 \times 64$) tensor that was originally used in the 2D architecture as possible. Various numbers of output channels were experimented with and are discussed in Chapter \ref{chap:evaluation}.
 
 The remaining contracting blocks are implemented similarly to the first block shown in Listing \ref{lst:3Dblock}. However, the tensor resulting from the last block of the contracting path must be reshaped before it is passed to the bottleneck since 2D convolutional layers are still used in the bottleneck block. The remainder of the network is implemented as it was in the 2D architecture.
 

@@ -14,6 +14,8 @@ This section reintroduces the initial results achieved by the ``baseline'' 2D mo
                 height=\axisdefaultheight,
                 ylabel=\small{Loss},
                 xlabel=\small{Epochs},
+                ytick={0.15, 0.10},
+                yticklabels={0.15, 0.10},
                 grid=major,
                 legend pos=north east,
                 legend cell align=left,
@@ -162,7 +164,7 @@ Although the both the 0.00005 and 0.0001 learning rates all achieved a similar a
         \caption{Varying batch size}
         \label{fig:bsplot}
     \end{subfigure}
-    \caption{The accuracies achieved on the validation set using various hyperparameter values. A TensorBoard smoothing value of 0.3 was used. \textbf{(a)} The accuracies achieved when training the network using various initial learning rate values $\eta$. Apart from the learning rate, the same hyperparameters used to achieve the initial results (outlined in Table \ref{tab:initialhyperparams}) were used once again. \textbf{(b)} The accuracies achieved when training the network using various batch sizes. Apart from a learning rate of 0.00005 being used, the hyperparameters outlined in Table \ref{tab:initialhyperparams} were used once again.}
+    \caption{The accuracies achieved on the validation set using various hyperparameter values. A TensorBoard smoothing value of 0.3 was used to improve visibility. \textbf{(a)} The accuracies achieved when training the network using various initial learning rate values $\eta$. Apart from the learning rate, the same hyperparameters used to achieve the initial results (outlined in Table \ref{tab:initialhyperparams}) were used once again. \textbf{(b)} The accuracies achieved when training the network using various batch sizes. Apart from a learning rate of 0.00005 being used, the hyperparameters outlined in Table \ref{tab:initialhyperparams} were used once again.}
 \end{figure}
 
 \subsubsection{Batch Size}
@@ -171,7 +173,7 @@ The next parameter experimented with was the batch size. Ranging from a size of 
 
 Small batches with sizes equal to powers of two were experimented with. The accuracies achieved when training using these various batch sizes are shown in Figure \ref{fig:bsplot}. Looking at Figure \ref{fig:bsplot}, it can already be seen that as the batch size increases, the accuracy achieved by the model decreases (with the exception of a batch size of one). Batch sizes greater than 16 were also experimented with but the accuracy achieved only continued to decrease. It may seem that the accuracy achieved still increase further given more training epochs, however even after 40 epochs the network trained with $batch=8$ only achieved an accuracy of 91\% compared to the accuracy of 95\% achieved when $batch=2$. Note that in order to ensure that the model was exposed to the same number of samples per epoch, with each increase in batch size, the \texttt{steps-per-epoch} argument of the \texttt{fit} method was also decreased. For example, if the batch size was doubled, the \texttt{steps-per-epoch} was halved. This is due to the \texttt{steps-per-epoch} argument specifying how many batches compose an epoch, rather than how many samples compose an epoch.
 
-In practice, it has often been observed that larger batch sizes result in lower accuracy being achieved in deep learning models~\cite{keskar2016large, smallbatch, largebatch}. Keskar et al. propose that this decrease in performance may be attributed to larger batch sizes converging to ``sharp'' minima~\cite{keskar2016large}. Whilst a ``flatter'' minimum can be described with low precision, a sharp minimum requires high precision. Keskar et al. cite the minimum description length (MDL) theory, which states that statistical models that require fewer bits to describe generalise better~\cite{rissanen}, and argue that since flat minima can be specified with lower precision, they tend to have better generalisation performance. Note that the accuracy achieved on the validation set is a measure of how well the network generalises, since the network has not yet been trained on any slices present in the validation set.
+In practice, it has often been observed that larger batch sizes result in lower accuracy being achieved in deep learning models~\cite{keskar2016large, smallbatch, largebatch}. Keskar et al.\ propose that this decrease in performance may be attributed to larger batch sizes converging to ``sharp'' minima~\cite{keskar2016large}. Whilst a ``flatter'' minimum can be described with low precision, a sharp minimum requires high precision. Keskar et al.\ cite the minimum description length (MDL) theory, which states that statistical models that require fewer bits to describe generalise better~\cite{rissanen}, and argue that since flat minima can be specified with lower precision, they tend to have better generalisation performance. Note that the accuracy achieved on the validation set is a measure of how well the network generalises, since the network has not yet been trained on any slices present in the validation set.
 
 Ultimately, a batch size of two was decided upon as the network trained with this size achieved the highest training and validation accuracy. Although a batch size of 16 provided a ${\sim}1.4$ times speed up in the training process, the model still trains in under 20 minutes\footnote{When trained using an Nvidia P100 ``Pascal'' GPU.} when using a batch size of two. For now, the improved performance provided by a smaller batch size outweighs the benefits provided by the training time saved when using larger sizes. If vast amounts of labelled data were available, a larger batch size would likely be necessary to keep training times reasonable.
 
@@ -251,8 +253,76 @@ Since even the optimal parameterisation of the focal loss did not yield any impr
         \includegraphics[width=1\textwidth, valign=c]{images/focal_g5.png}
         \caption{$\gamma=5$}
     \end{subfigure}
-    \caption{An illustration of how the focusing parameter $\gamma$ of the focal loss function affects the predictions output by the network. Although Lin et al. suggest increasing $\alpha$ to 0.75 when $\gamma$ is decreased to 0.1, $\alpha$ was set to a constant value of 0.25 for all values of $\gamma$ to better illustrate how $\gamma$ affects the performance of the network. It can be seen that as $\gamma$ increases, the percentage of pixels that are predicted as the ``part of a boundary'' class also increases.}
+    \caption{An illustration of how the focusing parameter $\gamma$ of the focal loss function affects the predictions output by the network. Although Lin et al.\ suggest increasing $\alpha$ to 0.75 when $\gamma$ is decreased to 0.1, $\alpha$ was set to a constant value of 0.25 for all values of $\gamma$ to better illustrate how $\gamma$ affects the performance of the network. It can be seen that as $\gamma$ increases, the percentage of pixels that are predicted as the ``part of a boundary'' class also increases.}
     \label{fig:lossfunctiondiff}
+\end{figure}
+
+\subsubsection{Dropout}
+
+Dropout is a regularization technique proposed by Srivastava et al.~\cite{dropout} in 2014. As mentioned in Chapter \ref{chap:implementation}, although the original U-Net architecture does not mention any dropout layers, two dropout layers were placed in this implementation: one after the last contracting block and one after the bottleneck block. The dropout \texttt{rate} arguments that specify the probability that a neuron is dropped were initially set to 0.5 but this value is experimented with and discussed further in this section.
+
+The training and validation loss curves resulting from various dropout probabilities are shown in Figure \ref{fig:dropoutplots}. It can be seen that the dropout probability affects the training and validation losses in a similar manner to that discovered by Srivastava et al.; the higher the dropout probability, the higher the training loss and the lower the validation loss~\cite{dropout}.
+
+Similarly to the training loss, the training accuracy also improved as $P$ decreased. However, the validation accuracy was not directly correlated to $P$; the validation accuracies achieved when $P$ was equal to 0.1, 0.3, 0.5, 0.7, and 0.9, were 92\%, 94\%, 95\%, 93\%, and 91\% respectively. Since the validation accuracy was highest when a dropout rate of 0.5 was used, the use of this rate was decided upon going forward.
+
+\begin{figure}[t]
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.9]
+            \begin{axis}[
+                height=\axisdefaultheight,
+                ylabel=\small{Loss},
+                xlabel=\small{Epochs},
+                grid=major,
+                ytick={0.16,0.14,0.12,0.10,0.08,0.06},
+                yticklabels={0.16,0.14,0.12,0.10,0.08,0.06},
+                legend pos=north east,
+                legend cell align=left,
+                legend style={fill=white, fill opacity=0.8, draw=none,text opacity=1}]
+                \addplot[magenta, mark=x] table [x=xs, y=0_tloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.1$}}
+                \addplot[darkgray, mark=x] table [x=xs, y=3_tloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.3$}}
+                \addplot[blue, mark=x] table [x=xs, y=5_tloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.5$}}
+                \addplot[teal, mark=x] table [x=xs, y=7_tloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.7$}}
+                \addplot[orange, mark=x] table [x=xs, y=9_tloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.9$}}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{Training loss}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}[scale=0.9]
+            \begin{axis}[
+                height=\axisdefaultheight,
+                ylabel=\small{Loss},
+                xlabel=\small{Epochs},
+                grid=major,
+                ytick={0.20,0.18,0.16,0.14,0.12},
+                yticklabels={0.20,0.18,0.16,0.14,0.12},
+                legend pos=north east,
+                legend cell align=left,
+                legend style={fill=white, fill opacity=0.8, draw=none,text opacity=1}]
+                \addplot[magenta, mark=x] table [x=xs, y=0_vloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.1$}}
+                \addplot[darkgray, mark=x] table [x=xs, y=3_vloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.3$}}
+                \addplot[blue, mark=x] table [x=xs, y=5_vloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.5$}}
+                \addplot[teal, mark=x] table [x=xs, y=7_vloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.7$}}
+                \addplot[orange, mark=x] table [x=xs, y=9_vloss, col sep=comma] {csv/drop.csv};
+                \addlegendentry{\small{$P=0.9$}}
+            \end{axis}
+        \end{tikzpicture}
+        \caption{Validation loss}
+    \end{subfigure}
+    \caption{The loss achieved on the training and validation sets when training the network with varying dropout probabilities $P$. A TensorBoard smoothing value of 0.3 was used to improve visibility.}
+    \label{fig:dropoutplots}
 \end{figure}
 
 \subsection{Resolution}
@@ -272,6 +342,8 @@ I said in Chapter \ref{chap:implementation} that augmentation was very important
 
 \subsubsection{Augmentation Ranges}
 
+Would probably not have been as important with larger amounts of data as the dataset would represent a more comprehensive range of possible samples.
+
 \subsection{Ablation Studies}
 
 comparison of convtranspose to upsample and then conv.
@@ -282,21 +354,13 @@ Make all max-poolings just 1x1? so no max pooling.
 
 Make all blocks just 1 conv layer instead of 2?
 
-\subsubsection{Kernel Sizes}
-
-increases sizes of receptive fields
-
-\subsubsection{Dropout}
-
-% Another technique often used to reduce overfitting is dropout. The use of dropout as a regularization technique when training neural networks was first popularised by Srivastava et al.~\cite{dropout} in 2014. Throughout the training process, subsets of randomly selected neurons (and their connections) are ``dropped''. Only the resulting reduced network is then trained on a particular training sample. A subset of dropped neurons will only remain dropped whilst processing a single training sample; the dropped neurons will then be added back to the network and a different subset of neurons will be dropped when processing the next training sample. The choice of which subset of neurons to drop for each training sample is random. 
-
-% Dropout reduces overfitting by preventing neurons from ``co-adapting'' too much~\cite{dropout}. Co-adaptation between neurons refers to the phenomenon when one neuron relies too heavily on the input from another neuron. If one neuron relies too heavily on the input of another neuron, the receiving neuron's performance in producing an activation that would be beneficial to the performance of the network may be hindered by the one ``bad'' input---even if the inputs from all other incoming neurons were ``good''. In this case, the terms good and bad are used to describe whether or not an input helped in contributing to the the beneficial activation value calculated via backpropagation.
-
 Remove bottleneck?
+
+Halve all of the output feature channel numbers?
 
 Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
 
-\begin{figure}[!t]
+\begin{figure}[t]
     \centering
     \begin{tikzpicture}[scale=0.9]
         \begin{axis}[
@@ -330,15 +394,19 @@ Due to the time constraints of the project, far fewer hyperparameters were optim
 
 Briefly mention that various learning rates and batch sizes were experimented with but none produced better results (unless then do?) and the new optimal hyperparameters for the 2D arch were used.
 
-\subsection{Augmentation}
-
 \subsection{Alternative Modified Architectures}
+
+\subsubsection{Increased 3D Convolution Output Channels}
+
+As mentioned in Chapter \ref{chap:implementation}, the number of feature channels output by the 3D convolutional layers was chosen in order to replicate 
 
 Varying numbers of output channels in Conv3D layers as you said youd experiment with this.
 
-\subsection{Fully Three Dimensional Architecture}
+\subsubsection{Extended 2D U-Net}
 
-\subsubsection{Data}
+The version with a few 4d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
+
+\subsubsection{Fully Three Dimensional Architecture}
 
 Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
 
@@ -349,7 +417,18 @@ As outlined in Chapter \ref{chap:technical}, cross-validation is designed to giv
 
 \subsection{Train/test Splits}
 
-In order to perform cross-validation, the dataset must be split into multiple training and testing sets---``train/test'' splits. Similarly to how the dataset was split in Chapter \ref{chap:implementation}, the
+In order to perform cross-validation, the dataset must be split into multiple training and testing sets known as ``train/test'' splits. Similarly to how the dataset was split in Chapter \ref{chap:implementation}, the patches composing the test sets must all be produced from slices of coral skeletons that are not part of the corresponding training sets. This ensures that in each train/test split, the network can not be overfitting to the nature of the annual banding present in the skeletons used for testing. If this had been the case, the performance on each test set could have been positively skewed. For this reason the train/test splits were manually selected as opposed to randomly selected as they usually can be. It is important to note that no hyperparameters or augmentation settings were changed during the cross-validation process as this could have been used to influence the final reported performance in some way.
+
+Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons. The manual splits chosen are outlined in Tables \ref{tab:appendixtab}--\ref{tab:appendixtab4}.
+
+Maybe mention anything interesting found here?
+
+\begin{table}[!t]
+\centering
+\caption{Cross validation}
+\input{tables/cross-val}
+\label{tab:crossval}
+\end{table}
 
 \section{Final Results}
 
@@ -381,6 +460,10 @@ Could have chosen the thick style as this would get rid of the class imbalance a
 \subsubsection{Lack of Data}
 
 very hard for a non expert to label.
+
+\subsubsection{3D Architectures}
+
+Augmentation proved so important. Perhaps more transformations should have been implemented.
 
 \subsubsection{Further Possible Experiments}
 

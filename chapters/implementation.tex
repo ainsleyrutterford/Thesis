@@ -24,7 +24,7 @@ All aspects of the project relied heavily on the provided dataset. The processin
 \begin{figure}[!p]
     \centering
     \includegraphics[width=\textwidth]{images/overview.pdf}
-    \caption{A diagram providing an overview of the components implemented and discussed throughout the project. The experimentation is discussed in Chapter \ref{chap:evaluation}.}
+    \caption{A diagram providing an overview of the components implemented and discussed throughout the project. The experimentation is discussed in Chapter \ref{chap:evaluation}. The dropout illustration in the experimentation section is taken from~\cite{dropout}.}
     \label{fig:overview}
 \end{figure}
 
@@ -96,8 +96,8 @@ In order to prevent the dataset from representing certain coral samples better t
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.95\textwidth]{images/sliding-window.pdf}
-    \caption{A visualisation of the sliding window technique used to produce multiple ``patches'' from a single slice. A portion of an original negative slice is shown with the manual labelling overlaid in white. The red windows show where the patches on the right would be produced from. $size$ is the patch size, and $s$ is the stride value. The windows have a width and height of $size$ and will be moved $s$ pixels to the right before another patch is produced. Once the window reaches the right hand side of the image, the window will be placed back at the start and will be shifted downwards by $s$ pixels before the process starts again.}
+    \includegraphics[width=1\textwidth]{images/sliding-window.pdf}
+    \caption{A visualisation of the sliding window technique used to produce multiple ``patches'' from a single slice. A portion of an original negative slice is shown with the manual labelling overlaid in white. The windows on the left show where the patches on the right would be produced from. $size$ is the patch size, and $s$ is the stride value. The windows have a width and height of $size$ and will be moved $s$ pixels to the right before another patch is produced. Once the window reaches the right hand side of the image, the window will be placed back at the start and will be shifted downwards by $s$ pixels before the process starts again.}
     \label{fig:slidingwindow}
 \end{figure}
 

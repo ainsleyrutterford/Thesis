@@ -1,4 +1,4 @@
-\begin{lstlisting}[float={ht},caption={NEED TO FINISH THIS CAPTION. Use Keras Adam optimiser implementation, the Keras implementation of the binary cross-entropy loss, and the Keras accuracy metric.},label={lst:compile},language=Python,upquote=true]
+\begin{lstlisting}[float={ht},caption={A simple example of compiling a Keras model using the \texttt{TensorBoard}, \texttt{EarlyStopping}, and \texttt{ModelCheckpoint} callbacks. The Keras implementations of the Adam optimiser, binary cross-entropy loss, and per-pixel accuracy are used.},label={lst:compile},language=Python,upquote=true]
 from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 from keras.optimizers import Adam
 
@@ -23,9 +23,9 @@ mc = ModelCheckpoint("checkpoint-{epoch:02d}.hdf5",
 
 # Train the model using data provided by the train_generator defined earlier
 model.fit_generator(train_generator, 
-                    steps_per_epoch=args.steps, 
-                    epochs=args.epochs,
-                    validation_data=val_gen,
-                    validation_steps=33,
+                    steps_per_epoch=500, 
+                    epochs=20,
+                    validation_data=val_generator,
+                    validation_steps=10,
                     callbacks=[tb, mc, es])
 \end{lstlisting}

@@ -257,7 +257,7 @@ Since even the optimal parameterisation of the focal loss did not yield any impr
     \label{fig:lossfunctiondiff}
 \end{figure}
 
-\subsubsection{Dropout}
+\subsubsection{Dropout Probability}
 
 Dropout is a regularization technique proposed by Srivastava et al.~\cite{dropout} in 2014. As mentioned in Chapter \ref{chap:implementation}, although the original U-Net architecture does not mention any dropout layers, two dropout layers were placed in this implementation: one after the last contracting block and one after the bottleneck block. The dropout \texttt{rate} arguments that specify the probability that a neuron is dropped were initially set to 0.5 but this value is experimented with and discussed further in this section.
 
@@ -321,30 +321,52 @@ Similarly to the training loss, the training accuracy also improved as $P$ decre
         \end{tikzpicture}
         \caption{Validation loss}
     \end{subfigure}
-    \caption{The loss achieved on the training and validation sets when training the network with varying dropout probabilities $P$. A TensorBoard smoothing value of 0.3 was used to improve visibility.}
+    \caption{The loss achieved on the training and validation sets when training the network with varying dropout probabilities $P$. A TensorBoard smoothing value of 0.3 was used to improve visibility. It is important to note that although the validation losses begin to increase after ${\sim}10$ epochs for all dropout probabilities, the validation accuracies and qualitative performance actually continue to improve.}
     \label{fig:dropoutplots}
 \end{figure}
 
-\subsection{Resolution}
+% \subsection{Resolution}
 
-In order to gain a better understanding of the U-Net architecture, the resolution of the patches input to the network was experimented with. These experiments could 
-
-Even with far more data for smaller patches, the performance was not good. suggests that the network needs context in order to perform well.
-
-larger slices just did not have enough data but should probably work better using same logic as above?
+% In order to gain a better understanding of the U-Net architecture, the resolution of the patches input to the network was experimented with. These experiments could 
+% Even with far more data for smaller patches, the performance was not good. suggests that the network needs context in order to perform well.
+% larger slices just did not have enough data but should probably work better using same logic as above?
 
 \subsection{Augmentation}
 \label{sec:evalaugmentation}
 
+Due to the little amount of labelled training data available, augmentation proved to be an important regularization technique. The experimentation involving the transformations applied are discussed below. The network was again trained using the hyperparameters summarised in Table \ref{tab:hyperparams1}.
+
 \subsubsection{No Augmentation}
 
-I said in Chapter \ref{chap:implementation} that augmentation was very important.
+The first experiment involved removing the augmentation process altogether. The \texttt{flow\_from\_directory} method from the \texttt{ImageDataGenerator} class was still used to ensure that shuffling was still performed. The \texttt{steps\_per\_epoch} argument was also still set to 500 batches ensuring that the network was exposed to the same amount of samples throughout the training process. Since there were less than 500 training samples, some of these unaugmented samples were inevitably seen multiple times.
+
+An example prediction output by the network when trained on unaugmented samples is shown in Figure \ref{fig:evalaugmentation}. Not only can it be seen that the performance is far worse qualitatively, an average validation accuracy of 87\% also makes evident the deterioration of the quantitative performance. The validation loss also reached a value of up to 0.4, far higher than the value of 0.15 reached when the network was trained using the initial transformation ranges. It is worth noting that a network trained on a larger dataset would not suffer as big of a deterioration in performance when no augmentation was used, as the dataset itself would already represent a much more comprehensive set of possible samples.
 
 \subsubsection{Augmentation Ranges}
 
-Would probably not have been as important with larger amounts of data as the dataset would represent a more comprehensive range of possible samples.
+The ranges of acceptable augmentation transformations were also experimented with. The initial ranges outlined in Chapter \ref{chap:implementation} were scaled up and down and the accuracies and losses achieved were monitored. A phenomena similar to that seen in Figure \ref{fig:dropoutplots} when varying the dropout probability was also observed in this case. The higher the ranges of acceptable transformations, the higher the training loss and the lower the validation loss achieved. The validation accuracy, however, was not directly correlated with the size of the transformation ranges. The highest validation accuracy was achieved using the initial ranges outlined in Chapter \ref{chap:implementation}. Since the initial ranges were selected by hand to be as high as possible whilst also ensuring that the resulting images were ``realistic'', it is understandable that the best performance is achieved when using these ranges. Any higher ranges result in many of the artefacts outlined in Figure \ref{fig:augexample} being present. These artefacts result in augmented samples that no longer represent real coral data, and may be a contributing factor to the lower validation accuracy achieved.
+
+Although higher transformation ranges did result in some valuable qualities being observed in the predictions, a trade-off with other valuable qualities was also observed. For example, when looking at Figure \ref{fig:evalaugmentation} it can be seen that although the highly augmented samples did produce better predictions in the inner areas of the coral skeleton, some degradation in the classification of the ``easier'' boundaries (such as the coral growth surface and the outermost density boundary) is also observed.
+
+Ultimately, the initial ranges outlined in Chapter \ref{chap:implementation} continued to be used as the network trained with these ranges achieved the highest validation accuracy.
 
 \subsection{Ablation Studies}
+
+In the context of deep neural networks, the term “ablation study” is used to describe a procedure in which certain parts of the network are removed in order to gain a better understanding of the network's behaviour. This section discusses the various ablation studies performed.
+
+\subsubsection{Output Feature Channels Reduction}
+
+The first ablation study involved the removal of varying amounts of the feature channels output by each convolutional layer.
+
+\subsubsection{Expanding and Contracting Block Removal}
+
+\subsubsection{Bottleneck Removal}
+
+\subsubsection{Max-Pooling Removal}
+
+\subsubsection{Convolutional Layer Removal}
+
+1 conv instead of 2?
 
 comparison of convtranspose to upsample and then conv.
 
@@ -360,7 +382,33 @@ Halve all of the output feature channel numbers?
 
 Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
 
-\begin{figure}[t]
+\begin{figure}[!t]
+    \centering
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/lr-comparison.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/aug-none.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/aug-normal.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/aug-rotation.png}
+        \caption{}
+    \end{subfigure}
+    \caption{Example predictions produced by the network trained using various ranges of acceptable transformations. \textbf{(a)} The ground truth label. \textbf{(b)} A prediction output when no augmentation was used. It can be seen that the network misclassifies the majority of the boundaries, and the continuity within boundaries is often broken. It can also be seen that there are multiple wrongly classified boundaries that are perpendicular to the skeleton's surface. \textbf{(c)} A prediction output when the initial augmentation ranges outlined in Chapter \ref{chap:implementation} were used. \textbf{(d)} A prediction output when the initial ranges outlined in Chapter \ref{chap:implementation} were multiplied by five (e.g., rotations within a range of $\pm 10$ degrees as opposed to $\pm 2$ degrees). Although better predictions in the inner areas of the coral skeleton were produced, some degradation in the classification of the coral growth surface and the outermost density boundary is also observed.}
+    \label{fig:evalaugmentation}
+\end{figure}
+
+\begin{figure}[!t]
     \centering
     \begin{tikzpicture}[scale=0.9]
         \begin{axis}[

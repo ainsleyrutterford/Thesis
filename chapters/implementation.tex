@@ -54,7 +54,7 @@ In order for a supervised CNN to perform well, large amounts of labelled data mu
 
 \subsubsection{The Initial Dataset}
 
-The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices'' (see Figure \ref{fig:extraction}). This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. An example of a Porites skeleton that is part of the dataset was shown previously in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled when compared to other coral genera.
+The dataset provided contains more than 160 three dimensional computed tomography (CT) scans of unique coral skeletons from the Natural History Museum's collection. Each individual 3D scan consists of stacks of thousands of 2D \texttt{.tif} images which will be referred to as ``slices'' (see Figure \ref{fig:extraction}). This unlabelled dataset will be referred to as the ``initial dataset''. Although the initial dataset contains scans of ten different genera of coral, only scans of the Porites genus were considered for labelling and training the network with. There are 58 scans of Porites skeletons in total. An example of a Porites skeleton that is part of the dataset was shown previously in Figure \ref{fig:scanexample}. The Porites scans were chosen as they contain annual banding that can be more easily identified and labelled when compared to other coral genera.
 
 A typical scan consists of ${\sim}2000$ slices that each have the same resolution of ${\sim}$2000$\times$2000 pixels resulting in an overall 3D resolution of 2000$\times$2000$\times$2000 voxels. However, note that the 3D resolution, scale (e.g., the number of voxels used to represent a centimetre cubed), and density calibration (e.g., the voxel value used to represent a given density) of each scan varies.
 
@@ -75,7 +75,7 @@ A typical scan consists of ${\sim}2000$ slices that each have the same resolutio
 
 \subsubsection{Slice Selection and Extraction}
 
-Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each Porites scan was opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. Since the density banding boundaries are orthogonal to the growth direction (or ``concordant'' with the growth surface~\cite{knutson}), the slices that present the most obvious density banding are normally parallel to the direction of growth. Once these slices were identified, a Python script was used to extract each slice and export them as greyscale \texttt{.png} images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the surrounding slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
+Not all slices that compose a scan contain annual density banding that can confidently be identified. In order to find appropriate slices, each of the 58 Porites scans were opened and inspected manually using a 3D visualisation program called Avizo\footnote{\url{https://tiny.cc/avizo}}. Avizo allows users to view slices orthogonal to the $x$, $y$, or $z$ axis of a scan. A selection of six slices that could confidently be labelled were chosen. Since the density banding boundaries are orthogonal to the growth direction (or ``concordant'' with the growth surface~\cite{knutson}), the slices that present the most obvious density banding are normally parallel to the direction of growth. Once these slices were identified, a Python script was used to extract each slice and export them as greyscale \texttt{.png} images. The slices can be represented as greyscale images since they only require one channel to represent depth. Some of the surrounding slices were also extracted in order to curate the 3D dataset used later in the project (discussed in Section~\ref{sec:threedimension}).
 
 \subsubsection{Slice Labelling}
 
@@ -445,7 +445,18 @@ As outlined in Chapter \ref{chap:context}, the objective of this project is to u
 
 \subsection{Linear Extension Rate}
 
-In order to estimate the linear extension rate, the average distance between two density boundaries must first be calculated. This distance can be calculated with a technique similar to the one described in Section \ref{sec:accimplementation}.
+In order to estimate the linear extension rate, the average distance grown annually must first be calculated. Since an idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}, the distance grown in a year is actually the distance between every second boundary (see Figure \ref{fig:calcification}).
+
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}
+        \node [anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=0.55\textwidth]{images/smooth-label.png}};
+        \draw [<->, red, thick] (4.5,4.6) -- (5.1,3.9);
+        \draw [<->, red, thick] (2.7,2.95) -- (3.4,1.85);
+    \end{tikzpicture}
+    \caption{Examples of the linear extension rate. The distance grown in a year is the distance between every second boundary. The bottom arrow starts at the end of a high density band and finishes at the end of the next high density band, whereas the top arrow starts at the end of a low density band and finishes at the end of the next low density band. It can be seen that even though both of the arrows shown are valid measurements of the linear extension rate, the distances measured at different points in the skeleton can vary significantly.}
+    \label{fig:calcification}
+\end{figure}
 
 Then use voxel size stored with each scan. Typical voxel sizes are ${\sim}0.1$ mm?
 

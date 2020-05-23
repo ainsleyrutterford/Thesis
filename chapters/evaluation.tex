@@ -364,6 +364,8 @@ The first ablation study involved the removal of varying amounts of the feature 
 
 \subsubsection{Max-Pooling Removal}
 
+Resulted in far more trainable parameters and so training times increased by up to nine times so was not a viable option anyway.
+
 \subsubsection{Convolutional Layer Removal}
 
 1 conv instead of 2?
@@ -436,12 +438,6 @@ Maybe visualise ablations with a graph showing each ablation with accuracy achie
 
 \section{Three Dimensional Experimentation}
 
-\subsection{Hyperparameter optimisation}
-
-Due to the time constraints of the project, far fewer hyperparameters were optimised for the three dimensional architectures.
-
-Briefly mention that various learning rates and batch sizes were experimented with but none produced better results (unless then do?) and the new optimal hyperparameters for the 2D arch were used.
-
 \subsection{Alternative Modified Architectures}
 
 \subsubsection{Increased 3D Convolution Output Channels}
@@ -454,9 +450,15 @@ Varying numbers of output channels in Conv3D layers as you said youd experiment 
 
 The version with a few 4d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
 
-\subsubsection{Fully Three Dimensional Architecture}
+\subsubsection{Fully 3D Architecture}
 
 Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
+
+\subsection{Hyperparameter optimisation}
+
+Due to the time constraints of the project, far fewer hyperparameters were optimised for the three dimensional architectures.
+
+Briefly mention that various learning rates and batch sizes were experimented with but none produced better results (unless then do?) and the new optimal hyperparameters for the 2D arch were used.
 
 \section{Cross-validation}
 \label{sec:evalcrossval}
@@ -467,7 +469,9 @@ As outlined in Chapter \ref{chap:technical}, cross-validation is designed to giv
 
 In order to perform cross-validation, the dataset must be split into multiple training and testing sets known as ``train/test'' splits. Similarly to how the dataset was split in Chapter \ref{chap:implementation}, the patches composing the test sets must all be produced from slices of coral skeletons that are not part of the corresponding training sets. This ensures that in each train/test split, the network can not be overfitting to the nature of the annual banding present in the skeletons used for testing. If this had been the case, the performance on each test set could have been positively skewed. For this reason the train/test splits were manually selected as opposed to randomly selected as they usually can be. It is important to note that no hyperparameters or augmentation settings were changed during the cross-validation process as this could have been used to influence the final reported performance in some way.
 
-Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons. The manual splits chosen are outlined in Tables \ref{tab:appendixtab}--\ref{tab:appendixtab4}.
+Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons.
+
+% The manual splits chosen are outlined in Tables \ref{tab:appendixtab}--\ref{tab:appendixtab4}.
 
 Maybe mention anything interesting found here?
 
@@ -496,22 +500,31 @@ Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix gener
 \subsection{pix2pix}
 
 
-
-\section{Critical Evaluation}
+\section{Evaluation}
 
 \subsection{Boundary Extraction}
 
+The majority of the project was focused on the use of deep learning to extract the annual density banding boundaries present in coral skeletons. This section aims to evaluate the decisions made throughout the project regarding this extraction process.
+
 \subsubsection{Labelling}
 
-Could have chosen the thick style as this would get rid of the class imbalance and would allow for a normal accuracy metric etc. Mention again how hard it is to be consistent.
+It has been mentioned that the utilised labelling method gives rise to a severe class imbalance which introduces challenges when assessing performance. Although the goal of this project was to extract the boundaries between density bands, a method of labelling the bands themselves might have been more sensible. Since the high and low density bands are roughly equal in width, the number of pixels classified as a high band would be roughly equal to the number of pixels classified as a low band. As a result, there would be significantly less class imbalance within the labels.
+
+The U-Net architecture is also capable of classifying more than two classes and so the use of a third class to represent the area outside of a coral skeleton may have been useful. The current labelling method treats the growth surface of a skeleton as a density band boundary even though this is technically not the case. The performance of the network in classifying banding boundaries may currently be hindered by the need to also classify the growth surface as a banding boundary even though the nature of a growth surface is significantly different to the nature of an actual boundary.
 
 \subsubsection{Lack of Data}
 
-very hard for a non expert to label.
+The experimentats carried out in Section \ref{sec:evalaugmentation} involving data augmentation highlighted the effect that a lack of labelled data has on performance. An increase in the amount of labelled would reduce the need for as many regularization techniques and would most likely increase the performance achieved.
 
-\subsubsection{3D Architectures}
+The lack of labelled data available is mostly due to the the challenges involved in the manual labelling process. As mentioned in Chapter \ref{chap:implementation}, upon visual inspection of over 50 Porites scans, only four scans contained slices that could be confidently labelled.
+
+\subsubsection{Three Dimensional Architectures}
 
 Augmentation proved so important. Perhaps more transformations should have been implemented.
+
+Seeing as the two dimensional augmentation proved so important, it stands to reason that the performance achieved by an architecture making use of three dimensional data would also benefit significantly from appropriate augmentation. Although some forms of augmentation such as rotations, flips, and brightness shifts were implemented, the implementation of further transformations such as shifts, shearing, and zooming could have improved the performance achieved by the architectures that made use of a third dimension.
+
+The three dimensional architectures also had significantly more trainable parameters. The fully three dimensional architecture for example required the training of over ... parameters, far higher than the ... required in the two dimensional U-Net implementation. This increased amount of parameters may require longer to train and thus more data may be needed to achieve acceptable performance.
 
 \subsubsection{Further Possible Experiments}
 

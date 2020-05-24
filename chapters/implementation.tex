@@ -96,7 +96,13 @@ In order to prevent the dataset from representing certain coral samples better t
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/sliding-window.pdf}
+    \begin{tikzpicture}
+        \node [anchor=south west,inner sep=0] at (0,0) {\includegraphics[width=1\textwidth]{images/sliding-window.pdf}};
+        \begin{scope}[decoration={
+            markings, mark=at position 1 with {\arrow[scale=1.8]{stealth}}}] 
+            \draw[postaction={decorate}, color={rgb:black,3}] (7.88,3)--(8.9,3);
+        \end{scope}
+    \end{tikzpicture}
     \caption{A visualisation of the sliding window technique used to produce multiple ``patches'' from a single slice. A portion of an original negative slice is shown with the manual labelling overlaid in white. The windows on the left show where the patches on the right would be produced from. $size$ is the patch size, and $s$ is the stride value. The windows have a width and height of $size$ and will be moved $s$ pixels to the right before another patch is produced. Once the window reaches the right hand side of the image, the window will be placed back at the start and will be shifted downwards by $s$ pixels before the process starts again.}
     \label{fig:slidingwindow}
 \end{figure}
@@ -200,7 +206,7 @@ The expanding path of the architecture described in the original U-Net paper con
 
 It is in these expanding blocks that the pass-forward of information from the contracting path takes place. The output feature channels from the corresponding blocks in the contracting path are appended to the feature channels that are produced by the transposed convolutions. This new set of feature channels containing both the feature channels from the contracting path, and the feature channels from the transposed convolution are then used as the inputs to the two convolutional layers in each block. As discussed in Chapter \ref{chap:technical}, this allows the features that are learned whilst contracting the image to also be used to reconstruct it. The implementation of the last expanding block is shown in Listing \ref{lst:block2}.
 
-Looking at Listing \ref{lst:block2} it can be seen that the 2$\times$2 transposed convolution used in the original U-Net architecture is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are minor and are explored in Chapter \ref{chap:evaluation}. Note that the output feature channels of the \texttt{up9} layer are appended to the feature channels of the \texttt{conv1} layer from the first contracting block using the \texttt{concatenate} function.
+Looking at Listing \ref{lst:block2} it can be seen that the 2$\times$2 transposed convolution used in the original U-Net architecture is replaced with a 2$\times$2 upsampling layer (with an implicit 2$\times$2 stride) followed by a regular 2$\times$2 convolution. The original U-Net paper also does not mention an activation function being applied to the output of the transposed convolutions, whereas a ReLU activation is used here. These architectural design choices stem from the initial implementation used and although these do differ from the original architecture, the effects on the performance achieved are negligible. Note that the output feature channels of the \texttt{up9} layer are appended to the feature channels of the \texttt{conv1} layer from the first contracting block using the \texttt{concatenate} function.
 
 \begin{figure}[!t]
     \centering
@@ -343,7 +349,7 @@ A fully 3D U-Net architecture was also implemented and experimented with. This n
 
 In order to train this fully 3D architecture, a new dataset containing nine-patch samples and nine-patch labels was curated using the same sliding window technique. Since only a small selection of slices were initially labelled to curate the original 2D dataset, a larger selection of slices adjacent to the initially selected slices were labelled manually. Ultimately, labelling enough data for this model to perform well proved challenging---curating a dataset with the same amount of samples used to train the 2D architecture would require nine times the amount of labelled slices.
 
-This architecture is experimented with and discussed further in Chapter \ref{chap:evaluation}.
+Both the experimentation with this architecture and the challenges involved in labelling 3D data are discussed further in Chapter \ref{chap:evaluation}.
 
 \subsection{Initial Results}
 
@@ -437,13 +443,11 @@ As outlined in Chapter \ref{chap:context}, the objective of this project is to u
 %     \item The calcification rate (g cm$^{-2}$ y$^{-1}$): the mass of skeletal matter being produced per year, calculated by multiplying the linear extension rate with the density.
 % \end{enumerate}
 
-% Distance represented by a voxel is ... mm$^3$. So in 2D one pixel represents ... mm$^2$. 
+\subsection{Density Estimation}
 
-% first need to find distances in 2d. then take into account how much one pixel is in mm. then we have the linear extension rate. now need to find the density. talk about how it is found. then multiply the two and we have calcification rate?
+Use 5 density values to calibrate 
 
-% \subsection{Point Sampling}
-
-\subsection{Linear Extension Rate}
+\subsection{Linear Extension Rate Estimation}
 
 In order to estimate the linear extension rate, the average distance grown annually must first be calculated. Since an idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}, the distance grown in a year is actually the distance between every second boundary (see Figure \ref{fig:calcification}).
 
@@ -459,7 +463,3 @@ In order to estimate the linear extension rate, the average distance grown annua
 \end{figure}
 
 Then use voxel size stored with each scan. Typical voxel sizes are ${\sim}0.1$ mm?
-
-\subsection{Density}
-
-Use 5 density values to calibrate 

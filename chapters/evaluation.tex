@@ -350,40 +350,6 @@ Although higher transformation ranges did result in some valuable qualities bein
 
 Ultimately, the initial ranges outlined in Chapter \ref{chap:implementation} continued to be used as the network trained with these ranges achieved the highest validation accuracy.
 
-\subsection{Ablation Studies}
-
-In the context of deep neural networks, the term “ablation study” is used to describe a procedure in which certain parts of the network are removed in order to gain a better understanding of the network's behaviour. This section discusses the various ablation studies performed.
-
-\subsubsection{Output Feature Channels Reduction}
-
-The first ablation study involved the removal of varying amounts of the feature channels output by each convolutional layer.
-
-\subsubsection{Expanding and Contracting Block Removal}
-
-\subsubsection{Bottleneck Removal}
-
-\subsubsection{Max-Pooling Removal}
-
-Resulted in far more trainable parameters and so training times increased by up to nine times so was not a viable option anyway.
-
-\subsubsection{Convolutional Layer Removal}
-
-1 conv instead of 2?
-
-comparison of convtranspose to upsample and then conv.
-
-remove the relu at the end of the implementation?
-
-Make all max-poolings just 1x1? so no max pooling.
-
-Make all blocks just 1 conv layer instead of 2?
-
-Remove bottleneck?
-
-Halve all of the output feature channel numbers?
-
-Maybe visualise ablations with a graph showing each ablation with accuracy achieved or something? like in that paper. or a table?
-
 \begin{figure}[!t]
     \centering
     \begin{subfigure}[t]{0.24\textwidth}
@@ -410,31 +376,69 @@ Maybe visualise ablations with a graph showing each ablation with accuracy achie
     \label{fig:evalaugmentation}
 \end{figure}
 
+\subsection{Ablation Studies}
+\label{sec:evalablation}
+
+In the context of deep neural networks, the term “ablation study” is used to describe a procedure in which certain parts of the network are removed in order to gain a better understanding of the network's behaviour. This section discusses the various ablation studies performed.
+
+\subsubsection{Pass-forward Removal}
+
+The first ablation study was used to determine the importance of the pass-forward of information from the contracting path to the expanding path that the U-Net architecture is known for. other than the removal of all concatenation operations, the rest of the architecture was unchanged. With this pass-forward of information removed the network performed surprisingly well. Although a decrease in the validation accuracy of ${\sim}4\%$ was observed, the predictions produced were qualitatively better in some respects. When looking at Figure \ref{fig:ablation} for example, it can be seen that the produced boundaries are significantly smoother and that the ``continuity'' of the boundaries is rarely broken. As discussed in Chapter \ref{chap:implementation}, smooth boundaries are deemed as more realistic.
+
+The production of smoother boundaries may be produced when there is no pass-forward of information from earlier in the network since the data must now pass through the entire network sequentially, and information from feature channels early in the architecture can not be used later on. The feature channels output by the blocks earlier in the architecture will be ``closer'' to the input image since not as many operations have yet been performed on the data. These earlier feature maps contain data that has not yet been ``processed'' by many operations and thus will not be as smooth as the feature maps output by blocks towards the end of the architecture that have already had to pass through 26 layers. For example, the U-Net architecture with the pass-forward of information allows the last block of the network to make use of feature channels output by the first block which have only been processed by two convolutional layers, whereas when the architecture does not pass-forward information, the last block can only make use of feature channels that have already passed through 24 layers.
+
+Although smoother boundaries can be seen as a positive quality in this particular task, when performing semantic segmentation with other data, a smoother segmentation is not necessarily more accurate. Note also that padding was used throughout this implementation of the architecture but was not used in the original implementation. This lack of padding in the original implementation by Ronneberger et al.\ significantly reduces the dimensionality of the bottleneck and could significantly affect the performance achieved when no pass-forward of information is present. Thus, although the lack of any pass-forward of information did not significantly deteriorate the performance achieved in this task, the pass-forward may still be valuable when the architecture is implemented differently or utilised for different segmentation tasks. Ultimately, due to the decrease in the observed validation accuracy, the pass-forward of information was not removed.
+
+\subsubsection{Output Feature Channels Reduction}
+
+The next ablation study involved the removal of varying amounts of the feature channels output by each convolutional layer. When the number of output feature channels were halved for all convolutional layers in all blocks (e.g., the convolutional layer present in the first block now outputs 32 feature channels as opposed to the 64 output by the original architecture), the validation accuracy decreased by ${\sim}2\%$. Although this decrease was only minor, visual inspection of the resulting predictions showed a noticeable deterioration in their quality. As seen in Figure \ref{fig:ablation}, the main qualitative issue observed was a lack of continuity within the predicted boundaries. Although the boundaries may have be predicted in the right place, many shorter boundaries were predicted rather than the desired long continuous boundaries. This small decrease in accuracy when there is a noticeable decrease in visual quality highlights an issue with the accuracy metric where breaks in the continuity of boundaries are not punished sufficiently. This issue and other shortcomings of the accuracy metric are discussed further in Section \ref{sec:evalaccuracy}.
+
+Although reducing the output feature channels to half the original amount resulted in a ${\sim}$2.8 times speedup of the training process, the qualitative performance did deteriorate, so the full number of feature channels continued to be used.
+
 \begin{figure}[!t]
     \centering
-    \begin{tikzpicture}[scale=0.9]
-        \begin{axis}[
-            height=\axisdefaultheight,
-            width=0.6\textwidth,
-            ylabel=\small{Accuracy (\%)},
-            xlabel=\small{Epochs},
-            grid=major,
-            legend pos=south east,
-            legend cell align=left,
-            legend style={fill=white, fill opacity=0.8, draw=none,text opacity=1}]
-            \addplot[magenta, mark=x] table [x=xs, y=lr00001_vacc, col sep=comma] {csv/lr.csv};
-            \addlegendentry{\small{$\eta=0.00001$}}
-            \addplot[darkgray, mark=x] table [x=xs, y=lr00005_vacc, col sep=comma] {csv/lr.csv};
-            \addlegendentry{\small{$\eta=0.00005$}}
-            \addplot[blue, mark=x] table [x=xs, y=lr0001_vacc, col sep=comma] {csv/lr.csv};
-            \addlegendentry{\small{$\eta=0.0001$}}
-            \addplot[orange, mark=x] table [x=xs, y=lr0005_vacc, col sep=comma] {csv/lr.csv};
-            \addlegendentry{\small{$\eta=0.0005$}}
-        \end{axis}
-    \end{tikzpicture}
-    \caption{Ablation}
-    \label{fig:ablationplot}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/abl-none.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/abl-forward.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/abl-short.png}
+        \caption{}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.24\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/abl-half.png}
+        \caption{}
+    \end{subfigure}
+    \caption{Example predictions produced by various ablated networks. \textbf{(a)} The prediction output by the unablated network for comparison. \textbf{(b)} A prediction output by the ablated network with no pass-forward of information. The produced boundaries are significantly smoother and that the continuity of the boundaries is rarely broken. \textbf{(c)} A prediction output by the ablated network in which half of the convolutional layers' output feature channels are removed. It can be seen that the continuity within the bands are often broken. \textbf{(d)} A prediction output by the ablated network in which a contracting and expanding block were removed. The boundaries are noisy and blurred in parts.}
+    \label{fig:ablation}
 \end{figure}
+
+\subsubsection{Architecture Shortening}
+
+Another ablation study experimented with the removing blocks throughout the architecture. In order to maintain the pass-forward of information, the removal of a contracting block also required the removal of the corresponding expanding block as this expanding block would otherwise have no contracting block from which information would be passed forward.
+
+When the last contracting block and its corresponding expanding block were removed, the validation accuracy achieved decreased by ${\sim}3\%$ and the produced predictions were noticeably more noisy. This shorter architecture does not contain as many layers and thus the outputs have not been processed by as many operations. As discussed earlier in this section, the more layers that data has been passed through, the further the data will be from the complex input images. Since the data has not been able to pass through as many layers in this case, the predictions have not been smoothed as much. An example of an output produced by this ablated architecture is shown in Figure \ref{fig:ablation}.
+
+\subsubsection{Max-Pooling Removal}
+
+In order to assess the importance of downsampling in the performance achieved by this architecture, the max-pooling layers in the contracting path and corresponding up-sampling layers in the expanding path were removed. As a result, the feature channels throughout the architecture all have a resolution of 256$\times$256. The ablated network did not perform well as no apparent boundaries were predicted. Blurry images vaguely resembling the input patches were produced and a validation accuracy of 0\% was achieved. It is clear that the downsampling throughout the network is essential for the performance achieved. Since the convolutional layers all had to be applied to full size 256$\times$256 images, training times increased by up to nine times and this ablated network was thus not a viable option anyway.
+
+The performances achieved by the various ablated networks are summarised in Table \ref{tab:ablation}. Although the ablated network with no pass-forward of information and the network with a reduced number of feature channels both produced acceptable predictions, the unablated network still performed the best and was used for the final results shown in Section \ref{sec:finalresults}.
+
+\begin{table}[!t]
+    \centering
+    \caption{A summary of the performances achieved by the various ablated networks discussed throughout this section. Note that the unablated network took ${\sim}16$ minutes to train on an Nvidia P100 ``Pascal'' GPU.}
+    \input{tables/ablation}
+    \label{tab:ablation}
+\end{table}
 
 \section{Three Dimensional Experimentation}
 
@@ -448,7 +452,7 @@ Varying numbers of output channels in Conv3D layers as you said youd experiment 
 
 \subsubsection{Extended 2D U-Net}
 
-The version with a few 4d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
+The version with a few 3d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
 
 \subsubsection{Fully 3D Architecture}
 
@@ -475,14 +479,19 @@ Since all of the data was extracted from four coral skeletons, four splits were 
 
 Maybe mention anything interesting found here?
 
+The RS0116 split had 260 test and only 128 train.
+
 \begin{table}[!t]
-\centering
-\caption{Cross validation}
-\input{tables/cross-val}
-\label{tab:crossval}
+    \centering
+    \caption{Cross validation}
+    \input{tables/cross-val}
+    \label{tab:crossval}
 \end{table}
 
 \section{Final Results}
+\label{sec:finalresults}
+
+\subsection{Final Boundary Extraction Results}
 
 \begin{figure}[!p]
     \centering
@@ -490,6 +499,15 @@ Maybe mention anything interesting found here?
     \caption{A full page of final results achieved.}
     \label{fig:finalresults}
 \end{figure}
+
+\subsection{Final Calcification Rate Estimations}
+
+\begin{table}[!t]
+    \centering
+    \caption{Calcification rate estimations}
+    \input{tables/calcification}
+    \label{tab:calcification}
+\end{table}
 
 \section{Comparisons with Other Architectures}
 
@@ -512,15 +530,9 @@ It has been mentioned that the utilised labelling method gives rise to a severe 
 
 The U-Net architecture is also capable of classifying more than two classes and so the use of a third class to represent the area outside of a coral skeleton may have been useful. The current labelling method treats the growth surface of a skeleton as a density band boundary even though this is technically not the case. The performance of the network in classifying banding boundaries may currently be hindered by the need to also classify the growth surface as a banding boundary even though the nature of a growth surface is significantly different to the nature of an actual boundary.
 
-\subsubsection{Lack of Data}
-
-The experimentats carried out in Section \ref{sec:evalaugmentation} involving data augmentation highlighted the effect that a lack of labelled data has on performance. An increase in the amount of labelled would reduce the need for as many regularization techniques and would most likely increase the performance achieved.
-
-The lack of labelled data available is mostly due to the the challenges involved in the manual labelling process. As mentioned in Chapter \ref{chap:implementation}, upon visual inspection of over 50 Porites scans, only four scans contained slices that could be confidently labelled.
+The experiments carried out in Section \ref{sec:evalaugmentation} involving data augmentation highlighted the effect that the lack of labelled data has on performance. An increase in the amount of labelled data would reduce the need for as many regularization techniques and would most likely increase the performance achieved. The lack of labelled data available is mostly due to the the challenges involved in the manual labelling process. As mentioned in Chapter \ref{chap:implementation}, upon visual inspection of over 50 Porites scans, only four scans contained slices that could be confidently labelled. Although more slices were labelled to be used by the three dimensional architecture, these slices were from the same scans and the labelling across adjacent slices was not consistent.
 
 \subsubsection{Three Dimensional Architectures}
-
-Augmentation proved so important. Perhaps more transformations should have been implemented.
 
 Seeing as the two dimensional augmentation proved so important, it stands to reason that the performance achieved by an architecture making use of three dimensional data would also benefit significantly from appropriate augmentation. Although some forms of augmentation such as rotations, flips, and brightness shifts were implemented, the implementation of further transformations such as shifts, shearing, and zooming could have improved the performance achieved by the architectures that made use of a third dimension.
 
@@ -535,6 +547,13 @@ L2 Regularization
 Batch Normalization
 
 \subsection{Accuracy Metric}
+\label{sec:evalaccuracy}
+
+Although the custom accuracy metric implemented does solve many of the problems faced by a classic per-pixel accuracy metric, it is not without its own shortcomings.
+
+The most obvious shortcoming of the custom accuracy metric is that it has no way of telling whether the pixels it is comparing should belong to the same boundary or not. For example, the prediction of boundaries
+
+The most obvious shortcoming highlighted in Section \ref{sec:evalablation} is the fact that breaks in continuity are not punished enough. Breaks in continuity are indirectly punished to an extent since a break in continuity results in the corresponding area of a ground truth boundary having no pixels close to it. However, the continuity of the boundaries is essential for the estimation of the calcification rate and should thus contribute to the accuracy achieved far more than it does currently.
 
 Can't tell which boundary it should be looking for. a completely white image would produce 100\% accuracy but the skeletonization makes the amount of white pixels low.
 
@@ -544,11 +563,9 @@ Show image produced by SGD. completely wrong but still gets 60\% due to the whit
 
 visual inspection is still needed take for example the learning rate plots, they all achieve accuracies within a percentage of each other but some are clearly worse than others?
 
+Doesn't punish breaks in continuity.
+
 \subsection{Calcification Rate Estimation}
-
-\section{Comparisons with Existing Techniques}
-
-Erica sent a paper a while ago that used a computer program to calculate the calcification rate  \url{https://www.geosociety.org/datarepository/2015/2015015.pdf} check the email from her with subject DeCarlo Paper
 
 % {\bf A topic-specific chapter, of roughly $15$ pages} 
 % \vspace{1cm} 

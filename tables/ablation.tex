@@ -1,0 +1,9 @@
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Ablation                  & Trainable Parameters & Speedup     & Validation Accuracy \\ \midrule
+None                      & 31,031,685           & $\times1.0$ & 95\%                \\
+Pass-forward Removal      & 27,898,245           & $\times1.1$ & 91\%                \\
+Feature Channel Reduction & 7,760,069            & $\times2.8$ & 93\%                \\
+Architecture Shortening   & 7,697,285            & $\times1.5$ & 92\%                \\
+Max-Pooling Removal       & 31,031,685           & $\times0.1$ &  0\%                \\ \bottomrule
+\end{tabular}

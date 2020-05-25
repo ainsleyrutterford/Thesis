@@ -418,6 +418,8 @@ The average distance between the prediction and the label can be thought of as a
 
 where $d_{max}$ is the maximum average distance that two images could be, and $d$ is the actual distance calculated. $d_{max}$ would theoretically be achieved if the prediction contained a single white pixel in one of the corners, and the ground truth label contained a single white pixel in the opposite corner. This would result in a maximum theoretical distance of 362 for 256$\times$256 patches. However, since the label patches present in the curated dataset must contain labelling across the entire patch, this scenario can never occur. The maximum distance achievable on a single label in the dataset was actually 131 pixels and the average across the entire dataset was ${\sim}110$ pixels. Ultimately, a maximum of 90 pixels was chosen, with errors above 90 pixels being truncated to an accuracy of 0\%. This lower maximum (in comparison with the theoretical maximum of 362) was chosen to ensure that accuracy percentages over 90\% correspond to predictions that are often considered acceptable when inspected visually.
 
+The initial two dimensional U-Net implementation achieved an accuracy of ${\sim}94\%$. The accuracy metric and its various strengths and weaknesses are discussed further in Chapter \ref{chap:evaluation}.
+
 \subsection{The \texttt{ctypes} Module}
 
 Since the entirety of the proejct is written in Python, the accuracy metric calculation was also written in Python allowing it to easily be integrated into the training process. However, when written in Python, the calculation of the custom accuracy metric for a single sample took an average of 38 seconds. Calculating the average accuracy achieved across the entire training set would therefore take up to three hours. Since the distances from a white pixel in one image to all white pixels in the other must be calculated in order to find the minimum, the time complexity of the algorithm is $O(n^2)$ and this computation is unavoidable.
@@ -426,14 +428,10 @@ In order to reduce the time taken to calculate the accuracy metric, an implement
 
 Once implemented and wrapped in a Python function, the C implementation took an average of 0.12 seconds to calculate the accuracy metric for a single sample\footnote{The times achieved by the Python and C implementations are taken when using an Intel Core i5 9400 processor.}. This provides a ${\sim}315$ times speed up compared to the pure Python implementation, and allows for the accuracy across the entire training set to be calculated in under a minute.
 
-\subsection{Initial Accuracy Results}
-
-Maybe show graphs comparing accuracy metric achieved to the loss achieved? outline exactly what accuracy the 2d and 3d versions got
-
 \section{Calcification Rate Estimation}
 \label{sec:calcificationimplementation}
 
-As outlined in Chapter \ref{chap:context}, the objective of this project is to utilise the implemented networks to estimate the calcification rate---the mass of skeletal matter produced annually. In order to estimate the calcification rate, the linear extension rate must first be estimated. The linear extension rate is the distance that the coral grows per year and can be estimated using the boundary positions predicted by the networks. Next, the density of the matter being produced must be estimated. This can be achieved using a calibration curve to estimate the density values that the the greyscale voxel values of the CT scan correspond to. Finally, the calcification rate can be calculated by multiplying the linear extension rate with the density.
+As outlined in Chapter \ref{chap:context}, the objective of this project is to utilise the implemented networks to estimate the calcification rate---the mass of skeletal matter produced annually. In order to estimate the calcification rate, the linear extension rate must first be estimated. The linear extension rate is the distance that the coral grows per year and can be estimated using the boundary positions predicted by the networks. Next, the density of the matter being produced must be estimated. This can be achieved using a calibration curve to estimate the density values that the the greyscale voxel values of the CT scans correspond to. Finally, the calcification rate can be calculated by multiplying the linear extension rate with the density.
 
 % More specifically, the annual banding can be used to measure three aspects of coral growth~\cite{lough2011new}:
 
@@ -443,13 +441,9 @@ As outlined in Chapter \ref{chap:context}, the objective of this project is to u
 %     \item The calcification rate (g cm$^{-2}$ y$^{-1}$): the mass of skeletal matter being produced per year, calculated by multiplying the linear extension rate with the density.
 % \end{enumerate}
 
-\subsection{Density Estimation}
-
-Use 5 density values to calibrate 
-
 \subsection{Linear Extension Rate Estimation}
 
-In order to estimate the linear extension rate, the average distance grown annually must first be calculated. Since an idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}, the distance grown in a year is actually the distance between every second boundary (see Figure \ref{fig:calcification}).
+In order to estimate the linear extension rate, the average distance grown annually in terms of voxels must first be calculated. Since an idealised annual density cycle is actually in the form of a sinusoidal wave with the density gradually changing from high to low and back over the course of a year~\cite[p. 39]{coralsine}, the distance grown in a year is actually the distance between every second boundary (see Figure \ref{fig:calcification}).
 
 \begin{figure}[t]
     \centering
@@ -462,4 +456,18 @@ In order to estimate the linear extension rate, the average distance grown annua
     \label{fig:calcification}
 \end{figure}
 
-Then use voxel size stored with each scan. Typical voxel sizes are ${\sim}0.1$ mm?
+A Python script was written that takes an image and two sets of coordinates as arguments. The image is then split into overlapping 256$\times$256 patches using a sliding window technique similar to that utilised in Section \ref{sec:datasetcuration}. The boundaries present in these patches are then predicted by the network and the boundaries present in the entire image are then reconstructed. During this reconstruction, only the inner areas of the predictions are taken into account since the predictions made at the edges of patches are often of a lower quality due to the lack of context available. For example, looking at Figure \ref{fig:skeletonisation} it can be seen that the outermost pixels of the boundaries are more blurry and tend to be less confidently predicted by the network. Once the boundaries across the entire image have been predicted, they are then skeletonized.
+
+The two supplied sets of coordinates should correspond to two points on the image. The first should be a point outside the growth surface of the coral, and the second a point inside the coral skeleton. When a line is drawn between these supplied points, the line should be parallel to the direction of growth of the coral as this ensures that the distances measured between the boundaries are more accurate. Using these two supplied points, a rectangular area is created as shown in Figure \ref{fig:rectangle}. This area is not only used to determine the linear extension rate but also to calculate the average density of the skeletal matter later on.
+
+The OpenCV \texttt{connectedComponents} method is then used to perform connected-component analysis (CCA). This method determines the positions of the individual skeletonized boundaries present in the rectangular area and supplies each boundary with a unique label. Once these unique labels are determined, the boundaries are sorted by the order in which they occur relative to the outside of the skeleton (e.g., the growth surface first, followed by the outermost boundary, and so on). The distances between these boundaries are then calculated using an average of the minimum Euclidean distances from one boundary to the next (i.e., for each pixel in one boundary, the closest pixel in the next boundary is found, and the distance from the first boundary to the next is the average of these closest distances for each pixel). 
+
+Since the distance grown annually is the distance between every second boundary, the number of pixels grown per year can be estimated by multiplying the average distance between the boundaries by two. This value represents the linear extension rate in terms of pixels per year so can be multiplied by the pixel size which is in terms of millimetres. The pixel size is the real distance that each pixel represents and is constant across all three dimensions (i.e., a voxel represents the same distance in the $x$ axis as it does in the $z$ axis). A common pixel size for the scans composing this dataset is ${\sim}0.1$ mm. Once the linear extension rate in terms of pixel y$^{-1}$ is multiplied by the pixel size, the linear extension rate in terms of mm y$^{-1}$ has been calculated.
+
+\subsection{Density Estimation}
+
+In order to calculate the density that each pixel value corresponds to, a calibration curve must be fit. Given the values of five densities that are known to correspond to five greyscale values, the non-linear relationship between a pixel's density and its corresponding greyscale value can be determined. This calibration curve is fit using \texttt{curve\_fit}\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html}}, the SciPy implementation of the non-linear least squares curve fitting method. In this case, a quadratic function is fit to the data. Once this function that maps a pixel's greyscale value to a corresponding density is found, it can be used to estimate each pixel's density in g cm$^{-3}$.
+
+When estimating the average density of the skeletal matter produced, only pixels that lie within the rectangular area (defined earlier) are taken into account. This ensures that the same skeletal matter used to estimate the linear extension rate is used to estimate the average density. However, since this rectangular area contains both pixels that are within the skeleton and pixels that are not, two mean density values will exist. In order to find the mean that corresponds to the pixels that are within the coral skeleton, the Scikit-learn implementation of the K-means algorithm~\cite{kmeans} was used\footnote{\url{https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html}}. It is assumed that only two means should be present---one corresponding to the skeletal pixels, and one corresponding to the other pixels---so the \texttt{n\_clusters} argument is set to two. It is also assumed that the mean corresponding to the pixels within the coral skeleton should be higher than the mean corresponding to the pixels outside since coral skeletons are denser than air. Thus, the maximum of the two means discovered is taken to be the average density value of the skeletal matter that lies within the rectangular area.
+
+With the linear extension rate (mm y$^{-1}$) and the density (g cm$^{-3}$) estimated, these two values can now simply be multiplied together to calculate the calcification rate (g cm$^{-2}$ y$^{-1}$). The calcification rates estimated for various scans are discussed in Chapter \ref{chap:evaluation}.

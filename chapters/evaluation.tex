@@ -2,7 +2,7 @@ This chapter first discusses the experiments carried out in order to both improv
 
 \section{Two Dimensional Experimentation}
 
-This section reintroduces the initial results achieved by the ``baseline'' 2D model implemented in Chapter \ref{chap:implementation} and then outlines the experiments carried out in an attempt to improve the performance both qualitatively and quantitatively.
+This section reintroduces the initial results achieved by the ``baseline'' two dimensional architecture implemented in Chapter \ref{chap:implementation} and then outlines the experiments carried out in an attempt to improve the performance both qualitatively and quantitatively.
 
 \subsection{Initial Results}
 
@@ -440,52 +440,63 @@ The performances achieved by the various ablated networks are summarised in Tabl
     \label{tab:ablation}
 \end{table}
 
-\section{Three Dimensional Experimentation}
+\section{Alternative Three Dimensional Architectures}
 
-\subsection{Alternative Modified Architectures}
+This section discusses the experiments carried out involving the structure of the three dimensional architecture implemented in Chapter \ref{chap:implementation}.
 
-\subsubsection{Increased 3D Convolution Output Channels}
+\subsection{3D to 2D Architectures}
 
-As mentioned in Chapter \ref{chap:implementation}, the number of feature channels output by the 3D convolutional layers was chosen in order to replicate 
+The initial modified architecture implemented in Chapter \ref{chap:implementation} took three dimensional samples as input (in the form of nine two dimensional patches) and attempted to produce some two dimensional output (the prediction of the boundary positions in the central patch). Various other ``3D to 2D'' architectures were also experimented with and are discussed below.
 
-Varying numbers of output channels in Conv3D layers as you said youd experiment with this.
+\subsubsection{Varying Convolution Output Channels}
 
-\subsubsection{Extended 2D U-Net}
+As mentioned in Chapter \ref{chap:implementation}, the number of feature channels output by the 3D convolutional layers were chosen in an attempt to replicate the original 2D U-Net architecture as closely as possible. Initially, the number of output channels was chosen to be eight times less than the number output channels used in the 2D architecture (i.e., since the first block of the 2D architecture output 64 feature channels, only eight were output by the ``3D to 2D'' architecture). Since the reshaping of the output feature channels in order to be used with 2D layers resulted in the number of output channels being multiplied by nine, this factor of eight was the closest that divided evenly into the numbers of output feature channels used in the original paper (e.g., 64, 128, 256, etc.).
 
-The version with a few 3d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
+However, whilst experimenting with the number of output feature channel, it was found that lower numbers of feature channels produced better results. For example, dividing the original number of feature channels by 16 resulted in an accuracy of ...\% being achieved as opposed to the ...\% achieved with the factor of eight. This increase in performance may be due to the reduction in the number of trainable parameters acting as a regularization technique.
 
-\subsubsection{Fully 3D Architecture}
+\subsubsection{Simple extension of the 2D U-Net}
+
+Another architecture experimented with consisted of the original 2D U-Net with a small amount of 3D convolutional layers placed at the start. These 3D convolutional layers allow the network to make use of the extra information available in the third dimension before the feature maps are reshaped and passed into the 2D architecture. Varying numbers of convolutional layers, numbers of output feature channels, and kernel sizes were experimented with but n
+
+original version with a few 3d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
+
+\subsection{Fully 3D Architecture}
+
+A fully three dimensional U-Net architecture was also experimented with. Similarly to the architectures discussed previously, this architecture also takes a chunk of nine patches as input. However, rather than only attempting to predict the boundaries present in the central slice, this architecture attempts to predict the boundaries present in all nine patches. Since the network is learning to label all nine patches, the labels for these patches must also be provided.
+
+This architecture thus required a large amount of extra data to be labelled.
+
+In hindsight, perhaps the labels sohuld be done one at a time constantly referencing the previous label in order to ensure that the labels are consistent throughout. However, labelling is already time consuming and this process would make it significantly longer.
 
 Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
 
-\subsection{Hyperparameter optimisation}
-
-Due to the time constraints of the project, far fewer hyperparameters were optimised for the three dimensional architectures.
-
 Briefly mention that various learning rates and batch sizes were experimented with but none produced better results (unless then do?) and the new optimal hyperparameters for the 2D arch were used.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/3D-label-example.png}
+    \caption{3D label}
+    \label{fig:3dlabel}
+\end{figure}
 
 \section{Cross-validation}
 \label{sec:evalcrossval}
 
-As outlined in Chapter \ref{chap:technical}, cross-validation is designed to give a comprehensive measure of a model's performance throughout the entire dataset, rather than just a particular subset. Cross-validation techniques reduce the effects of selection bias on the reported performance. Since the slices composing the test set and the slices composing the training set were extracted from different samples, some form of selection bias is inevitable and the performance achieved on the current test set does not necessarily represent the performance that would be achieved on the entire dataset.
+As outlined in Chapter \ref{chap:technical}, cross-validation techniques are used to give a comprehensive measure of a model's performance throughout the entire dataset, rather than just a particular subset. Cross-validation techniques reduce the effects of selection bias on the reported performance. Since the slices composing the test set and the slices composing the training set were extracted from different samples, some form of selection bias is inevitable and the performance achieved on the current test set does not necessarily represent the performance that would be achieved on the entire dataset.
 
 \subsection{Train/test Splits}
 
 In order to perform cross-validation, the dataset must be split into multiple training and testing sets known as ``train/test'' splits. Similarly to how the dataset was split in Chapter \ref{chap:implementation}, the patches composing the test sets must all be produced from slices of coral skeletons that are not part of the corresponding training sets. This ensures that in each train/test split, the network can not be overfitting to the nature of the annual banding present in the skeletons used for testing. If this had been the case, the performance on each test set could have been positively skewed. For this reason the train/test splits were manually selected as opposed to randomly selected as they usually can be. It is important to note that no hyperparameters or augmentation settings were changed during the cross-validation process as this could have been used to influence the final reported performance in some way.
 
-Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons.
+Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons. The accuracies achieved for each train/test split are shown in Table \ref{tab:crossval}.
 
-% The manual splits chosen are outlined in Tables \ref{tab:appendixtab}--\ref{tab:appendixtab4}.
+It can be seen that the split in which RS0030 is the test scan achieves the highest accuracy. This better performance achieved may in part be due to the validation set used to perform hyperparameter optimisation. Since the slices composing the validation set were all extracted from the RS0030 scan, the hyperparameters were optimised in order to maximise the performance on this scan. However, it is also worth noting that the RS0030 scan contains arguably the most obvious annual banding and so the better performance achieved may also be due to the RS0030 scan being inherently ``easier''.
 
-Maybe mention anything interesting found here?
-
-The RS0116 split had 260 test and only 128 train.
-
-The better performance achieved on the split1 may be due to the easier examples and also may be due to the fact that this set was used as validation and so influenced decisions made
+The slightly lower accuracy achieved on the RS0116 split may be due to the lack of training data available. Since the majority of the patches composing the curated dataset were extracted from this scan, only 128 training patches remained. Unfortunately, when classifying the RS0130 testing set, only the coral growth surfaces were ever successfully classified as a boundary. As a result, a significantly lower accuracy of 36.6\% was achieved. Although it is unclear exactly as to why the network performed so poorly on this test set, it is worth noting that annual banding present in the RS0130 scan was particularly hard to label. Although it was expected that the network would perform worse on this scan, the lack of any boundaries being detected at all was a particularly poor result.
 
 \begin{table}[!t]
     \centering
-    \caption{Cross validation}
+    \caption{The accuracies achieved on the various cross-validation splits.}
     \input{tables/cross-val}
     \label{tab:crossval}
 \end{table}
@@ -493,23 +504,31 @@ The better performance achieved on the split1 may be due to the easier examples 
 \section{Final Results}
 \label{sec:finalresults}
 
+This section introduces and discusses the final results achieved by the ablated two dimensional architecture described in Section \ref{sec:evalablation}. The estimated calcification rates for each of the coral skeletons are also presented.
+
 \subsection{Final Boundary Extraction Results}
+
+Examples of high and low quality predictions produced by the final ablated two dimensional architecture are shown in Figures \ref{fig:finalresultsgood} and \ref{fig:finalresultsbad} respectively. The final cross-validated accuracy achieved was 77.8\%.
 
 \begin{figure}[!p]
     \centering
-    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-a}
-    \caption{A full page of good final results achieved.}
+    \includegraphics[width=0.93\textwidth]{images/final-results-good.png}
+    \caption{Higher quality examples of the final predictions produced by the network.}
     \label{fig:finalresultsgood}
 \end{figure}
 
 \begin{figure}[!p]
     \centering
-    \includegraphics[width=\textwidth, height=1.45\textwidth]{example-image-b}
-    \caption{A full page of bad final results achieved.}
+    \includegraphics[width=0.93\textwidth]{images/final-results-good.png}
+    \caption{Lower quality examples of the final predictions produced by the network.}
     \label{fig:finalresultsbad}
 \end{figure}
 
 \subsection{Final Calcification Rate Estimations}
+
+\lipsum[1]
+
+\lipsum[1]
 
 \begin{table}[!t]
     \centering
@@ -518,13 +537,19 @@ The better performance achieved on the split1 may be due to the easier examples 
     \label{tab:calcification}
 \end{table}
 
+\newpage
+
 \section{Comparisons with Other Architectures}
 
 Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
 
 \subsection{SegNet}
 
+list hyperparams used (maybe use defaults recommended in paper?) say you tried up and down 1 learning rate and used best. say that obviously comparison is not completely fair as more hyperparams have been tuned with U-Net but is interesting none the less? mention similarities in the architecture so comparable performance is expected?
+
 \subsection{pix2pix}
+
+Why does it do badly? It generates boundary predictions that often look right at first glance but they can be for example 90 degrees off or too spaced out.
 
 \begin{figure}[t]
     \centering

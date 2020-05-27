@@ -425,7 +425,7 @@ In order to assess the importance of downsampling in the performance achieved by
 
 \subsubsection{Pass-forward Removal}
 
-The final ablation study was used to determine the importance of the pass-forward of information from the contracting path to the expanding path that the U-Net architecture is known for. other than the removal of all concatenation operations, the rest of the architecture was unchanged. With this pass-forward of information removed the network performed surprisingly well. Although a decrease in the validation accuracy of ${\sim}3\%$ was observed, the predictions produced were qualitatively better in some respects. When looking at Figure \ref{fig:ablation} for example, it can be seen that the produced boundaries are significantly smoother and that the ``continuity'' of the boundaries is rarely broken. As discussed in Chapter \ref{chap:implementation}, smooth boundaries are deemed as more realistic.
+The final ablation study was used to determine the importance of the pass-forward of information from the contracting path to the expanding path that the U-Net architecture is known for. other than the removal of all concatenation operations, the rest of the architecture was unchanged. With this pass-forward of information removed the network performed surprisingly well. Although a decrease in the validation accuracy of ${\sim}1\%$ was observed, the predictions produced were qualitatively better in some respects. When looking at Figure \ref{fig:ablation} for example, it can be seen that the produced boundaries are significantly smoother and that the ``continuity'' of the boundaries is rarely broken. As discussed in Chapter \ref{chap:implementation}, smooth boundaries are deemed as more realistic.
 
 The production of smoother boundaries may be produced when there is no pass-forward of information from earlier in the network since the data must now pass through the entire network sequentially, and information from feature channels early in the architecture can not be used later on. The feature channels output by the blocks earlier in the architecture will be ``closer'' to the input image since not as many operations have yet been performed on the data. These earlier feature maps contain data that has not yet been ``processed'' by many operations and thus will not be as smooth as the feature maps output by blocks towards the end of the architecture that have already had to pass through 26 layers. For example, the U-Net architecture with the pass-forward of information allows the last block of the network to make use of feature channels output by the first block which have only been processed by two convolutional layers, whereas when the architecture does not pass-forward information, the last block can only make use of feature channels that have already passed through 24 layers.
 
@@ -452,7 +452,7 @@ The initial modified architecture implemented in Chapter \ref{chap:implementatio
 
 As mentioned in Chapter \ref{chap:implementation}, the number of feature channels output by the 3D convolutional layers were chosen in an attempt to replicate the original 2D U-Net architecture as closely as possible. Initially, the number of output channels was chosen to be eight times less than the number output channels used in the 2D architecture (i.e., since the first block of the 2D architecture output 64 feature channels, only eight were output by the ``3D to 2D'' architecture). Since the reshaping of the output feature channels in order to be used with 2D layers resulted in the number of output channels being multiplied by nine, this factor of eight was the closest that divided evenly into the numbers of output feature channels used in the original paper (e.g., 64, 128, 256, etc.).
 
-However, whilst experimenting with the number of output feature channel, it was found that lower numbers of feature channels produced better results. For example, dividing the original number of feature channels by 16 resulted in an accuracy of ...\% being achieved as opposed to the ...\% achieved with the factor of eight. This increase in performance may be due to the reduction in the number of trainable parameters acting as a regularization technique.
+However, whilst experimenting with the number of output feature channel, it was found that a lower number of feature channels (e.g., dividing by a factor of 16 rather than a factor of eight) produced better qualitative results. This noticeable increase in qualitative performance may be due to the reduction in the number of trainable parameters acting as a regularization technique.
 
 \subsubsection{Simple extension of the 2D U-Net}
 
@@ -464,13 +464,11 @@ original version with a few 3d convs on the front and then outputting to a 2D (9
 
 A fully three dimensional U-Net architecture was also experimented with. Similarly to the architectures discussed previously, this architecture also takes a chunk of nine patches as input. However, rather than only attempting to predict the boundaries present in the central slice, this architecture attempts to predict the boundaries present in all nine patches. Since the network is learning to label all nine patches, the labels for these patches must also be provided.
 
-This architecture thus required a large amount of extra data to be labelled.
+Thus, in order to train the fully three dimensional architecture with the same amount of samples used previously, up to nine times as many slices would have to be labelled. This was not a realistic goal within the time frame of this project so a smaller amount of adjacent slices were labelled. Two sets of nine slices that were all adjacent to each other were labelled, and the sliding window technique described in Chapter \ref{chap:implementation} was used once again to curate a small three dimensional dataset. Using the custom data loader described in Chapter \ref{chap:implementation}, the three dimensional architecture was trained on various augmented versions of these three dimensional samples. Unfortunately, the architecture ultimately performed poorly with the output predictions containing almost no visible boundaries.
 
-In hindsight, perhaps the labels sohuld be done one at a time constantly referencing the previous label in order to ensure that the labels are consistent throughout. However, labelling is already time consuming and this process would make it significantly longer.
+Although many ... contribute to the poor performance, the lack of data is the main reason. It may have simply not been enough data and the network may have been severely overfitting. Another major issue is not consistently labelled. Show adjacent slices. Proves how hard it is to label images. In hindsight, perhaps the labels sohuld be done one at a time constantly referencing the previous label in order to ensure that the labels are consistent throughout. However, labelling is already time consuming and this process would make it significantly longer.
 
-Lack of data. Was not consistently labelled. Show adjacent slices. Proves how hard it is to label images.
-
-Briefly mention that various learning rates and batch sizes were experimented with but none produced better results (unless then do?) and the new optimal hyperparameters for the 2D arch were used.
+It is worth noting that the although the hyperparameters outlined in Section \ref{sec:threedimension} were initially used, multiple combinations of different learning rates, batch sizes, dropout rates, and kernel sizes were also experimented with and still no visible boundaries were produced.
 
 \begin{figure}[t]
     \centering
@@ -490,10 +488,6 @@ In order to perform cross-validation, the dataset must be split into multiple tr
 
 Since all of the data was extracted from four coral skeletons, four splits were selected. In each split, the test set consists of every patch produced from one skeleton, and the training set consists of every patch produced from the rest of the available skeletons. The accuracies achieved for each train/test split are shown in Table \ref{tab:crossval}.
 
-It can be seen that the split in which RS0030 is the test scan achieves the highest accuracy. This better performance achieved may in part be due to the validation set used to perform hyperparameter optimisation. Since the slices composing the validation set were all extracted from the RS0030 scan, the hyperparameters were optimised in order to maximise the performance on this scan. However, it is also worth noting that the RS0030 scan contains arguably the most obvious annual banding and so the better performance achieved may also be due to the RS0030 scan being inherently ``easier''.
-
-The slightly lower accuracy achieved on the RS0116 split may be due to the lack of training data available. Since the majority of the patches composing the curated dataset were extracted from this scan, only 128 training patches remained. Unfortunately, when classifying the RS0130 testing set, only the coral growth surfaces were ever successfully classified as a boundary. As a result, a significantly lower accuracy of 36.6\% was achieved. Although it is unclear exactly as to why the network performed so poorly on this test set, it is worth noting that annual banding present in the RS0130 scan was particularly hard to label. Although it was expected that the network would perform worse on this scan, the lack of any boundaries being detected at all was a particularly poor result.
-
 \begin{table}[!t]
     \centering
     \caption{The accuracies achieved on the various cross-validation splits.}
@@ -508,36 +502,44 @@ This section introduces and discusses the final results achieved by the ablated 
 
 \subsection{Final Boundary Extraction Results}
 
-Examples of high and low quality predictions produced by the final ablated two dimensional architecture are shown in Figures \ref{fig:finalresultsgood} and \ref{fig:finalresultsbad} respectively. The final cross-validated accuracy achieved was 77.8\%.
+Examples of higher and lower quality predictions produced by the final ablated two dimensional architecture are shown in Figures \ref{fig:finalresultsgood} and \ref{fig:finalresultsbad} respectively. The final cross-validated accuracy achieved was 77.8\%.
+
+Looking at Table \ref{tab:crossval}, it can be seen that the split in which RS0030 is the test scan achieves the highest accuracy. This better performance achieved may be due to the validation set that was chosen to perform hyperparameter optimisation with. Since the slices composing the validation set were all extracted from the RS0030 scan, the hyperparameters were optimised in order to maximise the performance on this scan. However, it is also worth noting that the RS0030 scan contains arguably the most obvious annual banding and so the better performance achieved may also be due to the RS0030 scan being inherently ``easier''.
+
+The slightly lower accuracy achieved on the RS0116 split may be due to the lack of training data available. Since the majority of the patches composing the curated dataset were extracted from this scan, only 128 training patches remained. Unfortunately, when classifying the RS0130 testing set, only the coral growth surfaces were ever successfully classified as a boundary. As a result, a significantly lower accuracy of 36.6\% was achieved. Although it is unclear exactly as to why the network performed so poorly on this test set, it is worth noting that annual banding present in the RS0130 scan was particularly hard to label. Although it was expected that the network would perform worse on this scan, the lack of any boundaries being detected at all was a particularly poor result.
 
 \begin{figure}[!p]
     \centering
-    \includegraphics[width=0.93\textwidth]{images/final-results-good.png}
-    \caption{Higher quality examples of the final predictions produced by the network.}
+    \includegraphics[width=0.91\textwidth]{images/final-results-good.png}
+    \caption{Higher quality examples of the final predictions produced by the network. From top to bottom: image, label, prediction, skeletonized prediction.}
     \label{fig:finalresultsgood}
 \end{figure}
 
 \begin{figure}[!p]
     \centering
-    \includegraphics[width=0.93\textwidth]{images/final-results-good.png}
-    \caption{Lower quality examples of the final predictions produced by the network.}
+    \includegraphics[width=0.91\textwidth]{images/final-results-bad.png}
+    \caption{Lower quality examples of the final predictions produced by the network. From top to bottom: image, label, prediction, skeletonized prediction.}
     \label{fig:finalresultsbad}
 \end{figure}
 
-\subsection{Final Calcification Rate Estimations}
+\subsection{Final Calcification Rate Estimates}
 
-\lipsum[1]
+The density, linear extension rate (LER), and calcification rate (CR) estimates made using the Python script described in Section \ref{sec:calcificationimplementation} are shown in Table \ref{tab:calcification}. The estimates made using both the ground truth boundaries and the predicted boundaries are shown.
 
-\lipsum[1]
+These density, LER, and CR estimations for Porites skeletons are in line with other estimates reported in the literature \cite{calcification1, calcification2}. The average CR of 0.51 g cm$^{-2}$ y$^{-1}$ found using the components implemented in this project is also similar to the CR estimated by researchers at the Natural History Museum\footnote{According to values provided by Dr Kenneth Johnson, an average CR of 0.48 was found on the samples that compose the dataset used to train the network.}.
+
+% For example, \cite{calcification1} reports averages of 1.17 g cm$^{-3}$, 5.70 cm y$^{-1}$, and 0.65 g cm$^{-2}$ y$^{-1}$ for the density, LER, and CR respectively, whilst \cite{calcification2} reports averages of 1.08 g cm$^{-3}$, 4.70 cm y$^{-1}$, and 0.51 g cm$^{-2}$ y$^{-1}$.
+
+% 2.9 * 1.16 = 0.33
+% 3.66 * 1.52 = 0.55
 
 \begin{table}[!t]
     \centering
-    \caption{Calcification rate estimations}
+    \caption{The density, linear extension rate, and calcification rate estimates produced using the Python script described in Section \ref{sec:calcificationimplementation}. The estimates produced when using the ground truth boundaries are compared with the estimates produced when using the boundaries predicted by the final ablated two dimensional architecture. Note that the network did not produce any valid boundaries for the RS0130 scan so the corresponding estimates are left blank. Note that the average linear extension rate and the average calcification rate estimated using the predicted boundaries are higher as a result.}
+    \small
     \input{tables/calcification}
     \label{tab:calcification}
 \end{table}
-
-\newpage
 
 \section{Comparisons with Other Architectures}
 

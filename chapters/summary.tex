@@ -44,7 +44,7 @@
 
 This project is concerned with the use of deep learning to automate the estimation of the amount of annual skeletal matter produced by corals.
 
-First, the process of labelling density bands present in two dimensional slices is automated. This is achieved using a convolutional neural network based off of the U-Net architecture~\cite{ronneberger2015u}. To train this network, a dataset containing ${\sim}600$ images was curated from slices extracted from seven individual coral samples. Various data augmentation techniques were also used to artificially expand the dataset. To measure performance, an accuracy metric based off of the Hausdorff distance between the predicted and ground truth boundaries is used. This initial architecture achieved an average Hausdorff distance of 1.X pixels.
+First, the process of labelling density bands present in two dimensional slices is automated. This is achieved using a convolutional neural network based off of the U-Net architecture. To train this network, a dataset containing ${\sim}600$ images was curated from slices extracted from seven individual coral samples. Various data augmentation techniques were also used to artificially expand the dataset. To measure performance, an accuracy metric based off of the Hausdorff distance between the predicted and ground truth boundaries is used. This initial architecture achieved an average Hausdorff distance of 1.X pixels.
 
 Second, the process of labelling density bands present in three dimensions is explored. To this end, the U-Net architecture is modified to process three dimensional data. A larger dataset of manually labelled adjacent slices was curated to train this network containing ${\sim}X$ images extracted from $X$ coral samples.
 
@@ -64,4 +64,5 @@ Finally, once the density bands are identified, the estimation of the distance b
     \item I implemented a custom accuracy metric in C and wrapped it in a Python function to achieve a ${\sim}315$ times speed up allowing the accuracy to be calculated in minutes rather than hours.
     \item I performed hyper parameter optimisation in order to maximise the performance achieved by the various architectures.
     \item ablation studies too trained the network over 100 times
+    \item Make successful ablation more important in the executive summary
 \end{itemize}

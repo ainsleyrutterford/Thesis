@@ -42,27 +42,24 @@
 % \end{itemize}
 % \end{quote}
 
-This project is concerned with the use of deep learning to automate the estimation of the amount of annual skeletal matter produced by corals.
+This project uses deep learning to automate the estimation of the amount of skeletal matter produced annually by corals. In particular, the labelling of density bands present in two dimensional slices of coral is automated. This is achieved using a convolutional neural network based off of the U-Net architecture. To train this network, a dataset containing ${\sim}400$ images is curated using slices extracted from four different three dimensional CT scans of coral skeletons. Various data augmentation techniques are used to artificially expand the dataset and improve the performance achieved. In order to effectively measure performance, an accuracy metric based off the average Euclidean distance between predicted and ground truth boundaries is conceived. Various ablation studies and rigorous quantitative and qualitative evaluation are applied to pinpoint performance and limitations. An ablated version of the U-Net architecture was found to perform better in this task and ultimately achieved a cross-validated accuracy of 77.8\%.
 
-First, the process of labelling density bands present in two dimensional slices is automated. This is achieved using a convolutional neural network based off of the U-Net architecture. To train this network, a dataset containing ${\sim}600$ images was curated from slices extracted from seven individual coral samples. Various data augmentation techniques were also used to artificially expand the dataset. To measure performance, an accuracy metric based off of the Hausdorff distance between the predicted and ground truth boundaries is used. This initial architecture achieved an average Hausdorff distance of 1.X pixels.
+The automatic labelling of the banding present in three dimensions is also explored. To this end, the U-Net architecture is modified to process three dimensional data, and a custom three dimensional data loader capable of online augmentation is implemented. In order to train this network, a larger dataset of manually labelled adjacent slices is curated, containing over 3,400 images extracted from four coral samples.
 
-Second, the process of labelling density bands present in three dimensions is explored. To this end, the U-Net architecture is modified to process three dimensional data. A larger dataset of manually labelled adjacent slices was curated to train this network containing ${\sim}X$ images extracted from $X$ coral samples.
-
-Finally, once the density bands are identified, the estimation of the distance between the bands is automated using various techniques. These distances are then used to automatically estimate the volume of skeletal matter produced annually.
+The densities of the coral skeletons, and the distances between the density bands extracted by the network are automatically estimated using various classical image processing techniques. These estimates are used to calculate the amount of skeletal matter produced annually. The final calculations are similar to the manual calculations reported in the literature.
 
 \section*{Summary of Achievements}
 
 \begin{itemize}
     \item I spent 25 hours manually labelling coral data.
-    \item I generated a 2D dataset containing ${\sim}600$ images and a 3D dataset containing ${\sim}X$ images using various scripts I wrote.
+    \item I generated a 2D dataset containing ${\sim}400$ images and a 3D dataset containing ${\sim}$3,400 images using various scripts I wrote.
     \item Having not taken the ``Deep Learning'' unit, I spent 20 hours researching and learning about the field of deep learning.
     \item I learned how to use the Keras and TensorFlow libraries in order to implement the networks used.
     \item I modified an existing 2D U-Net implementation and trained it on the curated dataset.
     \item I extended the U-Net architecture to process 3D data.
-    \item I wrote a ``data generator'' from scratch in Python to allow the input of 3D data into the network since Keras does not have its own implementation.
-    \item I implemented online data augmentation of the 3D data.
-    \item I implemented a custom accuracy metric in C and wrapped it in a Python function to achieve a ${\sim}315$ times speed up allowing the accuracy to be calculated in minutes rather than hours.
-    \item I performed hyper parameter optimisation in order to maximise the performance achieved by the various architectures.
-    \item ablation studies too trained the network over 100 times
-    \item Make successful ablation more important in the executive summary
+    \item I wrote a ``data generator'' from scratch in Python to allow ``online'' augmentation of 3D data as it is passed into the network since Keras does not have its own implementation.
+    \item I implemented a custom accuracy metric in C and wrapped it in a Python function to achieve a ${\sim}315$ times speedup allowing the accuracy to be calculated in minutes rather than hours.
+    \item I trained the network over 100 times whilst performing hyperparameter optimisation, in order to gain a better understanding of the model and to maximise the performance achieved.
+    \item I successfully used ablation studies to find a simplified architecture that performs better than the original U-Net architecture at labelling the boundaries present in two dimensions.
+    \item I cross-validated the results achieved and compared them to results achieved by other architectures.
 \end{itemize}

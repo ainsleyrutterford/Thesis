@@ -452,7 +452,7 @@ This section discusses the experiments carried out involving the structure of th
 
 As mentioned in Chapter \ref{chap:implementation}, the number of feature channels output by the 3D convolutional layers were chosen in an attempt to replicate the original 2D U-Net architecture as closely as possible. Initially, the number of output channels was chosen to be eight times less than the number output channels used in the 2D architecture (i.e., since the first block of the 2D architecture output 64 feature channels, only eight were output by the ``3D to 2D'' architecture). Since the reshaping of the output feature channels in order to be used with 2D layers resulted in the number of output channels being multiplied by nine, this factor of eight was the closest that divided evenly into the numbers of output feature channels used in the original paper (e.g., 64, 128, 256, etc.).
 
-However, whilst experimenting with the number of output feature channels, it was found that a higher number of feature channels (e.g., dividing by a factor of four rather than a factor of eight) produced significantly worse qualitative results. The noticeably better performance achieved when using less output feature channels may be due to the reduction in the number of trainable parameters acting as a regularization technique.
+However, whilst experimenting with the number of output feature channels, it was found that a higher number of feature channels (e.g., dividing by a factor of four rather than a factor of eight) produced significantly worse qualitative results and the validation accuracy dropped from ${\sim}$77\% to ${\sim}$43\%. The noticeably better performance achieved when using less output feature channels may be due to the reduction in the number of trainable parameters acting as a regularization technique.
 
 % \subsubsection{Simple extension of the 2D U-Net}
 
@@ -461,6 +461,7 @@ However, whilst experimenting with the number of output feature channels, it was
 % original version with a few 3d convs on the front and then outputting to a 2D (9 channels or 1) image to put straight into U-Net. May not have worked due to vanishing gradients? its right at the beginning of the network?
 
 \subsection{Fully Three Dimensional Architecture}
+\label{sec:eval3darch}
 
 A fully three dimensional U-Net architecture was also experimented with. Similarly to the architectures discussed previously, this architecture also takes a chunk of nine patches as input. However, rather than only attempting to predict the boundaries present in the central slice, this architecture attempts to predict the boundaries present in all nine patches. Since the network is learning to label every input patch, the labels for these patches must also be provided.
 
@@ -470,7 +471,7 @@ Although this architecture performs poorly for various reasons, the lack of labe
 
 The quality of the labelled three dimensional data may be also be contributing to the poor performance achieved. As mentioned in Chaper \ref{chap:implementation}, labelling the boundaries consistently is challenging. Looking at Figure \ref{fig:3dlabel}, it can be seen that the adjacent slices may not have been labelled consistently. Although the two labels are clearly similar, it is important to note that the slices that these labels correspond to are near identical, since the two slices are adjacent and are each only 0.1 mm thick. The corresponding labels cannot realistically be more than one pixel apart from each other at any time. As the network was trained on these inconsistent nine-patch labels, the network may have struggled to determine any relationships within the third dimension of the data. If the use of three dimensional architectures to extract these boundaries is revisited, consistent labelling of adjacent slices will be necessary if acceptable performance is to be achieved.
 
-It is worth noting that although the hyperparameters outlined in Section \ref{sec:threedimension} were initially used, multiple combinations of different learning rates, batch sizes, dropout rates, and kernel sizes were also experimented with and no visible boundaries were produced in any case.
+It is worth noting that although the hyperparameters outlined in Section \ref{sec:threedimension} were initially used, multiple combinations of different learning rates, batch sizes, dropout rates, and kernel sizes were also experimented with and no visible boundaries were produced in any case. Ultimately, the original architecture whose implementation is discussed in Chapter \ref{chap:implementation} achieved the best performance of any of the three dimensional architectures experimented with.
 
 \begin{figure}[t]
     \centering
@@ -545,86 +546,97 @@ These density, LER, and CR estimations for Porites skeletons are in line with ot
 
 \section{Comparisons with Other Architectures}
 
-Compare SegNet, U-Net, pix2pix. Maybe find somewhere to put in the pix2pix generation for fun? If not don't worry. Do mention pix2pix using different backbones or whatever its called and why you think it didnt perform well.
+This section outlines the experimentation carried out involving various other architectures that can be utilised to perform semantic segmentation. Comparing the performances achieved by similar architectures can help one gain a better understanding of which aspects of the architectures affect performance the most.
 
 \subsection{SegNet}
 
-list hyperparams used (maybe use defaults recommended in paper?) say you tried up and down 1 learning rate and used best. say that obviously comparison is not completely fair as more hyperparams have been tuned with U-Net but is interesting none the less? mention similarities in the architecture so comparable performance is expected?
+The first architecture experimented with was SegNet~\cite{segnet}. It was implemented using Keras, enabling it to be easily integrated into the code used in this project. The implementation is based heavily off of an implementation available on GitHub\footnote{\url{https://github.com/ykamikawa/tf-keras-SegNet}} which follows the architecture outlined in the original paper very closely. Although not as much time was spent optimising hyperparameters for this architecture, the learning rates and batch sizes were experimented with. In this case, a learning rate of 0.0001 and a batch size of two were found to produce the best results of any combination tested.
 
-split1: 86\%
-split2: 88\%
-split3: 88\%
-split4: 88\%
+An example of the a prediction produced by the SegNet implementation is shown in Figure \ref{fig:segexample}. It can be seen that although some banding was correctly identified in the bottom right of the prediction, the qualitative performance is poor overall. This is reflected by a validation accuracy of only 56\% being achieved.
+
+As mentioned in Chapter \ref{chap:technical}, the U-Net and SegNet architectures are remarkably similar overall, with both architectures following some form of fully convolutional encoder-decoder structure, and both architectures utilising some form of pass-forward of information from encoding blocks early in the architecture to decoding blocks later on. The similarity of the underlying fully convolutional encoder-decoder structures suggests that perhaps the difference in performance between the two architectures arises from the different methods of pass-forward used. Although the pass-forward of information is removed in the final architecture used in this project, the unablated U-Net architecture still performs significantly better than the SegNet architecture. The SegNet architecture passes information forward in the form of pooling indices. When this pass-forward of information was removed, the architecture performed better both qualitatively and quantitatively, with a validation accuracy of 75\% now being achieved. This suggests that perhaps the passing forward of pooling indices is not as useful in this task as it is in other semantic segmentation tasks.
+
+It is worth noting that the results discussed here may not be a true representation of the SegNet architecture's potential as more time was spent optimising the hyperparameters used with U-Net architecture. The hyperparameter settings used to achieve these results are summarised in Table \ref{tab:segnetparams}.
 
 \subsection{pix2pix}
 
-Why does it do badly? It generates boundary predictions that often look right at first glance but they can be for example 90 degrees off or too spaced out.
+Since generative adversarial networks (GANs) such as pix2pix~\cite{pix2pix} have shown some success whilst performing semantic segmentation, the pix2pix model was an interesting model to experiment with. The experiments were carried out using a PyTorch\footnote{\url{https://pytorch.org}} implementation provided by the original authors\footnote{\url{https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix}}. The generator was trained to generate boundary labels given some coral skeleton patches. The default hyperparameters specified by the authors were used and are summarised in Table \ref{tab:pix2pixparams}.
+
+An example of a label generated is shown in Figure \ref{fig:pixexample}. It appears as though the generator produces almost random predictions. Although at first glance these predictions look feasible, upon closer inspection it can be seen that the boundaries being predicted are completely wrong in many respects. In most of the labels produced, the predicted boundaries are not parallel to the growth surface and the spaces between them are significantly different than the spaces that exist between the ground truth labels. It is not obvious what data the generator is using to generate these labels as no relationships between the patches and the generations can be found via visual inspection.
+
+It is not clear as to why the pix2pix model performs so poorly at this task. Since the generator is only trained to maximise the probability that the discriminator makes a mistake, perhaps the discriminator is already not able to discern these fake labels from the real ones and so the generator is not incentivised to generate labels that are any more realistic. Ultimately, the model achieved a validation accuracy of 33\%. Note that the results discussed here may not be a true representation of the pix2pix model's potential, as more time could be spent optimising the hyperparameters used with the model and the performance achieved could improve.
 
 \begin{figure}[!t]
     \centering
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/abl-none.png}
+        \includegraphics[width=1\textwidth, valign=c]{images/5_image.png}
         \caption{}
     \end{subfigure}
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/abl-forward.png}
+        \includegraphics[width=1\textwidth, valign=c]{images/5_label.png}
         \caption{}
     \end{subfigure}
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/abl-short.png}
+        \includegraphics[width=1\textwidth, valign=c]{images/segnet_5_predict.png}
         \caption{}
+        \label{fig:segexample}
     \end{subfigure}
     \begin{subfigure}[t]{0.24\textwidth}
         \centering
-        \includegraphics[width=1\textwidth, valign=c]{images/abl-half.png}
+        \includegraphics[width=1\textwidth, valign=c]{images/pix2pix_predict.png}
         \caption{}
+        \label{fig:pixexample}
     \end{subfigure}
-    \caption{Example predictions produced by various ablated networks. \textbf{(a)} The prediction output by the unablated network for comparison. \textbf{(b)} A prediction output by the ablated network with no pass-forward of information. The produced boundaries are significantly smoother and that the continuity of the boundaries is rarely broken. \textbf{(c)} A prediction output by the ablated network in which half of the convolutional layers' output feature channels are removed. It can be seen that the continuity within the bands are often broken. \textbf{(d)} A prediction output by the ablated network in which a contracting and expanding block were removed. The boundaries are noisy and blurred in parts.}
+    \caption{Example predictions produced by the SegNet architecture and the pix2pix model. \textbf{(a)} The original coral skeleton patch. \textbf{(b)} The corresponding ground truth label. \textbf{(c)} A prediction output by the SegNet architecture. Although some banding is correctly identified in the bottom right of the prediction, the qualitative performance is poor overall. \textbf{(d)} A label generated by the pix2pix model. Although the generated boundaries are continuous, smooth, and sharp, they are do not follow the same direction as the ground truth boundaries and are too far apart.}
+    \label{fig:segpixexample}
 \end{figure}
 
 \section{Evaluation}
 
 \subsection{Boundary Extraction}
 
-The majority of the project was focused on the use of deep neural networks to extract the annual density banding boundaries present in coral skeletons. This section aims to evaluate the decisions made throughout the project regarding this extraction process.
+The majority of the project focused on the use of deep neural networks to extract the annual density banding boundaries present in coral skeletons. This section aims to evaluate the decisions made throughout the project regarding this extraction process.
 
-\subsubsection{Labelling}
+\subsubsection{Labelling Method}
+\label{sec:evallabel}
 
-It has been mentioned that the utilised labelling method gives rise to a severe class imbalance which introduces challenges when assessing performance. Although the goal of this project was to extract the boundaries between density bands, a method in which the bands themselves were labelled might have been more a sensible choice. Since the high and low density bands are roughly equal in width, the number of pixels classified as a high band would be roughly equal to the number of pixels classified as a low band. As a result, the class imbalance within the labels would be significantly reduced.
+It has been mentioned that the utilised labelling method gives rise to a severe class imbalance which introduces challenges when assessing performance. Although the goal of this project was to extract the boundaries between density bands, a labelling method in which the bands themselves were labelled might have been more a sensible choice. In this method, the possible classes would instead be "part of a high density band" and "part of a low density band". Since the high and low density bands are roughly equal in width, this labelling method would enable the number of pixels classified as a high band to be roughly equal to the number of pixels classified as a low band. As a result, the class imbalance within the labels would be significantly reduced.
 
-Since the U-Net architecture is also capable of classifying more than two classes, the use of a third class to represent the area outside of a coral skeleton may have been useful. The current labelling method treats the growth surface of a skeleton as a density band boundary even though this is technically not the case. The performance of the network in classifying banding boundaries may currently be hindered by the need to also classify the growth surface as a banding boundary even though the nature of a growth surface is significantly different to the nature of an actual boundary.
+Since the U-Net architecture is also capable of classifying more than two classes, the use of a third class to represent the area outside of a coral skeleton may have been useful. The current labelling method treats the growth surface of a skeleton as a density band boundary, even though this is technically not the case. The performance of the network in classifying banding boundaries may currently be hindered by the need to also classify the growth surface as a banding boundary, even though the nature of a growth surface is significantly different to the nature of an actual boundary.
+
+\subsubsection{Lack of Labelled Data}
 
 The experiments carried out in Section \ref{sec:evalaugmentation} involving data augmentation highlighted the effect that the lack of labelled data has on performance. An increase in the amount of labelled data would reduce the need for as many regularization techniques and would most likely increase the performance achieved. The lack of labelled data available is mostly due to the challenges involved in the manual labelling process. As mentioned in Chapter \ref{chap:implementation}, upon visual inspection of over 50 Porites scans, only four scans contained slices that could be confidently labelled. Although more slices were labelled to be used by the three dimensional architecture, these slices were from the same scans and the labelling across adjacent slices was not consistent.
+
+When this boundary extraction task is revisted, a larger amount of consistently labelled data will be key in improving the performance achieved.
 
 \subsubsection{Three Dimensional Architectures}
 
 Seeing as the two dimensional augmentation proved so important, it stands to reason that the performance achieved by an architecture making use of three dimensional data would also benefit significantly from appropriate augmentation. Although some forms of augmentation such as rotations, flips, and brightness shifts were implemented, the implementation of further transformations such as shifts, shearing, and zooming could have improved the performance achieved by the architectures that made use of a third dimension.
 
-The three dimensional architectures also had significantly more trainable parameters. The fully three dimensional architecture for example required the training of over ... parameters, far higher than the ... required in the two dimensional U-Net implementation. This increased amount of parameters may require longer to train and thus more data may be needed to achieve acceptable performance.
-
-In hindsight, perhaps the labels should be done one at a time constantly referencing the previous label in order to ensure that the labels are consistent throughout. However, labelling is already time consuming and this process would make it significantly longer.
+As mentioned in Section \ref{sec:eval3darch}, the inconsistent labelling of the adjacent slices that compose the three dimensional data was a problem. In hindsight, perhaps each slice should have been labelled whilst constantly referencing the label of an adjacent slice, in order to ensure that the labelling is consistent in the third dimension. Although this labelling process would take an appreciably longer amount of time per slice, it could potentially improve the performance achieved by both the two and three dimensional architectures significantly.
 
 \subsection{Accuracy Metric}
 \label{sec:evalaccuracy}
 
-Although the custom accuracy metric implemented does solve many of the problems faced by a classic per-pixel accuracy metric, it is not without its issues.
+The custom accuracy metric was played a significant role in assessing the performance achieved by the various networks experimented with. Although the metric does solve many of the problems faced by a classic per-pixel accuracy metric, it is not without its issues.
 
-The most obvious shortcoming highlighted in Section \ref{sec:evalablation} is the fact that breaks in continuity are not punished enough. Breaks in continuity are indirectly punished to some extent, since a break in continuity results in the corresponding area of a ground truth boundary having no pixels close to it. However, the continuity of the boundaries is essential for the estimation of the calcification rate and should thus contribute to the accuracy achieved far more than it does currently.
+The most obvious shortcoming highlighted in Section \ref{sec:evalablation}, is the fact that breaks in continuity are not punished enough. Breaks in continuity are indirectly punished to some extent, since a break results in the corresponding area of a ground truth boundary having no pixels close to it. However, the continuity of the boundaries is essential for the estimation of the calcification rate and should thus contribute to the accuracy achieved far more than it does currently.
 
-Another issue with the accuracy metric is that it has no way of telling whether the pixels it is comparing should belong to the same boundary or not. For example, the prediction of boundaries
+Although the accuracy often reflects the qualitative performance well, there are examples in which visual inspection is still required to assess the performance of the network on this task. For example, although the predictions shown previously in Figure \ref{fig:ablation} are significantly different in terms of quality, the accuracy achieved by all of predictions were within ${\sim}3\%$ of each other.
 
-Maybe show concrete examples of where it falls down? images shifted to the right so that one boundary is roughly where another should be? images that have many white lines that are even perpendicular to the right labels should still produce a pretty low score?
+It is important to note that despite its shortcomings, there is a still a clear correlation between the qualitative performance observed and the accuracy metric achieved. The custom accuracy metric is far more useful than a standard per-pixel accuracy, and it has enabled useful quantitative comparisons to be made throughout the project.
 
-It is clear that visual inspection is still required to assess the performance of the network on this task. For example, although the predictions shown previously in Figure \ref{fig:ablation} are significantly different in terms of quality, the accuracy achieved by all of predictions were within ${\sim}3\%$ of each other.
+% \subsection{Calcification Rate Estimation}
 
-Although the custom accuracy metric is not without its shortcomings, it is important to note that there is a clear correlation between the qualitative performance observed and the accuracy metric achieved. The custom accuracy metric is far more useful than a standard per-pixel accuracy, and it has enabled useful quantitative comparisons to be made throughout the project.
+% Although the automatic calcification rate estimations were similar to the manual estimates reported in the literature, the method used in this project is not fully automated. Ideally, the two points specifying which area to estimate within would not have to be specified. If the labelling method outlined in Section \ref{sec:evallabel} was utilised (in which the outside of a coral is labelled as a different class), a fully automatic method could potentially be implemented. The method could, for example, start from the outside of the skeleton and using work its way in, keeping track of the distances between boundaries as it goes.
 
-\subsection{Calcification Rate Estimation}
+% Ideally two points would not have to be supplied and the solution would find the outside and work its way in. would perhaps be possible with 3 classes.
 
-Ideally two points would not have to be supplied and the solution would find the outside and work its way in. would perhaps be possible with 3 classes.
+% Rather than just using a thin rectangular area, a larger area could have been used allowing more point samples?
 
 % {\bf A topic-specific chapter, of roughly $15$ pages} 
 % \vspace{1cm} 

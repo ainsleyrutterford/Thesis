@@ -14,7 +14,7 @@ Using X-radiographs in 1972, Knutson et al.\ were able to confirm the presence o
 
 Analysis of these aspects of growth can be used to determine changes in a coral colony's environmental conditions as it was growing. Lough and Cooper highlight one significant potential use of the banding information contained within coral skeletons: ``skeletal material contained deep within massive corals can be extracted to allow comparisons of present day growth rates with those pre-dating the industrial revolution and hence examine the consequences of climate and environmental changes on coral reefs''~\cite{lough2011new}.
 
-This project aims to automate the estimation of the linear extension rate which can then used to estimate the calcification rate. Deep learning will be used to extract the boundaries of each annual density band and the distance between these boundaries will then be estimated using various methods based off of the Hausdorff distance.
+This project aims to automate the estimation of the linear extension rate which can then used to estimate the calcification rate. Deep learning will be used to extract the boundaries of each annual density band, and the distance between these boundaries will then be estimated using a method based off of the Euclidean distances between points on the boundaries.
 
 \begin{figure}[t]
     \centering
@@ -63,7 +63,21 @@ The task of extracting the boundaries between density bands can be presented as 
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=1\textwidth]{images/label-example.png}
+    \centering
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/label-example-1.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/label-example-2.png}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth, valign=c]{images/label-example-3.png}
+    \end{subfigure}
     \caption{An example of a manually labelled 2D slice from the dataset used in this project. This represents the ideal semantic segmentation of a slice. \textbf{(left)} An unaltered section of a 2D slice taken from a 3D scan of a coral sample. The slice is a negative; brighter pixels correspond to high density and darker pixels correspond to low density. \textbf{(centre)} The manual labelling of the section. The white pixels correspond to the ``part of a boundary'' class, and the black pixels correspond to the ``not part of a bounary'' class. \textbf{(right)} The manual labelling overlaid with the corresponding section of the slice. The contrast and brightness of the slice has been altered to better show the annual banding, and the colour of the labelling has been changed for illustration purposes.}
     \label{fig:example-label}
 \end{figure}
@@ -152,6 +166,7 @@ In summary, the main objective of this project is to automate the estimation of 
     \item Modify the architectures to process three dimensional data.
     \item Conceive and implement an accuracy metric to assess the performance of different networks on the data.
     \item Optimise hyperparameters of the chosen network architecture to maximise accuracy.
+    \item Perform ablation studies to gain a better understanding of the architectures used.
     \item Make use of these extracted boundaries to automate the calculation of the annual skeletal matter produced.
     \item Package the implementation in a form usable by researchers at the Natural History Museum and the School of Earth Sciences at the University of Bristol.
 \end{enumerate}

@@ -1,0 +1,36 @@
+\begin{table}[h]
+    \centering
+    \caption{A summary of the hyperparameter settings used when training the SegNet architecture.}
+    \begin{tabular}{@{}ll@{}}
+    \toprule
+    Hyperparameter   & Setting      \\ \midrule
+    Architecture     & 2D SegNet   \\
+    Optimisation Algorithm & Adam \\
+    Learning rate & 0.0001 \\
+    Loss function & Cross-entropy \\
+    Epochs & 20 \\
+    Steps per epoch & 500 \\
+    Batch size & 2 \\ \bottomrule
+    \end{tabular}
+    \label{tab:segnetparams}
+\end{table}
+
+\vspace{1cm}
+
+\begin{table}[h]
+    \centering
+    \caption{A summary of the hyperparameter settings used when training the pix2pix model.}
+    \begin{tabular}{@{}ll@{}}
+    \toprule
+    Hyperparameter   & Setting      \\ \midrule
+    Generator Architecture     & U-Net 256   \\
+    Discriminator Architecture     & Basic   \\
+    Optimisation Algorithm & Adam \\
+    Learning rate & 0.0002 \\
+    % Loss function & Cross-entropy \\
+    Epochs & 100 \\
+    Batch size & 1 \\
+    Dropout & Enabled \\ \bottomrule
+    \end{tabular}
+    \label{tab:pix2pixparams}
+\end{table}

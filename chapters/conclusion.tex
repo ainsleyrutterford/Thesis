@@ -1,35 +1,34 @@
 \section{Contributions and Achievements}
 
-\lipsum[1]
-\lipsum[2]
-\lipsum[3]
+The main objective of this project was to automate the estimation of the calcification rate---the amount of skeletal matter produced annually by corals. This objective was broken down into multiple tasks and the majority of the project focused on the use of deep convolutional neural networks to extract the density band boundary positions. These positions were successfully extracted from two dimensional data with the network achieving a cross-validated accuracy of 77.8\%, and predicting reasonable continuous boundaries for the majority of the coral samples experimented with. Through various ablation studies, a simplified version of the U-Net architecture was found which both performed better and trained faster than the original U-Net. The network is packaged in the form of multiple Python scripts which allow researchers to easily change hyperparameter values and train the model in under 30 minutes on a consumer grade GPU\footnote{The final ablated U-Net architecture takes ${\sim}$22 minutes to train on an Nvidia GTX 1070 using the hyperparameters outlined previously.}.
 
-\section{Final Status}
+Although the attempts to extract the density band boundary positions present in three dimensional data were not successful due to the lack of data and inconsistent labelling, the insights into the three dimensional labelling process will enable researchers to label the data more accurately and potentially enable forms of three dimensional extraction in the future. Since it did not exist before, the implementation of a three dimensional data loader capable of online augmentation will also allow researchers to easily implement augmentation in their three dimensional Keras models.
 
-2D architecture achieves good results that enable some sort of semi-automated calcification estimation via the network and the calcification scripts. 3D does not. The tools have been packaged as executables that can be easily used by researchers and are publicly available at GitHub (footnote). 
+The custom accuracy metric implemented is not without its issues, but is far more useful than a standard per-pixel accuracy in assessing the performance achieved in the boundary extraction task, and has enabled quantitative comparisons to be made throughout the project.
 
-\lipsum[4]
-\lipsum[5]
+The tool implemented to estimate the density, linear extension rate, and calcification rate successfully produces estimates that are similar to the manual estimates reported in the literature. Once trained, the network is capable of extracting the boundaries present in an entire slice in under a minute, and the tools implemented are capable of estimating the statistics mentioned above in under ten seconds.
+
+In summary, this project has highlighted the strengths and weaknesses of various ANN architectures in extracting the density band boundary positions, produced an optimised network capable of performing this task reliably, and provided researchers with a publicly available\footnote{\url{GITHUBFILLTHISIN}} semi-automated tool that is able to quickly and accurately estimate the density, linear extension rate, and calcification rate of coral samples.
 
 \section{Future Work}
 
-Train with larger datasets. Relabel the 3D data to be more consistent and surely the 3D data would help performance. can look at corallites in neighbouring slices and can see that that although the corallites do not span more than ${\sim}5$ pixels, the annual density bands span up to 40 pixels in width. Would reduce the amount of mistakes involving the corallites.
+\subsection{Labelling Methods and Three Dimensional Architectures}
 
-Could use one slice to train and then could predict rest of the scan really well.
+As discussed in Chapter \ref{chap:evaluation}, the biggest limitation on the performance achieved appeared to be the lack of labelled data available. Provided larger amounts of consistently labelled data, the architectures experimented with throughout could potentially achieve significantly better performance. The improved three dimensional labelling method outlined in Chapter \ref{chap:evaluation} in which each is labelled whilst constantly referencing the label of an adjacent slice, may ensure that the labelling is consistent in the third dimension and could enable extraction of the boundaries present in three dimensions in the future.
 
-Could use predictions to better label slices as sometimes its not obvious where the boundaries even are?
+The alternative labelling method outlined in Section \ref{sec:evallabel} (in which the bands themselves are labelled as opposed to the boundaries between them) would also be an interesting avenue to pursue. Potentially solving the class imbalance faced and reducing the interference caused by the growth surfaces being classified as boundaries, this labelling method could improve the reliability of the boundary position predictions.
 
-Proper working 3D is probs a good future work
+Due to the nature of the annual density banding, an architecture that could make use of a third dimension could perform significantly better. Whilst corallite structures vary significantly in adjacent slices due to their small size (often less than a millimetre in diameter), the annual density banding is consistent across tens of scans. It seems likely that further research into the use of three dimensional architectures would yield improved results over those achieved by a two dimensional architecture.
 
-\lipsum[6]
+\subsection{Further Possible Experiments}
 
-\subsubsection{Further Possible Experiments}
+Although various experiments including both the two and three dimensional architectures are carried out, it is worth noting that with more time and experiments, the performance achieved by these networks may well be improved. Since the lack of data currently remains an issue, experimentation with other regularization techniques such as spatial dropout~\cite{spatial}, L2 regularization, and batch normalization~\cite{batchnorm} could yield interesting results.
 
-Spatial Dropout?
+Since the original U-Net architecture was introduced almost five years ago~\cite{ronneberger2015u}, various deep learning models have been proposed since that outperform U-Net in most semantic segmentation tasks~\cite{chen2018encoder, semanticseg-SOTA}. Experimentation with these alternative models may result in even better performance being achieved in the boundary extraction task tackled in this project.
 
-L2 Regularization
-
-Batch Normalization
+% Could use one slice to train and then could predict rest of the scan really well.
+% Could use predictions to better label slices as sometimes its not obvious where the boundaries even are?
+% The pix2pix model performance was particularly poor and maybe could be looked into.
 
 % {\bf A compulsory chapter,     of roughly $5$ pages} 
 % \vspace{1cm} 

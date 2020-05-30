@@ -1,0 +1,63 @@
+\section{Generating a Dataset}
+
+\subsection{2D Datasets}
+
+In order to generate a 2D dataset, the provided \texttt{utils/sliding\_window.py} script can be used. To see what command line arguments are available, run \texttt{python utils/sliding\_window.py --help}.
+
+The script can be used for each slice one at a time. The following arguments must be supplied: the slice file name, the top left and bottom right coordinates of the confidently labelled area, the window size, and the stride.
+
+To generate patches from the \texttt{RS0030\_yz\_0625.tif} slice with the arguments specified in Table \ref{tab:slidingwindow} for example, one would run:
+
+\texttt{python utils/sliding\_window.py RS0030\_yz\_0625.tif 1028 153 1350 530 --stride 20}
+
+\subsection{3D Datasets}
+
+In order to generate a 3D dataset, the provided \texttt{utils/sliding\_window\_3D.py} script can be used. To see what command line arguments are available, run \texttt{python utils/sliding\_window\_3D.py --help}.
+
+The script can be used to generate patches from many adjacent slices at once. The number of images that compose a 3D sample can also be changed from the default of nine using the \texttt{--frames} argument. The following arguments must be supplied: the path of the directory containing the slices, the top left and bottom right coordinates of the confidently labelled area, the window size, and the stride.
+
+To generate patches from many \texttt{RS0030\_yz\_XXXX.tif} slices with the arguments specified in Table \ref{tab:slidingwindow} for example, one would run:
+
+\texttt{python utils/sliding\_window\_3D.py RS0030/ 1028 153 1350 530 --stride 20}
+
+if the \texttt{RS0030\_yz\_XXXX.tif} slices were in the \texttt{RS0030} directory.
+
+\section{Training a Network}
+
+In order to train the network, the \texttt{train.py} script can simply be run. To see what command line arguments are available, run \texttt{python train.py --help}.
+
+To train the ablated 2D U-Net architecture with a learning rate of 0.0001 and a batch size of four for example, one would run:
+
+\texttt{python train.py --ablated --lr 0.0001 --batch 4}
+
+To train the modified U-Net architecture using 3D data stored in the \texttt{data/3D} directory for example, one would run:
+
+\texttt{python train.py --model unet3D --dir data/3D}
+
+The model's learned parameters would be saved in a file named \texttt{checkpoint-20.hdf5} if the network was run for 20 epochs for example.
+
+\section{Assessing the Accuracy Achieved}
+
+The accuracy can be assessed using the \texttt{accuracy.py} script. To see what command line arguments are available, run \texttt{python accuracy.py --help}.
+
+To assess the accuracy achieved by a standard 2D U-Net architecture trained over 30 epochs for example, one would run:
+
+\texttt{python accuracy.py --epochs 30}
+
+To assess the accuracy achieved by an ablated 2D U-Net architecture on a dataset in the \texttt{new\_data/test} directory for example, one would run:
+
+\texttt{python accuracy.py --ablated --dir new\_data/test}
+
+\section{Estimating the Calcification Rate}
+
+In order to estimate the calcification rate of a given slice, the boundaries present in the slice must first be calculated using the \texttt{predict.py} script. To see what command line arguments are available, run \texttt{python predict.py --help}.
+
+To predict the boundaries present in a slice named \texttt{slice.png} for example, one would run:
+
+\texttt{python predict.py --image slice.png}
+
+The image containing the skeletonized boundary positions will be saved in the \texttt{out.png} file. Next, the \texttt{utils/calcification.ipynb} script can be used. Open this script using a jupyter notebook\footnote{\url{https://jupyter.org}} environment or something similar, and run the contained cells. Each cell will walk the user through the steps taken to estimate the density, linear extension rate, and calcification rate of the slice, and the final estimates will be printed by the last cell.
+
+Working coordinates and density calibration values of the slices used in this project are provided in the script. If a user would like to estimate values for new slices, a \texttt{Slice} object must be defined with the following arguments: the slice image file name, the two sets of coordinates, and the density calibration values output by the CT machine.
+
+In the future, this \texttt{.ipynb} script could easily be converted to a pure Python script and new information could be provided through the command line instead.

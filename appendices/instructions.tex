@@ -20,11 +20,11 @@ To generate patches from many \texttt{RS0030\_yz\_XXXX.tif} slices with the argu
 
 \texttt{python utils/sliding\_window\_3D.py RS0030/ 1028 153 1350 530 --stride 20}
 
-if the \texttt{RS0030\_yz\_XXXX.tif} slices were in the \texttt{RS0030} directory.
+if the \texttt{RS0030\_yz\_XXXX.tif} slices were stored in the \texttt{RS0030} directory.
 
 \section{Training a Network}
 
-In order to train the network, the \texttt{train.py} script can simply be run. To see what command line arguments are available, run \texttt{python train.py --help}.
+In order to train the networks, the \texttt{train.py} script can simply be run. To see what command line arguments are available, run \texttt{python train.py --help}.
 
 To train the ablated 2D U-Net architecture with a learning rate of 0.0001 and a batch size of four for example, one would run:
 
@@ -60,4 +60,4 @@ The image containing the skeletonized boundary positions will be saved in the \t
 
 Working coordinates and density calibration values of the slices used in this project are provided in the script. If a user would like to estimate values for new slices, a \texttt{Slice} object must be defined with the following arguments: the slice image file name, the two sets of coordinates, and the density calibration values output by the CT machine.
 
-In the future, this \texttt{.ipynb} script could easily be converted to a pure Python script and new information could be provided through the command line instead.
+In the future, this \texttt{.ipynb} script could easily be converted to a pure Python script and new slice information could be provided through the command line instead.

@@ -19,7 +19,7 @@
 % the reader confidence that you are able to absorb, understand and clearly 
 % communicate highly technical material.
 
-As outlined in Chapter \ref{chap:context}, the objective of this project is to use deep learning to automate the estimation of the amount of skeletal matter produced annually by corals. This chapter introduces and briefly describes the technique that will be used in order to achieve this goal.
+As outlined in Chapter \ref{chap:context}, the objective of this project is to use deep learning to automate the estimation of the amount of skeletal matter produced annually by corals. This chapter introduces and briefly describes the techniques that will be used in order to achieve this goal.
 
 \section{Deep Learning}
 \label{sec:deeplearning}
@@ -62,7 +62,7 @@ As well as the convolution operation, the max-pooling operation is often used in
     \label{fig:operations}
 \end{figure}
 
-Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a 3$\times$3 kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyperparameter optimisation, kernel sizes from various layers are often tuned, in order to increase or decrease the size of neurons' receptive fields. Hyperparameter optimisation is discussed in Section \ref{sec:hyperparam}.
+Another feature of CNNs that set them apart from their fully connected counterparts is the localised ``receptive fields'' of the neurons present in convolutional layers. Whilst neurons in a fully connected layer can receive input from every neuron in the previous layer, neurons present in a convolutional layer can only receive input from a small amount of neighbouring neurons in the previous layer. For example, if a 3$\times$3 kernel is used, a neuron's activation can only be influenced by nine neurons in the previous layer. This area of input that can influence a neuron is called its receptive field. This is one of the reasons why during hyperparameter optimisation, kernel sizes from various layers are often tuned, in order to increase or decrease the sizes of neurons' receptive fields. Hyperparameter optimisation is discussed in Section \ref{sec:hyperparam}.
 
 \subsection{Backpropagation}
 \label{sec:backprop}
@@ -82,7 +82,7 @@ The size of the weight update is not only determined by the gradient calculated,
 \end{equation}
 
 \noindent
-where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$. Choosing an appropriate learning rate is challenging but is essential to allow an optimisation algorithm to converge to a local minimum. A learning rate that is too large can cause the loss function to fluctuate around the minimum, impeding convergence or even causing divergence. The learning rate hyperparameter has a significant effect on training and is one of the most important parameters tuned in the hyperparameter optimisation process~\cite{bengio2012practical} (see Section \ref{sec:hyperparam}).
+where $\eta$ is the learning rate and $\nabla\ell(w)$ is the derivative of the loss function $\ell$ with respect to $w$. Choosing an appropriate learning rate is challenging but is essential to allow an optimisation algorithm to converge to a local minimum. A learning rate that is too large can cause the loss function to fluctuate around the minimum, impeding convergence or even causing divergence~\cite{bishop1995neural}. The learning rate hyperparameter has a significant effect on training and is one of the most important parameters tuned in the hyperparameter optimisation process~\cite{bengio2012practical} (see Section \ref{sec:hyperparam}).
 
 \subsubsection{Stochastic Gradient Descent}
 
@@ -97,12 +97,12 @@ Issues arise when using gradient descent with larger datasets, as evaluating the
 
 \subsubsection{Adam}
 
-First introduced by Kingma and Ba in 2014, Adam is an optimisation algorithm that is also based off of SGD. However, rather than using the same learning rate across all parameters, Adam computes individual adaptive learning rates for each parameter. These individual learning rates are based off of estimates of the first moment (the mean) and second moment (the uncentered variance) of the gradients~\cite{gdbad}. Kingma and Ba showed empirically that Adam works well in practice and compares favourably to other optimisation algorithms when optimising both fully connected ANNs and deep CNNs. Due to its ability to train deep CNNs effectively, the Adam optimisation algorithm~\cite{adam} will be the main algorithm utilised throughout the project.
+First introduced by Kingma and Ba in 2014, Adam~\cite{adam} is an optimisation algorithm that is also based off of SGD. However, rather than using the same learning rate across all parameters, Adam computes individual adaptive learning rates for each parameter. These individual learning rates are based off of estimates of the first moment (the mean) and second moment (the uncentered variance) of the gradients~\cite{gdbad}. Kingma and Ba showed empirically that Adam works well in practice and compares favourably to other optimisation algorithms when optimising both fully connected ANNs and deep CNNs. Due to its ability to train deep CNNs effectively, the Adam optimisation algorithm will be the main algorithm utilised throughout the project.
 
 \subsection{Loss functions}
 \label{sec:loss}
 
-A loss function takes both the ground truth label and the predicted label of a training sample, and outputs some measure of how well a model performed by producing that prediction. As mentioned in Section \ref{sec:backprop}, backpropagation makes use of the derivative of the loss function with respect to each parameter in order to minimise the loss achieved. If the appropriate loss function is chosen, minimising the loss should improve the performance achieved by the network. It is for this reason that loss functions must be differentiable. The loss functions that will be experimented with throughout this project are outlined below.
+A loss function takes the ground truth label and the predicted label of a training sample, and outputs some measure of how well a model performed by producing that prediction. As mentioned in Section \ref{sec:backprop}, backpropagation makes use of the derivative of the loss function with respect to each parameter in order to minimise the loss achieved. It is for this reason that loss functions must be differentiable. If the appropriate loss function is chosen, minimising the loss should improve the performance achieved by the network. The loss functions that will be experimented with throughout this project are outlined below.
 
 \subsubsection{Binary Cross-Entropy Loss}
 
@@ -138,7 +138,7 @@ where $y \in \{+1, -1\}$ is the actual value (the ground-truth), and $p \in [0, 
 \begin{figure}[t]
     \centering
     \input{tikz/focal}
-    \caption{An illustration of the focal loss with varying values of $\gamma$. Recreated from \cite[Fig. 1]{focalloss}: ``setting $\gamma > 0$ reduces the relative loss for well-classified examples $(p > 0.5)$, putting more focus on hard, misclassified examples''.}
+    \caption{An illustration of the focal loss with varying values of $\gamma$. Recreated from \cite[Fig. 1]{focalloss}: ``setting $\gamma > 0$ reduces the relative loss for well-classified examples $(p > 0.5)$, putting more focus on hard, misclassified examples''. It can be seen that when $\gamma = 5$, the loss achieved by well-classified examples is far lower than when $\gamma = 0$.}
     \label{fig:focal}
 \end{figure}
 
@@ -155,7 +155,7 @@ The term ``overfitting'' refers to the phenomenon when a model performs well on 
 
 \subsubsection{Data augmentation}
 
-A very common technique used to reduce overfitting is data augmentation. Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images are: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Effective data augmentation allows for a dataset to be artificially expanded, enabling it to represent a more comprehensive set of possible samples. Due to the challenges involved in labelling the data used in this project, data augmentation is an important regularization technique and may significantly improve the performance achieved by both the 2D and 3D models experimented with.
+A very common technique used to reduce overfitting is data augmentation. Data augmentation is the process of augmenting the labelled training data in some way in order to increase the amount of training data available. This augmentation can be performed ``online'' with each training sample being randomly augmented during the training process, or it can be performed ``offline'' with the augmentation taking place before training. The training data can be augmented in many ways. Common examples for 2D images include: random rotations within some predefined range, random changes to brightness levels, and random horizontal and vertical flips. Effective data augmentation allows for a dataset to be artificially expanded, enabling it to represent a more comprehensive set of possible samples. Due to the challenges involved in labelling the data used in this project, data augmentation is an important regularization technique and may significantly improve the performance achieved by both the 2D and 3D models experimented with.
 
 \subsubsection{Dropout}
 
@@ -221,7 +221,9 @@ The information passed through from the encoder to the decoder is in the form of
 
 \subsection{U-Net}
 
-Presented by Ronneberger et al.\ in 2015~\cite{ronneberger2015u}, U-Net is a CNN architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. At a high level, the U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled via convolutional and max-pooling layers, and the number of feature channels is increased. The expansion path then gradually reconstructs the image via ``up-convolutions''. Throughout the expanding path, the feature channels from the corresponding contracting layers are appended to the feature channels in the expanding layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown later in Chapter \ref{chap:implementation} when its internals are discussed in more detail.
+Presented by Ronneberger et al.\ in 2015~\cite{ronneberger2015u}, U-Net is a CNN architecture that was initially used to perform image segmentation on biomedical images, but has since been used on a wider range of visual data. Due to its success in semantic segmentation tasks, it will be the main architecture experimented with throughout the project.
+
+At a high level, the U-Net architecture consists of three sections: the contracting path, the bottleneck, and the expanding path. The contracting path follows the typical architecture of a convolutional network, in that the image is gradually downsampled via convolutional and max-pooling layers, and the number of feature channels is increased. The expansion path then gradually reconstructs the image via ``up-convolutions''. Throughout the expanding path, the feature channels from the corresponding contracting layers are appended to the feature channels in the expanding layers. This allows the features that are learned whilst contracting the image to also be used to reconstruct it. A diagram of the U-Net architecture is shown later in Chapter \ref{chap:implementation} when its internals are discussed in more detail.
 
 The U-Net and SegNet architectures share multiple similarities. They are both fully convolutional architectures designed to perform semantic pixel-wise segmentation. Both architectures also consist of an encoder, a bottleneck, and a decoder, with the encoder following a typical CNN architecture. Note that when describing the U-Net architecture, Ronneberger et al.\ refer to the encoder and decoder as the contracting and expanding paths respectively. Another similarity between the architectures is their passing of information from layers in the encoder to corresponding layers in the decoder. However, the passing of information is implemented differently in each architecture. Whilst U-Net passes information by concatenating feature maps from layers in the encoder to the feature maps of layers in the decoder, SegNet passes information in the form of pooling indices. These different methods of passing forward information can significantly affect the performance achieved in various semantic segmentation tasks, and will be experimented with later in the project.
 
@@ -229,7 +231,7 @@ The U-Net and SegNet architectures share multiple similarities. They are both fu
 
 A generative adversarial network (GAN)~\cite{gans} is a framework in which two models are pitted against each other: a generative model $G$ that captures the data distribution and a discriminative model $D$ that estimates the probability that a sample came from the training data rather than $G$. Both models are trained simultaneously and in competition with each other, in that $G$ is trained to maximise the probability of $D$ making a mistake.
 
-Many problems in image processing and computer vision involve ``image-to-image translation'': the translation of an input image into some corresponding output image. In recent years, adversarial nets have proved to be an effective general-purpose solution to image-to-image translation~\cite{gansoverview}. For example, the pix2pix model~\cite{pix2pix} demonstrates effective results in different computer vision tasks that had previously required special purpose models, including semantic segmentation and colourisation of black and white images. Since the boundary extraction task attempted in this project can also be thought of as an image-to-image translation task, the pix2pix model will briefly be experimented with.
+Many problems in image processing and computer vision involve ``image-to-image translation'': the translation of an input image into some corresponding output image. In recent years, adversarial nets have proved to be an effective general-purpose solution to image-to-image translation~\cite{gansoverview}. For example, the pix2pix model~\cite{pix2pix} demonstrates effective results in different computer vision tasks that had previously required special purpose models, including semantic segmentation and colourisation of black and white images. Since the boundary extraction task attempted in this project can also be thought of as an image-to-image translation task, the pix2pix model will briefly be experimented with later in the project.
 
 % \section{Classical Image Processing Techniques}
 

@@ -42,22 +42,24 @@
 % \end{itemize}
 % \end{quote}
 
-This project uses deep learning to automate the estimation of the amount of skeletal matter produced annually by corals. In particular, the labelling of density bands present in two dimensional slices of coral is automated. This is achieved using a convolutional neural network based off of the U-Net architecture. To train this network, a dataset containing ${\sim}400$ images is curated using slices extracted from four different three dimensional CT scans of coral skeletons. Various data augmentation techniques are used to artificially expand the dataset and improve the performance achieved. In order to effectively measure performance, an accuracy metric based off the average Euclidean distance between predicted and ground truth boundaries is conceived. Various ablation studies and rigorous quantitative and qualitative evaluation are applied to pinpoint performance and limitations. An ablated version of the U-Net architecture was found to perform better in this task and ultimately achieved a cross-validated accuracy of 77.8\%.
+This project uses deep learning to automate the estimation of the amount of skeletal matter produced annually by corals. In particular, the U-Net architecture is successfully modified to automatically label the density bands present in two dimensional slices of coral. This is the first time that deep learning techniques have been used to process coral density data of any kind. To train the U-Net based network, a dataset containing ${\sim}400$ images is curated using slices extracted from four different three dimensional CT scans of coral skeletons. Various data augmentation techniques are used to artificially expand the dataset and improve the performance achieved. In order to effectively measure performance, an accuracy metric based off the average Euclidean distance between predicted and ground truth boundaries is conceived. Various ablation studies and rigorous quantitative and qualitative evaluation are applied to pinpoint performance and limitations. An ablated version of the U-Net architecture was found to perform better in this task and ultimately achieved a cross-validated accuracy of 77.8\%.
 
 The automatic labelling of the banding present in three dimensions is also explored. To this end, the U-Net architecture is modified to process three dimensional data, and a custom three dimensional data loader capable of online augmentation is implemented. In order to train this network, a larger dataset of manually labelled adjacent slices is curated, containing over 3,400 images extracted from four coral samples.
 
-The densities of the coral skeletons, and the distances between the density bands extracted by the network are automatically estimated using various classical image processing techniques. These estimates are used to calculate the amount of skeletal matter produced annually. The final calculations are similar to the manual calculations reported in the literature.
+% The performance achieved is investigated and a new labelling techniques are suggested for future research.
+
+The densities of the coral skeletons and the distances between the density bands extracted by the network are automatically estimated using various classical image processing techniques. These estimates are used to automatically calculate the amount of skeletal matter produced annually and the final automated calculations are similar to the manual calculations reported in the literature.
 
 \section*{Summary of Achievements}
 
 \begin{itemize}
     \item I spent 25 hours manually labelling coral data.
-    \item I generated a 2D dataset containing ${\sim}400$ images and a 3D dataset containing ${\sim}$3,400 images using various scripts I wrote.
-    \item Having not taken the ``Deep Learning'' unit, I spent 20 hours researching and learning about the field of deep learning.
+    \item I generated a 2D dataset containing ${\sim}400$ images and a 3D dataset containing over 3,400 images using various scripts I wrote.
+    \item Having not taken the ``Applied Deep Learning'' unit, I spent 20 hours researching and learning about the field of deep learning.
     \item I learned how to use the Keras and TensorFlow libraries in order to implement the networks used.
     \item I modified an existing 2D U-Net implementation and trained it on the curated dataset.
     \item I extended the U-Net architecture to process 3D data.
-    \item I wrote a ``data generator'' from scratch in Python to allow ``online'' augmentation of 3D data as it is passed into the network since Keras does not have its own implementation.
+    \item I wrote a ``data generator'' from scratch in Python to perform ``online'' augmentation of 3D data as it is passed into the network since Keras does not have its own implementation.
     \item I implemented a custom accuracy metric in C and wrapped it in a Python function to achieve a ${\sim}315$ times speedup allowing the accuracy to be calculated in minutes rather than hours.
     \item I trained the network over 100 times whilst performing hyperparameter optimisation, in order to gain a better understanding of the model and to maximise the performance achieved.
     \item I successfully used ablation studies to find a simplified architecture that performs better than the original U-Net architecture at labelling the boundaries present in two dimensions.

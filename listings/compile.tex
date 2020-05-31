@@ -1,5 +1,6 @@
-\begin{lstlisting}[float={ht},caption={A simple example of compiling a Keras model using the \texttt{TensorBoard}, \texttt{EarlyStopping}, and \texttt{ModelCheckpoint} callbacks. The Keras implementations of the Adam optimiser, binary cross-entropy loss, and per-pixel accuracy are used.},label={lst:compile},language=Python,upquote=true]
+\begin{lstlisting}[float={ht},caption={A simple example of compiling a Keras model using the \texttt{TensorBoard}, \texttt{EarlyStopping}, and \texttt{ModelCheckpoint} callbacks. The Keras implementations of the Adam optimiser, binary cross-entropy loss, and per-pixel accuracy are used. Once the model is compiled, it is then trained for 20 epochs using the \texttt{fit\_generator} method.},label={lst:compile},language=Python,upquote=true]
 from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from keras.models import Model
 from keras.optimizers import Adam
 
 # Create an instance of the Model class using the Model constructor
@@ -17,7 +18,7 @@ tb = TensorBoard(log_dir="logs/")
 es = EarlyStopping(monitor="val_loss", mode="min", patience=5)
 
 # Create a ModelCheckpoint callback
-mc = ModelCheckpoint("checkpoint-{epoch:02d}.hdf5",
+mc = ModelCheckpoint(filepath="checkpoint-{epoch:02d}.hdf5",
                      monitor="loss",
                      save_best_only=False)
 

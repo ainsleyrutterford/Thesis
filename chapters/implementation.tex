@@ -228,7 +228,7 @@ Finally, the model is stored in an instance of the Keras \texttt{Model} class. B
 
 \subsection{Training}
 
-Once the architecture and online data augmentation process had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method can then be used to define which optimiser and loss function to use and which metrics to monitor. Subsequently, the \texttt{fit} method can be used to train the network.
+Once the architecture and online data augmentation process had been implemented, the model was then compiled using the \texttt{compile} method from the \texttt{Model} class. The \texttt{compile} method is used to define which optimiser and loss function to use and which metrics to monitor. Subsequently, the \texttt{fit} method can be used to train the network.
 
 \subsubsection{Keras Callbacks}
 
@@ -416,7 +416,7 @@ The average distance between the prediction and the label can be thought of as a
 
 where $d_{max}$ is the maximum distance that two images could be from each other, and $d$ is the actual distance calculated. $d_{max}$ would theoretically be achieved if the prediction contained a single white pixel in one of the corners, and the ground truth label contained a single white pixel in the opposite corner. This would result in a maximum theoretical distance of 362 for 256$\times$256 patches. However, since the label patches present in the curated dataset must contain labelling across the entire patch, this scenario can never occur. The maximum distance achieved by any sample during training was actually 131 pixels. Ultimately, a maximum of 90 pixels was chosen, with errors above 90 pixels resulting in a truncated accuracy of 0\%. This lower maximum (in comparison with the theoretical maximum of 362) was chosen to ensure that accuracy percentages over 90\% correspond to predictions that are often considered acceptable when inspected visually.
 
-The initial two dimensional U-Net implementation achieved a validaiton accuracy of ${\sim}94\%$ and the initial three dimensional implementation achieved a validation accuracy of ${\sim}$77\%. The accuracy metric and its various strengths and weaknesses are discussed further in Chapter \ref{chap:evaluation}.
+The initial two dimensional U-Net implementation achieved a validation accuracy of ${\sim}94\%$ and the initial three dimensional implementation achieved a validation accuracy of ${\sim}$77\%. The accuracy metric and its various strengths and weaknesses are discussed further in Chapter \ref{chap:evaluation}.
 
 \subsection{The \texttt{ctypes} Module}
 

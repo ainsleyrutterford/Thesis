@@ -1,6 +1,6 @@
 # Coral Density Analysis using Deep Learning
 
-The full PDF is available [here](https://github.com/ainsleyrutterford/Thesis/blob/master/Thesis.pdf) and the accompanying code is available in [this repository](https://github.com/ainsleyrutterford/DeepC).
+This repository contains the LaTeX source code for my MEng Computer Science thesis at the University of Bristol. The full PDF is available [here](https://github.com/ainsleyrutterford/Thesis/blob/master/Thesis.pdf) and the accompanying code written throughout is available in [this repository](https://github.com/ainsleyrutterford/DeepC).
 
 ### Abstract
 

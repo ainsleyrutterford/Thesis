@@ -2,6 +2,11 @@
 
 This repository contains the LaTeX source code for my MEng Computer Science thesis at the University of Bristol. The full PDF is available [here](https://github.com/ainsleyrutterford/Thesis/blob/master/Thesis.pdf) and the accompanying code written throughout is available in [this repository](https://github.com/ainsleyrutterford/DeepC).
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/real-coral.png" height=300>
+  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/3D-scan.png" height=300>
+</p>
+
 ### Abstract
 
 This project uses deep learning to automate the estimation of the amount of skeletal matter produced
@@ -26,8 +31,3 @@ The densities of the coral skeletons and the distances between the density bands
 are automatically estimated using various classical image processing techniques. These estimates are
 used to automatically calculate the amount of skeletal matter produced annually and the final automated
 calculations are similar to the manual calculations reported in the literature.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/real-coral.png" width=400>
-  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/3D-scan.png" width=400>
-</p>

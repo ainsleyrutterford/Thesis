@@ -3,8 +3,8 @@
 This repository contains the LaTeX source code for my MEng Computer Science thesis at the University of Bristol. The full PDF is available [here](https://github.com/ainsleyrutterford/Thesis/blob/master/Thesis.pdf) and the accompanying code written throughout is available in [this repository](https://github.com/ainsleyrutterford/DeepC).
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/real-coral.png" height=300>
-  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/3D-scan.png" height=300>
+  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/real-coral.png" height=280>
+  <img src="https://raw.githubusercontent.com/ainsleyrutterford/Thesis/master/images/3D-scan.png" height=280>
 </p>
 
 ### Abstract
